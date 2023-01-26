@@ -1,0 +1,1362 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+  <meta charset="UTF-8">
+  <meta 
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+  <meta 
+    http-equiv="X-UA-Compatible" 
+    content="ie=edge">
+  <meta 
+    name="theme-color" 
+    content="#fff" 
+    id="theme-color">
+  <meta 
+    name="description" 
+    content="reacord of learn cs">
+  <link 
+    rel="icon" 
+    href="/img/pacman.png">
+  <title>Cmake</title>
+  
+    
+      <meta 
+        property="og:title" 
+        content="Cmake">
+    
+    
+      <meta 
+        property="og:url" 
+        content="https://fetch150zy.github.io/2022/08/20/cmake/index.html">
+    
+    
+      <meta 
+        property="og:img" 
+        content="/img/cmake.jpg">
+    
+    
+      <meta 
+        property="og:img" 
+        content="reacord of learn cs">
+    
+    
+      <meta 
+        property="og:type" 
+        content="article">
+      <meta 
+        property="og:article:published_time" 
+        content="2022-08-20">
+      <meta 
+        property="og:article:modified_time" 
+        content="2023-01-26">
+      <meta 
+        property="og:article:author" 
+        content="fetch150zy">
+      
+        
+          <meta 
+            property="og:article:tag" 
+            content="Cmake">
+        
+      
+    
+  
+  
+  <link rel="preload" href="//at.alicdn.com/t/font_1946621_i1kgafibvw.css" as="style" >
+  <link rel="preload" href="//at.alicdn.com/t/font_1952792_89b4ac4k4up.css" as="style" >
+  <link rel="preload" href="/css/main.css" as="style" >
+  
+  <link rel="modulepreload" href="//instant.page/5.1.0">
+  
+  <link rel="stylesheet" href="/css/main.css">
+  
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1946621_i1kgafibvw.css">
+  
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1952792_89b4ac4k4up.css">
+  
+  
+  
+    <link rel="stylesheet" href="/js/lib/lightbox/baguetteBox.min.css">
+  
+  <script>
+    function loadScript(url, cb) {
+      var script = document.createElement('script');
+      script.src = url;
+      if (cb) script.onload = cb;
+      script.async = true;
+      document.body.appendChild(script);
+    }
+    function loadCSS(href, data, attr) {
+      var sheet = document.createElement('link');
+      sheet.ref = 'stylesheet';
+      sheet.href = href;
+      sheet.dataset[data] = attr;
+      document.head.appendChild(sheet);
+    }
+    function changeCSS(cssFile, data, attr) {
+      var oldlink = document.querySelector(data);
+      var newlink = document.createElement("link");
+      newlink.setAttribute("rel", "stylesheet");
+      newlink.setAttribute("href", cssFile);
+      newlink.dataset.prism = attr;
+      document.head.replaceChild(newlink, oldlink);
+    }
+  </script>
+  
+    
+      
+      
+      
+      
+        
+        
+        
+        <script>
+          function prismThemeChange() {
+            if(document.getElementById('theme-color').dataset.mode === 'dark') {
+              if(document.querySelector('[data-prism]')) {
+                changeCSS('/js/lib/prism/prism-tomorrow.min.css', '[data-prism]', 'prism-tomorrow');
+              } else {
+                loadCSS('/js/lib/prism/prism-tomorrow.min.css', 'prism', 'prism-tomorrow');
+              }
+            } else {
+              if(document.querySelector('[data-prism]')) {
+                changeCSS('/js/lib/prism/prism.min.css', '[data-prism]', 'prism');
+              } else {
+                loadCSS('/js/lib/prism/prism.min.css', 'prism', 'prism');
+              }
+            }
+          }
+          prismThemeChange()
+        </script>
+      
+      
+        
+        <link rel="stylesheet" href="/js/lib/prism/prism-line-numbers.min.css">
+      
+    
+  
+  <script>
+    // control reverse button
+    var reverseDarkList = {
+      dark: 'light',
+      light: 'dark'
+    };
+    var themeColor = {
+      dark: '#1c1c1e',
+      light: '#fff'
+    }
+    // get the data of css prefers-color-scheme
+    var getCssMediaQuery = function() {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    };
+    // reverse current darkmode setting function
+    var reverseDarkModeSetting = function() {
+      var setting = localStorage.getItem('user-color-scheme');
+      if(reverseDarkList[setting]) {
+        setting = reverseDarkList[setting];
+      } else if(setting === null) {
+        setting = reverseDarkList[getCssMediaQuery()];
+      } else {
+        return;
+      }
+      localStorage.setItem('user-color-scheme', setting);
+      return setting;
+    };
+    // apply current darkmode setting
+  </script>
+  
+    <script>
+      var setDarkmode = function(mode) {
+      var setting = mode || localStorage.getItem('user-color-scheme');
+      if(setting === getCssMediaQuery()) {
+        document.documentElement.removeAttribute('data-user-color-scheme');
+        localStorage.removeItem('user-color-scheme');
+        document.getElementById('theme-color').content = themeColor[setting];
+        document.getElementById('theme-color').dataset.mode = setting;
+        prismThemeChange();
+      } else if(reverseDarkList[setting]) {
+        document.documentElement.setAttribute('data-user-color-scheme', setting);
+        document.getElementById('theme-color').content = themeColor[setting];
+        document.getElementById('theme-color').dataset.mode = setting;
+        prismThemeChange();
+      } else {
+        document.documentElement.removeAttribute('data-user-color-scheme');
+        localStorage.removeItem('user-color-scheme');
+        document.getElementById('theme-color').content = themeColor[getCssMediaQuery()];
+        document.getElementById('theme-color').dataset.mode = getCssMediaQuery();
+        prismThemeChange();
+      }
+    };
+    setDarkmode();
+    </script>
+  
+  
+  
+    <link rel="preload" href="/js/lib/lightbox/baguetteBox.min.js" as="script">
+    <link rel="preload" href="/js/lib/lightbox/baguetteBox.min.css" as="style" >
+  
+  
+    <link rel="preload" href="/js/lib/lozad.min.js" as="script">
+  
+  
+  
+  
+    
+    <link rel="prefetch" href="//cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-svg.js" as="script">
+  
+  
+    
+    <link rel="prefetch" href="https://cdn.jsdelivr.net/npm/valine@1.5.1/dist/Valine.min.js" as="script">
+  
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+    <div class="wrapper">
+       
+      <nav class="navbar">
+  <div class="navbar-logo">
+    <a class="navbar-logo-main" href="/">
+      
+        <img 
+          class="navbar-logo-img"
+          width="32"
+          height="32"
+          src="/img/pacman.png" 
+          alt="blog logo">
+      
+      <span class="navbar-logo-dsc">fetch150zy'blog</span>
+      </a>
+  </div>
+  <div class="navbar-menu">
+    
+      <a 
+        href="/" 
+        class="navbar-menu-item">
+        
+          首页
+        
+      </a>
+    
+      <a 
+        href="/archives" 
+        class="navbar-menu-item">
+        
+          归档
+        
+      </a>
+    
+      <a 
+        href="/tags" 
+        class="navbar-menu-item">
+        
+          标签
+        
+      </a>
+    
+      <a 
+        href="/categories" 
+        class="navbar-menu-item">
+        
+          分类
+        
+      </a>
+    
+      <a 
+        href="/links" 
+        class="navbar-menu-item">
+        
+          友链
+        
+      </a>
+    
+    <button 
+      class="navbar-menu-item darknavbar navbar-menu-btn" 
+      aria-label="Toggle dark mode"
+      id="dark">
+      <i class="iconfont icon-weather"></i>
+    </button>
+    <button 
+      class="navbar-menu-item searchnavbar navbar-menu-btn" 
+      aria-label="Toggle search"
+      id="search">
+      <!-- <i 
+        class="iconfont icon-search" 
+        style="font-size: 1.2rem; font-weight: 400;">
+      </i> -->
+      <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img"
+        class="iconify iconify--ion" width="28" height="28" preserveAspectRatio="xMidYMid meet" viewBox="0 0 512 512">
+        <path fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="28"
+          d="M256 80a176 176 0 1 0 176 176A176 176 0 0 0 256 80Z"></path>
+        <path fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="28"
+          d="M232 160a72 72 0 1 0 72 72a72 72 0 0 0-72-72Z"></path>
+        <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="28"
+          d="M283.64 283.64L336 336"></path>
+      </svg>
+    </button>
+  </div>
+</nav> 
+      
+      <div 
+        id="local-search" 
+        style="display: none">
+        <input
+          class="navbar-menu-item"
+          id="search-input"
+          placeholder="请输入搜索内容..." />
+        <div id="search-content"></div>
+      </div>
+      
+      <div class="section-wrap">
+        <div class="container">
+          <div class="columns">
+            <aside class="left-column">
+              
+              <div class="card card-author">
+                
+  <img 
+    src="/img/logo.png" 
+    class="author-img"
+    width="88"
+    height="88"
+    alt="author avatar">
+
+<p class="author-name">fetch150zy</p>
+<p class="author-description">a college student at XDU</p>
+<div class="author-message">
+  <a 
+    class="author-posts-count" 
+    href="/archives">
+    <span>19</span>
+    <span>文章</span>
+  </a>
+  <a 
+    class="author-categories-count" 
+    href="/categories">
+    <span>8</span>
+    <span>分类</span>
+  </a>
+  <a 
+    class="author-tags-count" 
+    href="/tags">
+    <span>11</span>
+    <span>标签</span>
+  </a>
+</div>
+
+  <div class="author-card-society">
+    
+      <div class="author-card-society-icon">
+        <a target="_blank" rel="noopener" href="https://space.bilibili.com/505867894">
+          <i class="iconfont icon-bilibili society-icon"></i>
+        </a>
+      </div>
+    
+      <div class="author-card-society-icon">
+        <a href="mailto:mars_zhewei@outlook.com">
+          <i class="iconfont icon-mail society-icon"></i>
+        </a>
+      </div>
+    
+      <div class="author-card-society-icon">
+        <a target="_blank" rel="noopener" href="https://github.com/fetch150zy">
+          <i class="iconfont icon-github society-icon"></i>
+        </a>
+      </div>
+    
+      <div class="author-card-society-icon">
+        <a target="_blank" rel="noopener" href="https://stackoverflow.com/users/16738249/fetch150zy">
+          <i class="iconfont icon-stackflow society-icon"></i>
+        </a>
+      </div>
+    
+  </div>
+
+              </div>
+               <div class="sticky-tablet">
+  
+  
+    <article class="display-when-two-columns spacer">
+      <div class="card card-content toc-card">
+        <div class="toc-header">
+  <i 
+    class="iconfont icon-menu" 
+    style="padding-right: 2px;">
+  </i>目录
+</div>
+<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#cmake"><span class="toc-text"> cmake</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#cmake_mininum_required"><span class="toc-text"> cmake_mininum_required</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#project"><span class="toc-text"> project</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#configure_file"><span class="toc-text"> configure_file</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#set"><span class="toc-text"> set</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#add_executable"><span class="toc-text"> add_executable</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#target_include_directories"><span class="toc-text"> target_include_directories</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#add_library"><span class="toc-text"> add_library</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#option"><span class="toc-text"> option</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#if"><span class="toc-text"> if</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#add_subdirectory"><span class="toc-text"> add_subdirectory</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#list"><span class="toc-text"> list</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#target_link_libraries"><span class="toc-text"> target_link_libraries</span></a></li><li class="toc-item toc-level-2"><a class="toc-link"><span class="toc-text"> </span></a></li></ol></li></ol>
+      </div>
+    </article>
+  
+  
+  <article class="card card-content categories-widget">
+    <div class="categories-card">
+  <div class="categories-header">
+    <i 
+      class="iconfont icon-fenlei" 
+      style="padding-right: 2px;">
+    </i>分类
+  </div>
+  <div class="categories-list">
+    
+      <a href="/categories/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E5%85%B7/">
+        <div class="categories-list-item">
+          软件工具
+          <span class="categories-list-item-badge">7</span>
+        </div>
+      </a>
+    
+      <a href="/categories/Rust/">
+        <div class="categories-list-item">
+          Rust
+          <span class="categories-list-item-badge">1</span>
+        </div>
+      </a>
+    
+      <a href="/categories/%E8%99%9A%E6%8B%9F%E5%8C%96/">
+        <div class="categories-list-item">
+          虚拟化
+          <span class="categories-list-item-badge">2</span>
+        </div>
+      </a>
+    
+      <a href="/categories/Golang/">
+        <div class="categories-list-item">
+          Golang
+          <span class="categories-list-item-badge">1</span>
+        </div>
+      </a>
+    
+      <a href="/categories/%E5%AE%9E%E7%94%A8%E6%8A%80%E8%83%BD/">
+        <div class="categories-list-item">
+          实用技能
+          <span class="categories-list-item-badge">3</span>
+        </div>
+      </a>
+    
+      <a href="/categories/Assembly/">
+        <div class="categories-list-item">
+          Assembly
+          <span class="categories-list-item-badge">1</span>
+        </div>
+      </a>
+    
+      <a href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/">
+        <div class="categories-list-item">
+          数据结构与算法
+          <span class="categories-list-item-badge">1</span>
+        </div>
+      </a>
+    
+      <a href="/categories/C-Cpp/">
+        <div class="categories-list-item">
+          C-Cpp
+          <span class="categories-list-item-badge">3</span>
+        </div>
+      </a>
+    
+  </div>
+</div>
+  </article>
+  
+  <article class="card card-content tags-widget">
+    <div class="tags-card">
+  <div class="tags-header">
+    <i 
+      class="iconfont icon-biaoqian" 
+      style="padding-right: 2px;">
+    </i>热门标签
+  </div>
+  <div class="tags-list">
+    
+      <a 
+        href="/tags/Programming-language/" 
+        title="Programming language">
+        <div class="tags-list-item">Programming language</div>
+      </a>
+    
+      <a 
+        href="/tags/Editor/" 
+        title="Editor">
+        <div class="tags-list-item">Editor</div>
+      </a>
+    
+      <a 
+        href="/tags/Linux/" 
+        title="Linux">
+        <div class="tags-list-item">Linux</div>
+      </a>
+    
+      <a 
+        href="/tags/Vmware/" 
+        title="Vmware">
+        <div class="tags-list-item">Vmware</div>
+      </a>
+    
+      <a 
+        href="/tags/Algorithm/" 
+        title="Algorithm">
+        <div class="tags-list-item">Algorithm</div>
+      </a>
+    
+      <a 
+        href="/tags/Cmake/" 
+        title="Cmake">
+        <div class="tags-list-item">Cmake</div>
+      </a>
+    
+      <a 
+        href="/tags/Docker/" 
+        title="Docker">
+        <div class="tags-list-item">Docker</div>
+      </a>
+    
+      <a 
+        href="/tags/GCC-GDB/" 
+        title="GCC/GDB">
+        <div class="tags-list-item">GCC/GDB</div>
+      </a>
+    
+      <a 
+        href="/tags/Git/" 
+        title="Git">
+        <div class="tags-list-item">Git</div>
+      </a>
+    
+      <a 
+        href="/tags/Zsh/" 
+        title="Zsh">
+        <div class="tags-list-item">Zsh</div>
+      </a>
+    
+      <a 
+        href="/tags/Regex/" 
+        title="Regex">
+        <div class="tags-list-item">Regex</div>
+      </a>
+    
+  </div>
+</div>
+  </article>
+  
+  
+</div>
+            </aside>
+            <main class="main-column">
+              
+  <div class="image-wrapper">
+    <img 
+      src="/img/cmake.jpg" 
+      data-src="/img/cmake.jpg"
+      srcset="data:image/svg+xml,%3Csvg%20xmlns=&#39;http://www.w3.org/2000/svg&#39;%20viewBox=&#39;0%200%20300%20300&#39;%3E%3C/svg%3E"
+      class="image lozad"
+      alt="Cmake thumbnail">
+  </div>
+
+<article class="card card-content">
+  <header>
+    <h1 class="post-title">
+      Cmake
+    </h1>
+  </header>
+  <div class="post-meta post-show-meta">
+    <time datetime="2022-08-19T16:00:00.000Z">
+      <i 
+        class="iconfont icon-calendar" 
+        style="margin-right: 2px;">
+      </i>
+      <span>2022-08-20</span>
+    </time>
+    
+      <span class="dot"></span>
+      
+        <a 
+          href="/categories/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E5%85%B7/" 
+          class="post-meta-link">
+          软件工具
+        </a>
+      
+    
+    
+      <span class="dot"></span>
+      <span>2.1k 字</span>
+    
+  </div>
+  
+    <div 
+      class="post-meta post-show-meta" 
+      style="margin-top: -10px;">
+      <div style="display: flex; align-items: center;">
+        <i 
+          class="iconfont icon-biaoqian" 
+          style="margin-right: 2px; font-size: 1.15rem;">
+        </i>
+        
+          
+          <a 
+            href="/tags/Cmake/" 
+            class="post-meta-link">
+            Cmake
+          </a>
+        
+      </div>
+    </div>
+  
+  </header>
+  <div 
+    id="section" 
+    class="post-content">
+    <blockquote>
+<p>最常用的 C C++ 大型项目构建工具，管理大型 C C++ 项目必备</p>
+</blockquote>
+<h1 id="cmake"><a class="markdownIt-Anchor" href="#cmake"></a> cmake</h1>
+<h2 id="cmake_mininum_required"><a class="markdownIt-Anchor" href="#cmake_mininum_required"></a> cmake_mininum_required</h2>
+<p><strong><em>主要用于设定cmake最低版本要求</em></strong></p>
+<ol>
+<li>
+<p>语法格式</p>
+<pre class="line-numbers language-cmake" data-language="cmake"><code class="language-cmake"><span class="token keyword">cmake_minimum_required</span><span class="token punctuation">(</span><span class="token property">VERSION</span> &lt;min<span class="token punctuation">></span>[...&lt;policy_max<span class="token punctuation">></span>] [FATAL_ERROR]<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+</li>
+<li>
+<p>参数</p>
+<ul>
+<li>
+<p>VERSION</p>
+<p>此命令会将<code>CMAKE_MINIMUM_REQUIRED_VERSION</code>变量的值设置为 <code>&lt;min&gt;</code></p>
+<pre class="line-numbers language-cmake" data-language="cmake"><code class="language-cmake"><span class="token function">cmake_mininum_required</span><span class="token punctuation">(</span><span class="token property">VERSION</span> <span class="token number">3.10</span>...<span class="token number">3.20</span><span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+</li>
+<li>
+<p>FATAL_ERROR</p>
+<p>该 <code>FATAL_ERROR</code> 选项被接受，但通过CMake的2.6和更高忽略。应该指定它，以便CMake 2.4及更低版本失败并显示错误，而不仅仅是警告</p>
+</li>
+</ul>
+</li>
+<li>
+<p>policy setting</p>
+<p>当指定的 <code>&lt;min&gt;</code> 版本高于2.4时，该命令会隐式调用</p>
+<pre class="line-numbers language-cmake" data-language="cmake"><code class="language-cmake"><span class="token keyword">cmake_policy</span><span class="token punctuation">(</span><span class="token property">VERSION</span> &lt;min<span class="token punctuation">></span>[...&lt;max<span class="token punctuation">></span>]<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>当给出 <code>&lt;min&gt;</code> 2.4或更低版本时，该命令会隐式调用</p>
+<pre class="line-numbers language-cmake" data-language="cmake"><code class="language-cmake"><span class="token keyword">cmake_policy</span><span class="token punctuation">(</span><span class="token property">VERSION</span> <span class="token number">2.4</span>[...&lt;max<span class="token punctuation">></span>]<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+</li>
+</ol>
+<h2 id="project"><a class="markdownIt-Anchor" href="#project"></a> project</h2>
+<p><strong><em>主要用于指定项目相关信息</em></strong></p>
+<ol>
+<li>
+<p>语法格式</p>
+<pre class="line-numbers language-cmake" data-language="cmake"><code class="language-cmake"><span class="token keyword">project</span><span class="token punctuation">(</span>&lt;PROJECT-<span class="token property">NAME</span><span class="token punctuation">></span> [&lt;language-name<span class="token punctuation">></span>...]<span class="token punctuation">)</span> <span class="token comment"># project_name是必须项，项目版本，语言等为可选项</span>
+<span class="token keyword">project</span><span class="token punctuation">(</span>&lt;PROJECT-<span class="token property">NAME</span><span class="token punctuation">></span>
+        [<span class="token property">VERSION</span> &lt;major<span class="token punctuation">></span>[.&lt;minor<span class="token punctuation">></span>[.&lt;patch<span class="token punctuation">></span>[.&lt;tweak<span class="token punctuation">></span>]]]]	<span class="token comment"># 项目版本</span>
+        [DESCRIPTION &lt;project-description-string<span class="token punctuation">></span>]	<span class="token comment"># 项目描述</span>
+        [HOMEPAGE_URL &lt;url-string<span class="token punctuation">></span>]	<span class="token comment"># 主页地址</span>
+        [LANGUAGES &lt;language-name<span class="token punctuation">></span>...]<span class="token punctuation">)</span>	<span class="token comment"># 指定项目语言</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li>
+<p>参数</p>
+<ul>
+<li>
+<p>VERSION</p>
+<ol>
+<li><code>PROJECT_VERSION</code> <code>&lt;PROJECT_NAME&gt;_VERSION</code></li>
+<li><code>PROJECT_VERSION_MAJOR</code> <code>&lt;PROJECT_NAME&gt;_VERSION_MAJOR</code></li>
+<li><code>PROJECT_VERSION_MINOR</code> <code>&lt;PROJECT_NAME&gt;_VERSION_MINOR</code></li>
+<li><code>PROJECT_VERSION_PATCH</code> <code>&lt;PROJECT_NAME&gt;_VERSION_PATCH</code></li>
+<li><code>PROJECT_VERSION_TWEAK</code> <code>&lt;PROJECT_NAME&gt;_VERSION_TWEAK</code></li>
+</ol>
+<p><code>project()</code>从顶层调用命令 时<code>CMakeLists.txt</code>，版本也存储在变量中 <code>CMAKE_PROJECT_VERSION</code></p>
+<pre class="line-numbers language-cmake" data-language="cmake"><code class="language-cmake"><span class="token keyword">project</span><span class="token punctuation">(</span><span class="token property">NAME</span> <span class="token number">1.2.3.4</span><span class="token punctuation">)</span>
+<span class="token comment"># PROJECT_VERSION/CMAKE_PROJECT_VERSION == 1.2.3.4</span>
+<span class="token comment"># PROJECT_VERSION_MAJOR == 1 主要</span>
+<span class="token comment"># PROJECT_VERSION_MINOR == 2 次要</span>
+<span class="token comment"># PROJECT_VERSION_PATCH == 3 修补</span>
+<span class="token comment"># PROJECT_VERSION_TWEAK == 4 调整</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li>
+<p>DESCRIPTION</p>
+<p><code>PROJECT_DESCRIPTION</code> <code>&lt;PROJECT_NAME&gt;_DESCRIPTION</code></p>
+<p>当<code>project()</code>从顶层调用命令时<code>CMakeLists.txt</code>，描述也存储在变量中<code>CMAKE_PROJECT_DESCRIPTION</code></p>
+</li>
+<li>
+<p>HOMEPAGE_URL</p>
+<p><code>PROJECT_HOMEPAGE_URL</code> <code>&lt;PROJECT_NAME&gt;_HOMEPAGE_URL</code></p>
+<p>当<code>project()</code>从顶层调用命令时<code>CMakeLists.txt</code>，URL 也存储在变量中<code>CMAKE_PROJECT_HOMEPAGE_URL</code></p>
+</li>
+<li>
+<p>LANGUAGE</p>
+</li>
+</ul>
+</li>
+<li>
+<p>相关变量</p>
+<ul>
+<li>项目名</li>
+</ul>
+<p>项目名存储在<code>PROJECT_NAME</code>中，从顶层调用时还存在了<code>CMAKE_PROJECT_NAME</code>中</p>
+<ul>
+<li>项目源目录的绝对路径</li>
+</ul>
+<pre class="line-numbers language-cmake" data-language="cmake"><code class="language-cmake"><span class="token variable">PROJECT_SOURCE_DIR</span>
+&lt;<span class="token variable">PROJECT_NAME</span><span class="token punctuation">></span>_SOURCE_DIR<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<ul>
+<li>项目二进制目录的绝对路径</li>
+</ul>
+<pre class="line-numbers language-cmake" data-language="cmake"><code class="language-cmake"><span class="token variable">PROJECT_BINARY_DIR</span>
+&lt;<span class="token variable">PROJECT_NAME</span><span class="token punctuation">></span>_BINARY_DIR<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<ul>
+<li>指示项目是否为顶级的布尔值</li>
+</ul>
+<pre class="line-numbers language-cmake" data-language="cmake"><code class="language-cmake">PROJECT_IS_TOP_LEVEL
+&lt;<span class="token variable">PROJECT_NAME</span><span class="token punctuation">></span>_IS_TOP_LEVEL<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+</li>
+<li>
+<p>代码注入</p>
+<pre class="line-numbers language-cmake" data-language="cmake"><code class="language-cmake"><span class="token variable">CMAKE_PROJECT_INCLUDE_BEFORE</span>
+<span class="token variable">CMAKE_PROJECT_</span>&lt;PROJECT-<span class="token property">NAME</span><span class="token punctuation">></span>_INCLUDE_BEFORE
+<span class="token variable">CMAKE_PROJECT_INCLUDE</span>
+<span class="token variable">CMAKE_PROJECT_</span>&lt;PROJECT-<span class="token property">NAME</span><span class="token punctuation">></span>_INCLUDE
+<span class="token variable">CMAKE_PROJECT_TOP_LEVEL_INCLUDES</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+</ol>
+<p>项目的顶级<code>CMakeLists.txt</code>文件必须包含对<code>project()</code>命令的直接调用；通过加载一个<code>include()</code>命令是不够的。如果不存在这样的调用，CMake 将发出警告并假装 <code>project(Project)</code>顶部有一个以启用默认语言（<code>C</code>和<code>CXX</code>）</p>
+<h2 id="configure_file"><a class="markdownIt-Anchor" href="#configure_file"></a> configure_file</h2>
+<p><strong><em>将文件复制到另一个位置并修改其内容</em></strong></p>
+<ol>
+<li>
+<p>格式</p>
+<pre class="line-numbers language-cmake" data-language="cmake"><code class="language-cmake"><span class="token keyword">configure_file</span><span class="token punctuation">(</span>&lt;input<span class="token punctuation">></span> &lt;output<span class="token punctuation">></span>
+               [NO_SOURCE_PERMISSIONS | USE_SOURCE_PERMISSIONS |
+                FILE_PERMISSIONS &lt;permissions<span class="token punctuation">></span>...]
+               [COPYONLY] [ESCAPE_QUOTES] [@ONLY]
+               [NEWLINE_STYLE [<span class="token variable">UNIX</span>|DOS|<span class="token variable">WIN32</span>|LF|CRLF] ]<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p><code>#cmakedefine</code></p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">cmakedefine</span> <span class="token expression">VAR <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">VAR</span> <span class="token expression"><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>  </span><span class="token comment">// 如果VAR已定义（ON）</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">undef</span> <span class="token expression">VAR		</span><span class="token comment">// 未定义（OFF）</span></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+<p><code>#cmakedefine01</code></p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">cmakedefine</span><span class="token expression"><span class="token number">01</span> VAR</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">VAR</span> <span class="token expression"><span class="token number">1</span>	</span><span class="token comment">// VAR已定义（ON）</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">VAR</span> <span class="token expression"><span class="token number">0</span>	</span><span class="token comment">// 未定义（OFF）</span></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+</li>
+<li>
+<p>参数</p>
+<ul>
+<li>
+<p><code>&lt;input&gt;</code></p>
+<p>输入文件的路径。相对路径的值相对于<code>CMAKE_CURRENT_SOURCE_DIR</code>。输入路径必须是文件，而不是目录</p>
+</li>
+<li>
+<p><code>&lt;output&gt;</code></p>
+<p>输出文件或目录的路径。相对路径的值相对于<code>CMAKE_CURRENT_BINARY_DIR</code>。如果路径命名现有目录，则输出文件将放置在该目录中，文件名与输入文件相同。如果路径包含不存在的目录，则会创建它们</p>
+</li>
+<li>
+<p><code>NO_SOURCE_PERMISSIONS</code></p>
+<p>不要将输入文件的权限转移到输出文件。复制的文件权限默认为标准 644 值 (-rw-r–r–)</p>
+</li>
+<li>
+<p><code>USE_SOURCE_PERMISSIONS</code></p>
+<p>将输入文件的权限转移到输出文件</p>
+</li>
+<li>
+<p><code>FILE_PERMISSIONS &lt;permissions&gt;...</code></p>
+<p>忽略输入文件的权限并使用<code>&lt;permissions&gt;</code> 为输出文件指定的权限</p>
+</li>
+<li>
+<p><code>COPYONLY</code></p>
+<p>复制文件而不替换任何变量引用或其他内容</p>
+</li>
+<li>
+<p><code>ESCAPE_QUOTES</code></p>
+<p>使用反斜杠（C 样式）转义任何替换的引号</p>
+</li>
+<li>
+<p><code>@ONLY</code></p>
+<p>将变量替换限制为对表单的引用<code>@VAR@</code>。这对于配置使用<code>$&#123;VAR&#125;</code>语法的脚本很有用</p>
+</li>
+<li>
+<p><code>NEWLINE_STYLE &lt;style&gt;</code></p>
+<p>指定输出文件的换行样式</p>
+</li>
+</ul>
+</li>
+</ol>
+<h2 id="set"><a class="markdownIt-Anchor" href="#set"></a> set</h2>
+<ol>
+<li>
+<p>设置正常变量</p>
+<pre class="line-numbers language-cmake" data-language="cmake"><code class="language-cmake"><span class="token keyword">set</span><span class="token punctuation">(</span>&lt;variable<span class="token punctuation">></span> &lt;value<span class="token punctuation">></span>... [PARENT_SCOPE]<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<ul>
+<li>
+<p>给<code>variable</code>设定给定的值（在当前函数或目录范围内）</p>
+</li>
+<li>
+<p>给出<code>PARENT_SCOPE</code> 参数</p>
+<p>变量将设置在当前范围之上的范围内。每个新目录或函数都会创建一个新范围。此命令会将变量的值设置到父目录或调用函数中（以适用于手头的情况为准）。变量值的先前状态在当前范围内保持不变（例如，如果它之前未定义，它仍然是未定义的，如果它有一个值，它仍然是那个值）</p>
+</li>
+</ul>
+</li>
+<li>
+<p>设置缓存条目</p>
+<pre class="line-numbers language-cmake" data-language="cmake"><code class="language-cmake"><span class="token keyword">set</span><span class="token punctuation">(</span>&lt;variable<span class="token punctuation">></span> &lt;value<span class="token punctuation">></span>... <span class="token variable">CACHE</span> &lt;type<span class="token punctuation">></span> &lt;docstring<span class="token punctuation">></span> [FORCE]<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<ul>
+<li>
+<p>设置给定的缓存<code>&lt;variable&gt;</code>（缓存条目）。由于缓存条目旨在提供用户可设置的值，因此默认情况下不会覆盖现有的缓存条目。使用<code>FORCE</code>选项覆盖现有条目</p>
+</li>
+<li>
+<p><code>&lt;type&gt;</code>必须指定为以下之一</p>
+<ol>
+<li>
+<p><code>BOOL</code></p>
+<p>布尔<code>ON/OFF</code>值</p>
+</li>
+<li>
+<p><code>FILEPATH</code></p>
+<p>磁盘上文件的路径</p>
+</li>
+<li>
+<p><code>PATH</code></p>
+<p>磁盘上目录的路径</p>
+</li>
+<li>
+<p><code>STRING</code></p>
+<p>一行文字（如果<code>STRINGS</code>缓存条目属性已设置）</p>
+</li>
+<li>
+<p><code>INTERNAL</code></p>
+<p>一行文字（它们可用于跨运行持久存储变量。使用这种类型意味着<code>FORCE</code>）</p>
+</li>
+</ol>
+</li>
+<li>
+<p><code>&lt;docstring&gt;</code>必须指定为一行文本</p>
+</li>
+</ul>
+<p>如果在调用之前缓存条目不存在或<code>FORCE</code> 给出了选项，则缓存条目将设置为给定值</p>
+</li>
+<li>
+<p>设置环境变量</p>
+<pre class="line-numbers language-cmake" data-language="cmake"><code class="language-cmake"><span class="token keyword">set</span><span class="token punctuation">(</span><span class="token variable">ENV</span>&#123;&lt;variable<span class="token punctuation">></span><span class="token punctuation">&#125;</span> [&lt;value<span class="token punctuation">></span>]<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>设置一个<code>Environment Variable</code> 到给定的值。后续调用<code>$ENV&#123;&lt;variable&gt;&#125;</code>将返回这个新值</p>
+<p>如果在后面没有给出参数<code>ENV&#123;&lt;variable&gt;&#125;</code>或者<code>&lt;value&gt;</code>是一个空字符串，那么这个命令将清除环境变量的任何现有值</p>
+</li>
+</ol>
+<h2 id="add_executable"><a class="markdownIt-Anchor" href="#add_executable"></a> add_executable</h2>
+<ol>
+<li>
+<p>正常的可执行文件</p>
+<pre class="line-numbers language-cmake" data-language="cmake"><code class="language-cmake"><span class="token keyword">add_executable</span><span class="token punctuation">(</span>&lt;name<span class="token punctuation">></span> [<span class="token variable">WIN32</span>] [<span class="token property">MACOSX_BUNDLE</span>]
+               [<span class="token property">EXCLUDE_FROM_ALL</span>]
+               [source1] [source2 ...]<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+<p><code>&lt;name&gt;</code>并且在项目中必须是全局唯一的</p>
+</li>
+<li>
+<p>导入的可执行文件</p>
+<pre class="line-numbers language-cmake" data-language="cmake"><code class="language-cmake"><span class="token keyword">add_executable</span><span class="token punctuation">(</span>&lt;name<span class="token punctuation">></span> <span class="token property">IMPORTED</span> [GLOBAL]<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+</li>
+<li>
+<p>别名可执行文件</p>
+<pre class="line-numbers language-cmake" data-language="cmake"><code class="language-cmake"><span class="token keyword">add_executable</span><span class="token punctuation">(</span>&lt;name<span class="token punctuation">></span> ALIAS &lt;target<span class="token punctuation">></span><span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+</li>
+</ol>
+<h2 id="target_include_directories"><a class="markdownIt-Anchor" href="#target_include_directories"></a> target_include_directories</h2>
+<ol>
+<li>
+<p>格式</p>
+<pre class="line-numbers language-cmake" data-language="cmake"><code class="language-cmake"><span class="token keyword">target_include_directories</span><span class="token punctuation">(</span>&lt;target<span class="token punctuation">></span> [SYSTEM] [AFTER|BEFORE]
+  &lt;<span class="token namespace">INTERFACE</span>|<span class="token namespace">PUBLIC</span>|<span class="token namespace">PRIVATE</span><span class="token punctuation">></span> [items1...]
+  [&lt;<span class="token namespace">INTERFACE</span>|<span class="token namespace">PUBLIC</span>|<span class="token namespace">PRIVATE</span><span class="token punctuation">></span> [items2...] ...]<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+</li>
+<li>
+<p>参数</p>
+<ul>
+<li>
+<p><code>&lt;target&gt;</code>必须是由命令创建的，例如<code>add_executable()</code>或者<code>add_library()</code>并且不能是 ALIAS 目标</p>
+</li>
+<li>
+<p>通过使用<code>AFTER</code>or<code>BEFORE</code>显式，您可以在附加和前置之间进行选择，而与默认值无关</p>
+</li>
+<li>
+<p>需要<code>INTERFACE PUBLIC PRIVATE</code>指定以下参数的范围</p>
+</li>
+</ul>
+<pre><code>`PRIVATE`和`PUBLIC`填充了`INCLUDE_DIRECTORIES`的`&lt;target&gt;`
+
+`INTERFACE`填充了`INTERFACE_INCLUDE_DIRECTORIES`的`&lt;target&gt;`
+</code></pre>
+<ul>
+<li>如果<code>SYSTEM</code>与<code>PUBLIC</code>或<code>INTERFACE</code>一起使用，则 <code>INTERFACE_SYSTEM_INCLUDE_DIRECTORIES</code>target 属性将填充指定的目录</li>
+</ul>
+</li>
+</ol>
+<h2 id="add_library"><a class="markdownIt-Anchor" href="#add_library"></a> add_library</h2>
+<ol>
+<li>
+<p>普通库</p>
+<pre class="line-numbers language-cmake" data-language="cmake"><code class="language-cmake"><span class="token keyword">add_library</span><span class="token punctuation">(</span>&lt;name<span class="token punctuation">></span> [<span class="token namespace">STATIC</span> | <span class="token namespace">SHARED</span> | MODULE]
+            [<span class="token property">EXCLUDE_FROM_ALL</span>]
+            [&lt;source<span class="token punctuation">></span>...]<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+</li>
+<li>
+<p>对象库</p>
+<pre class="line-numbers language-cmake" data-language="cmake"><code class="language-cmake"><span class="token keyword">add_library</span><span class="token punctuation">(</span>&lt;name<span class="token punctuation">></span> OBJECT [&lt;source<span class="token punctuation">></span>...]<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+</li>
+<li>
+<p>接口库</p>
+<pre class="line-numbers language-cmake" data-language="cmake"><code class="language-cmake"><span class="token keyword">add_library</span><span class="token punctuation">(</span>&lt;name<span class="token punctuation">></span> <span class="token namespace">INTERFACE</span><span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+</li>
+<li>
+<p>导入的库</p>
+<pre class="line-numbers language-cmake" data-language="cmake"><code class="language-cmake"><span class="token keyword">add_library</span><span class="token punctuation">(</span>&lt;name<span class="token punctuation">></span> &lt;type<span class="token punctuation">></span> <span class="token property">IMPORTED</span> [GLOBAL]<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+</li>
+<li>
+<p>别名库</p>
+<pre class="line-numbers language-cmake" data-language="cmake"><code class="language-cmake"><span class="token keyword">add_library</span><span class="token punctuation">(</span>&lt;name<span class="token punctuation">></span> ALIAS &lt;target<span class="token punctuation">></span><span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+</li>
+</ol>
+<h2 id="option"><a class="markdownIt-Anchor" href="#option"></a> option</h2>
+<pre class="line-numbers language-cmake" data-language="cmake"><code class="language-cmake"><span class="token keyword">option</span><span class="token punctuation">(</span>&lt;variable<span class="token punctuation">></span> <span class="token string">"&lt;help_text>"</span> [value]<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>如果没有<code>&lt;value&gt;</code>提供初始值，则布尔值<code>OFF</code>是默认值。如果<code>&lt;variable&gt;</code>已设置为普通或缓存变量，则该命令不执行任何操作</p>
+<h2 id="if"><a class="markdownIt-Anchor" href="#if"></a> if</h2>
+<pre class="line-numbers language-cmake" data-language="cmake"><code class="language-cmake"><span class="token keyword">if</span><span class="token punctuation">(</span>&lt;condition<span class="token punctuation">></span><span class="token punctuation">)</span>
+  &lt;commands<span class="token punctuation">></span>
+<span class="token keyword">elseif</span><span class="token punctuation">(</span>&lt;condition<span class="token punctuation">></span><span class="token punctuation">)</span> <span class="token comment"># optional block, can be repeated</span>
+  &lt;commands<span class="token punctuation">></span>
+<span class="token keyword">else</span><span class="token punctuation">(</span><span class="token punctuation">)</span>              <span class="token comment"># optional block</span>
+  &lt;commands<span class="token punctuation">></span>
+<span class="token keyword">endif</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<ol>
+<li>
+<p>基本表达式</p>
+<ul>
+<li>
+<p><code>if(&lt;constant&gt;)</code></p>
+<p>如果常数是<code>1</code>, <code>ON</code>, <code>YES</code>, <code>TRUE</code>,<code>Y</code>或非零数（包括浮点数），则为真。False 如果常量是<code>0</code>, <code>OFF</code>, <code>NO</code>, <code>FALSE</code>, <code>N</code>, <code>IGNORE</code>, <code>NOTFOUND</code></p>
+</li>
+<li>
+<p><code>if(&lt;variable&gt;)</code></p>
+<p>如果给定一个定义为非假常量的值的变量，则为真。否则为 False，包括变量未定义时</p>
+</li>
+<li>
+<p><code>if(&lt;string&gt;)</code></p>
+<p>带引号的字符串始终计算为 false</p>
+</li>
+</ul>
+</li>
+<li>
+<p>逻辑运算符</p>
+<ul>
+<li><code>NOT</code>	<code>AND</code>	<code>OR</code></li>
+</ul>
+</li>
+<li>
+<p>存在性检查</p>
+<ul>
+<li>
+<p><code>if(COMMAND command-name)</code></p>
+<p>如果给定名称是可以调用的命令、宏或函数，则为真</p>
+</li>
+<li>
+<p><code>if(POLICY policy-id)</code></p>
+<p>如果给定名称是现有策略（形式为<code>CMP&lt;NNNN&gt;</code>），则为真</p>
+</li>
+<li>
+<p><code>if(TARGET target-name)</code></p>
+<p>如果给定名称是由调用创建的现有逻辑目标名称，则为真</p>
+</li>
+<li>
+<p>if(TEST test-name)</p>
+<p>如果给定名称是由 <code>add_test()</code>命令</p>
+</li>
+<li>
+<p><code>if(DEFINED &lt;name&gt;|CACHE&#123;&lt;name&gt;&#125;|ENV&#123;&lt;name&gt;&#125;)</code></p>
+<p>如果定义了给定的变量、缓存变量或环境变量，则为真<code>&lt;name&gt;</code>。变量的值无关紧要</p>
+<ol>
+<li>宏参数不是变量</li>
+<li>无法直接测试<name>是否为非缓存变量。如果存在缓存或非缓存变量，则表达式将评估为真。</li>
+</ol>
+</li>
+<li>
+<p><code>if(&lt;variable|string&gt; IN_LIST &lt;variable&gt;)</code></p>
+<p>如果给定元素包含在命名列表变量中，则为真</p>
+</li>
+</ul>
+</li>
+<li>
+<p>文件操作</p>
+<ul>
+<li>
+<p><code>if(EXISTS path-to-file-or-directory)</code></p>
+<p>如果指定的文件或目录存在，则为真</p>
+</li>
+<li>
+<p><code>if(file1 IS_NEWER_THAN file2)</code></p>
+</li>
+<li>
+<p><code>if(IS_DIRECTORY path-to-directory)</code></p>
+<p>如果给定名称是目录，则为真。行为仅针对完整路径进行了明确定义</p>
+</li>
+<li>
+<p><code>if(IS_SYMLINK file-name)</code></p>
+</li>
+</ul>
+</li>
+<li>
+<p>比较</p>
+</li>
+<li>
+<p>版本比较</p>
+</li>
+<li>
+<p>路径比较</p>
+</li>
+<li>
+<p>变量扩展</p>
+</li>
+</ol>
+<h2 id="add_subdirectory"><a class="markdownIt-Anchor" href="#add_subdirectory"></a> add_subdirectory</h2>
+<h2 id="list"><a class="markdownIt-Anchor" href="#list"></a> list</h2>
+<h2 id="target_link_libraries"><a class="markdownIt-Anchor" href="#target_link_libraries"></a> target_link_libraries</h2>
+<h2 id=""><a class="markdownIt-Anchor" href="#"></a> </h2>
+
+  </div>
+  <div>
+    
+      <div 
+        class="post-note note-warning copyright" 
+        style="margin-top: 42px">
+        <p>
+          <span style="font-weight: bold;">作者：</span><a 
+            target="_blank" 
+            rel="nofollow noopener noreferrer" 
+            href="/about">
+            fetch150zy
+          </a>
+        </p>
+        <p>
+          <span style="font-weight: bold;">文章链接：</span><a 
+            target="_blank" 
+            rel="nofollow noopener noreferrer" 
+            href="https://fetch150zy.github.io/2022/08/20/cmake/">
+            https://fetch150zy.github.io/2022/08/20/cmake/
+          </a>
+        </p>
+        <p><span style="font-weight: bold;">版权声明：</span>本博客所有文章除特别声明外，均采用<a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh">CC BY-NC-SA 4.0 协议</a>。转载请注明出处！</p>
+      </div>
+    
+  </div>
+</article>
+<div class="nav">
+  
+    <div class="nav-item-prev">
+      <a 
+        href="/2022/10/05/algorithm/" 
+        class="nav-link">
+        <i class="iconfont icon-left nav-prev-icon"></i>
+        <div>
+          <div class="nav-label">上一篇</div>
+          
+            <div class="nav-title">算法 </div>
+          
+        </div>
+      </a>
+    </div>
+  
+  
+    <div class="nav-item-next">
+      <a 
+        href="/2022/08/06/rust-on-manjaro/" 
+        class="nav-link">
+        <div>
+          <div class="nav-label">下一篇</div>
+          
+            <div class="nav-title">在Manjaro上配置Rust开发环境 </div>
+          
+        </div>
+        <i class="iconfont icon-right nav-next-icon"></i>
+      </a>
+    </div>
+  
+</div>
+
+  <div 
+    class="card card-content comment-card" 
+    style="margin-top: 16px;">
+    <div class="comment-card-title">评论</div>
+    
+  <div id="vcomments"></div>
+  
+  <script>
+    loadScript("https://cdn.jsdelivr.net/npm/valine@1.5.1/dist/Valine.min.js");
+    var oldLoadVa = window.onload;
+    window.onload = function () {
+      oldLoadVa && oldLoadVa();
+      new Valine({
+        el: '#vcomments',
+        appId: 'vuWq4iMUqb3CkE0CSnXIB7Fs-gzGzoHsz',
+        appKey: 'RXnAXYC2yE7O2PXOhFMaRJry',
+        placeholder: 'Just go go',
+        path: window.location.pathname,
+        avatar: 'mp',
+        meta: ["nick","mail","link"],
+        pageSize: '10',
+        lang: '',
+        visitor: 'false',
+        highlight: true,
+        recordIP: false,
+        
+        
+        
+        enableQQ: 'true',
+        requiredFields: [],
+      });
+    };
+  </script>
+
+  </div>
+
+<div 
+  class="card card-content toc-card" 
+  id="mobiletoc">
+  <div class="toc-header">
+  <i 
+    class="iconfont icon-menu" 
+    style="padding-right: 2px;">
+  </i>目录
+</div>
+<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#cmake"><span class="toc-text"> cmake</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#cmake_mininum_required"><span class="toc-text"> cmake_mininum_required</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#project"><span class="toc-text"> project</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#configure_file"><span class="toc-text"> configure_file</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#set"><span class="toc-text"> set</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#add_executable"><span class="toc-text"> add_executable</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#target_include_directories"><span class="toc-text"> target_include_directories</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#add_library"><span class="toc-text"> add_library</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#option"><span class="toc-text"> option</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#if"><span class="toc-text"> if</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#add_subdirectory"><span class="toc-text"> add_subdirectory</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#list"><span class="toc-text"> list</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#target_link_libraries"><span class="toc-text"> target_link_libraries</span></a></li><li class="toc-item toc-level-2"><a class="toc-link"><span class="toc-text"> </span></a></li></ol></li></ol>
+</div>
+            </main>
+            <aside class="right-column">
+              <div class="sticky-widescreen">
+  
+  
+    <article class="card card-content toc-card">
+      <div class="toc-header">
+  <i 
+    class="iconfont icon-menu" 
+    style="padding-right: 2px;">
+  </i>目录
+</div>
+<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#cmake"><span class="toc-text"> cmake</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#cmake_mininum_required"><span class="toc-text"> cmake_mininum_required</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#project"><span class="toc-text"> project</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#configure_file"><span class="toc-text"> configure_file</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#set"><span class="toc-text"> set</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#add_executable"><span class="toc-text"> add_executable</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#target_include_directories"><span class="toc-text"> target_include_directories</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#add_library"><span class="toc-text"> add_library</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#option"><span class="toc-text"> option</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#if"><span class="toc-text"> if</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#add_subdirectory"><span class="toc-text"> add_subdirectory</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#list"><span class="toc-text"> list</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#target_link_libraries"><span class="toc-text"> target_link_libraries</span></a></li><li class="toc-item toc-level-2"><a class="toc-link"><span class="toc-text"> </span></a></li></ol></li></ol>
+    </article>
+  
+  
+  <article class="card card-content">
+    <div class="recent-posts-card">
+  <div class="recent-posts-header">
+    <i 
+      class="iconfont icon-wenzhang_huaban" 
+      style="padding-right: 2px;">
+    </i>最近文章
+  </div>
+  <div class="recent-posts-list">
+    
+      <div class="recent-posts-item">
+        <div class="recent-posts-item-title">2023-01-16</div>
+        <a href="/2023/01/16/regex/"><div class="recent-posts-item-content">Regex正则表达式</div></a>
+      </div>
+    
+      <div class="recent-posts-item">
+        <div class="recent-posts-item-title">2023-01-09</div>
+        <a href="/2023/01/09/linux/"><div class="recent-posts-item-content">Linux指南</div></a>
+      </div>
+    
+      <div class="recent-posts-item">
+        <div class="recent-posts-item-title">2022-12-29</div>
+        <a href="/2022/12/29/vmware/"><div class="recent-posts-item-content">在Manjaro中使用Vmware虚拟机</div></a>
+      </div>
+    
+      <div class="recent-posts-item">
+        <div class="recent-posts-item-title">2022-12-18</div>
+        <a href="/2022/12/18/docker/"><div class="recent-posts-item-content">Docker</div></a>
+      </div>
+    
+  </div>
+</div>
+  </article>
+  
+  
+</div>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </div>
+     
+    <footer class="footer">
+  <div class="footer-container">
+    <div>
+      <div class="footer-dsc">
+        <span>
+          Copyright ©
+          
+            2021
+          
+          
+                - 
+                2023
+          
+        </span>
+        &nbsp;
+        <a 
+          href="/" 
+          class="footer-link">
+          fetch150zy'blog
+        </a>
+      </div>
+    </div>
+
+    
+      <div class="footer-dsc">
+        
+          Powered by
+          <a 
+            href="https://hexo.io/" 
+            class="footer-link" 
+            target="_blank" 
+            rel="nofollow noopener noreferrer">
+            &nbsp;Hexo
+          </a>
+        
+        
+          <span>&nbsp;|&nbsp;</span>
+        
+        
+          Theme -
+          <a 
+            href="https://github.com/theme-kaze" 
+            class="footer-link" 
+            target="_blank"
+            rel="nofollow noopener noreferrer">
+            &nbsp;Kaze
+          </a>
+        
+      </div>
+    
+    
+    
+    
+      <div class="footer-dsc">
+        
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        
+        
+          <span>&nbsp;|&nbsp;</span>
+        
+        
+          本站总访客数<span id="busuanzi_value_site_uv"></span>次
+        
+      </div>
+      
+    
+</footer>
+ 
+    
+  <a 
+    role="button" 
+    id="scrollbutton" 
+    class="basebutton" 
+    aria-label="回到顶部">
+    <i class="iconfont icon-arrowleft button-icon"></i>
+  </a>
+
+<a 
+  role="button" 
+  id="menubutton"
+  aria-label="menu button"
+  class="basebutton">
+  <i class="iconfont icon-menu button-icon"></i>
+</a>
+<a 
+  role="button" 
+  id="popbutton" 
+  class="basebutton" 
+  aria-label="控制中心">
+  <i class="iconfont icon-expand button-icon"></i>
+</a>
+<a 
+  role="button" 
+  id="darkbutton" 
+  class="basebutton darkwidget" 
+  aria-label="夜色模式">
+  <i class="iconfont icon-weather button-icon"></i>
+</a>
+<a 
+  role="button" 
+  id="searchbutton" 
+  class="basebutton searchwidget" 
+  aria-label="搜索">
+  <i class="iconfont icon-search button-icon"></i>
+</a> 
+     
+     
+      
+ 
+     
+     
+      <script>
+  var addImgLayout = function () {
+    var img = document.querySelectorAll('.post-content img')
+    var i
+    for (i = 0; i < img.length; i++) {
+      var wrapper = document.createElement('a')
+      wrapper.setAttribute('href', img[i].getAttribute('data-src'))
+      wrapper.setAttribute('aria-label', 'illustration')
+      wrapper.style.cssText =
+        'width: 100%; display: flex; justify-content: center;'
+      if (img[i].alt) wrapper.dataset.caption = img[i].alt
+      wrapper.dataset.nolink = true
+      img[i].before(wrapper)
+      wrapper.append(img[i])
+      var divWrap = document.createElement('div')
+      divWrap.classList.add('gallery')
+      wrapper.before(divWrap)
+      divWrap.append(wrapper)
+    }
+    baguetteBox.run('.gallery')
+  }
+</script>
+<script>
+  loadScript(
+    "/js/lib/lightbox/baguetteBox.min.js",
+    addImgLayout
+  )
+</script>
+ 
+     
+     
+    <script src="/js/main.js"></script> 
+    
+      <script> 
+        loadScript('/js/lib/busuanzi.min.js') 
+      </script>
+     
+    
+      <script>
+        var addLazyload = function () {
+          var observer = lozad('.lozad', {
+            load: function (el) {
+              el.srcset = el.getAttribute('data-src')
+            },
+            loaded: function (el) {
+              el.classList.add('loaded')
+            },
+          })
+          observer.observe()
+        }
+      </script>
+      <script>
+        loadScript('/js/lib/lozad.min.js', addLazyload)
+      </script>
+    
+    <script src="//instant.page/5.1.0" type="module"
+      integrity="sha384-by67kQnR+pyfy8yWP4kPO12fHKRLHZPfEsiSXR8u2IKcTdxD805MGUXBzVPnkLHw"></script>
+    
+    
+      <script>
+        setTimeout(() => {localSearch("search.json")}, 0)
+      </script>
+    
+  </body>
+</html>

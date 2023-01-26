@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+  <meta charset="UTF-8">
+  <meta 
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+  <meta 
+    http-equiv="X-UA-Compatible" 
+    content="ie=edge">
+  <meta 
+    name="theme-color" 
+    content="#fff" 
+    id="theme-color">
+  <meta 
+    name="description" 
+    content="reacord of learn cs">
+  <link 
+    rel="icon" 
+    href="/img/pacman.png">
+  <title>Vim操作指南</title>
+  
+    
+      <meta 
+        property="og:title" 
+        content="Vim操作指南">
+    
+    
+      <meta 
+        property="og:url" 
+        content="https://fetch150zy.github.io/2022/04/19/Vim/index.html">
+    
+    
+      <meta 
+        property="og:img" 
+        content="/img/vim.png">
+    
+    
+      <meta 
+        property="og:img" 
+        content="reacord of learn cs">
+    
+    
+      <meta 
+        property="og:type" 
+        content="article">
+      <meta 
+        property="og:article:published_time" 
+        content="2022-04-19">
+      <meta 
+        property="og:article:modified_time" 
+        content="2023-01-26">
+      <meta 
+        property="og:article:author" 
+        content="fetch150zy">
+      
+        
+          <meta 
+            property="og:article:tag" 
+            content="Editor">
+        
+      
+    
+  
+  
+  <link rel="preload" href="//at.alicdn.com/t/font_1946621_i1kgafibvw.css" as="style" >
+  <link rel="preload" href="//at.alicdn.com/t/font_1952792_89b4ac4k4up.css" as="style" >
+  <link rel="preload" href="/css/main.css" as="style" >
+  
+  <link rel="modulepreload" href="//instant.page/5.1.0">
+  
+  <link rel="stylesheet" href="/css/main.css">
+  
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1946621_i1kgafibvw.css">
+  
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1952792_89b4ac4k4up.css">
+  
+  
+  
+    <link rel="stylesheet" href="/js/lib/lightbox/baguetteBox.min.css">
+  
+  <script>
+    function loadScript(url, cb) {
+      var script = document.createElement('script');
+      script.src = url;
+      if (cb) script.onload = cb;
+      script.async = true;
+      document.body.appendChild(script);
+    }
+    function loadCSS(href, data, attr) {
+      var sheet = document.createElement('link');
+      sheet.ref = 'stylesheet';
+      sheet.href = href;
+      sheet.dataset[data] = attr;
+      document.head.appendChild(sheet);
+    }
+    function changeCSS(cssFile, data, attr) {
+      var oldlink = document.querySelector(data);
+      var newlink = document.createElement("link");
+      newlink.setAttribute("rel", "stylesheet");
+      newlink.setAttribute("href", cssFile);
+      newlink.dataset.prism = attr;
+      document.head.replaceChild(newlink, oldlink);
+    }
+  </script>
+  
+    
+      
+      
+      
+      
+        
+        
+        
+        <script>
+          function prismThemeChange() {
+            if(document.getElementById('theme-color').dataset.mode === 'dark') {
+              if(document.querySelector('[data-prism]')) {
+                changeCSS('/js/lib/prism/prism-tomorrow.min.css', '[data-prism]', 'prism-tomorrow');
+              } else {
+                loadCSS('/js/lib/prism/prism-tomorrow.min.css', 'prism', 'prism-tomorrow');
+              }
+            } else {
+              if(document.querySelector('[data-prism]')) {
+                changeCSS('/js/lib/prism/prism.min.css', '[data-prism]', 'prism');
+              } else {
+                loadCSS('/js/lib/prism/prism.min.css', 'prism', 'prism');
+              }
+            }
+          }
+          prismThemeChange()
+        </script>
+      
+      
+        
+        <link rel="stylesheet" href="/js/lib/prism/prism-line-numbers.min.css">
+      
+    
+  
+  <script>
+    // control reverse button
+    var reverseDarkList = {
+      dark: 'light',
+      light: 'dark'
+    };
+    var themeColor = {
+      dark: '#1c1c1e',
+      light: '#fff'
+    }
+    // get the data of css prefers-color-scheme
+    var getCssMediaQuery = function() {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    };
+    // reverse current darkmode setting function
+    var reverseDarkModeSetting = function() {
+      var setting = localStorage.getItem('user-color-scheme');
+      if(reverseDarkList[setting]) {
+        setting = reverseDarkList[setting];
+      } else if(setting === null) {
+        setting = reverseDarkList[getCssMediaQuery()];
+      } else {
+        return;
+      }
+      localStorage.setItem('user-color-scheme', setting);
+      return setting;
+    };
+    // apply current darkmode setting
+  </script>
+  
+    <script>
+      var setDarkmode = function(mode) {
+      var setting = mode || localStorage.getItem('user-color-scheme');
+      if(setting === getCssMediaQuery()) {
+        document.documentElement.removeAttribute('data-user-color-scheme');
+        localStorage.removeItem('user-color-scheme');
+        document.getElementById('theme-color').content = themeColor[setting];
+        document.getElementById('theme-color').dataset.mode = setting;
+        prismThemeChange();
+      } else if(reverseDarkList[setting]) {
+        document.documentElement.setAttribute('data-user-color-scheme', setting);
+        document.getElementById('theme-color').content = themeColor[setting];
+        document.getElementById('theme-color').dataset.mode = setting;
+        prismThemeChange();
+      } else {
+        document.documentElement.removeAttribute('data-user-color-scheme');
+        localStorage.removeItem('user-color-scheme');
+        document.getElementById('theme-color').content = themeColor[getCssMediaQuery()];
+        document.getElementById('theme-color').dataset.mode = getCssMediaQuery();
+        prismThemeChange();
+      }
+    };
+    setDarkmode();
+    </script>
+  
+  
+  
+    <link rel="preload" href="/js/lib/lightbox/baguetteBox.min.js" as="script">
+    <link rel="preload" href="/js/lib/lightbox/baguetteBox.min.css" as="style" >
+  
+  
+    <link rel="preload" href="/js/lib/lozad.min.js" as="script">
+  
+  
+  
+  
+    
+    <link rel="prefetch" href="//cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-svg.js" as="script">
+  
+  
+    
+    <link rel="prefetch" href="https://cdn.jsdelivr.net/npm/valine@1.5.1/dist/Valine.min.js" as="script">
+  
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+    <div class="wrapper">
+       
+      <nav class="navbar">
+  <div class="navbar-logo">
+    <a class="navbar-logo-main" href="/">
+      
+        <img 
+          class="navbar-logo-img"
+          width="32"
+          height="32"
+          src="/img/pacman.png" 
+          alt="blog logo">
+      
+      <span class="navbar-logo-dsc">fetch150zy'blog</span>
+      </a>
+  </div>
+  <div class="navbar-menu">
+    
+      <a 
+        href="/" 
+        class="navbar-menu-item">
+        
+          首页
+        
+      </a>
+    
+      <a 
+        href="/archives" 
+        class="navbar-menu-item">
+        
+          归档
+        
+      </a>
+    
+      <a 
+        href="/tags" 
+        class="navbar-menu-item">
+        
+          标签
+        
+      </a>
+    
+      <a 
+        href="/categories" 
+        class="navbar-menu-item">
+        
+          分类
+        
+      </a>
+    
+      <a 
+        href="/links" 
+        class="navbar-menu-item">
+        
+          友链
+        
+      </a>
+    
+    <button 
+      class="navbar-menu-item darknavbar navbar-menu-btn" 
+      aria-label="Toggle dark mode"
+      id="dark">
+      <i class="iconfont icon-weather"></i>
+    </button>
+    <button 
+      class="navbar-menu-item searchnavbar navbar-menu-btn" 
+      aria-label="Toggle search"
+      id="search">
+      <!-- <i 
+        class="iconfont icon-search" 
+        style="font-size: 1.2rem; font-weight: 400;">
+      </i> -->
+      <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img"
+        class="iconify iconify--ion" width="28" height="28" preserveAspectRatio="xMidYMid meet" viewBox="0 0 512 512">
+        <path fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="28"
+          d="M256 80a176 176 0 1 0 176 176A176 176 0 0 0 256 80Z"></path>
+        <path fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="28"
+          d="M232 160a72 72 0 1 0 72 72a72 72 0 0 0-72-72Z"></path>
+        <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="28"
+          d="M283.64 283.64L336 336"></path>
+      </svg>
+    </button>
+  </div>
+</nav> 
+      
+      <div 
+        id="local-search" 
+        style="display: none">
+        <input
+          class="navbar-menu-item"
+          id="search-input"
+          placeholder="请输入搜索内容..." />
+        <div id="search-content"></div>
+      </div>
+      
+      <div class="section-wrap">
+        <div class="container">
+          <div class="columns">
+            <aside class="left-column">
+              
+              <div class="card card-author">
+                
+  <img 
+    src="/img/logo.png" 
+    class="author-img"
+    width="88"
+    height="88"
+    alt="author avatar">
+
+<p class="author-name">fetch150zy</p>
+<p class="author-description">a college student at XDU</p>
+<div class="author-message">
+  <a 
+    class="author-posts-count" 
+    href="/archives">
+    <span>19</span>
+    <span>文章</span>
+  </a>
+  <a 
+    class="author-categories-count" 
+    href="/categories">
+    <span>8</span>
+    <span>分类</span>
+  </a>
+  <a 
+    class="author-tags-count" 
+    href="/tags">
+    <span>11</span>
+    <span>标签</span>
+  </a>
+</div>
+
+  <div class="author-card-society">
+    
+      <div class="author-card-society-icon">
+        <a target="_blank" rel="noopener" href="https://space.bilibili.com/505867894">
+          <i class="iconfont icon-bilibili society-icon"></i>
+        </a>
+      </div>
+    
+      <div class="author-card-society-icon">
+        <a href="mailto:mars_zhewei@outlook.com">
+          <i class="iconfont icon-mail society-icon"></i>
+        </a>
+      </div>
+    
+      <div class="author-card-society-icon">
+        <a target="_blank" rel="noopener" href="https://github.com/fetch150zy">
+          <i class="iconfont icon-github society-icon"></i>
+        </a>
+      </div>
+    
+      <div class="author-card-society-icon">
+        <a target="_blank" rel="noopener" href="https://stackoverflow.com/users/16738249/fetch150zy">
+          <i class="iconfont icon-stackflow society-icon"></i>
+        </a>
+      </div>
+    
+  </div>
+
+              </div>
+               <div class="sticky-tablet">
+  
+  
+    <article class="display-when-two-columns spacer">
+      <div class="card card-content toc-card">
+        <div class="toc-header">
+  <i 
+    class="iconfont icon-menu" 
+    style="padding-right: 2px;">
+  </i>目录
+</div>
+<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-text"> Vim </span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%85%89%E6%A0%87%E7%A7%BB%E5%8A%A8"><span class="toc-text"> 1、光标移动</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E7%BC%96%E8%BE%91"><span class="toc-text"> 2、编辑</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%89%AA%E5%88%87%E5%92%8C%E7%B2%98%E8%B4%B4"><span class="toc-text"> 3、剪切和粘贴</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C-%E6%8F%92%E5%85%A5%E6%A8%A1%E5%BC%8F"><span class="toc-text"> 二、插入模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%9F%BA%E6%9C%AC%E7%BC%96%E8%BE%91%E6%93%8D%E4%BD%9C"><span class="toc-text"> 1、基本编辑操作</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89-%E5%8F%AF%E8%A7%86%E6%A8%A1%E5%BC%8F"><span class="toc-text"> 三、可视模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C"><span class="toc-text"> 1、基本操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%91%BD%E4%BB%A4%E8%A1%8C"><span class="toc-text"> 2、命令行</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B-%E5%91%BD%E4%BB%A4%E6%A8%A1%E5%BC%8F"><span class="toc-text"> 四、命令模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E6%9F%A5%E6%89%BE%E6%9B%BF%E6%8D%A2"><span class="toc-text"> 1、查找替换</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E9%80%80%E5%87%BA"><span class="toc-text"> 2、退出</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%A4%9A%E6%96%87%E4%BB%B6%E6%93%8D%E4%BD%9C"><span class="toc-text"> 3、多文件操作</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94-%E6%8F%92%E4%BB%B6"><span class="toc-text"> 五、插件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%BF%AB%E6%8D%B7%E9%94%AE"><span class="toc-text"> 1、快捷键</span></a></li></ol></li></ol></li></ol>
+      </div>
+    </article>
+  
+  
+  <article class="card card-content categories-widget">
+    <div class="categories-card">
+  <div class="categories-header">
+    <i 
+      class="iconfont icon-fenlei" 
+      style="padding-right: 2px;">
+    </i>分类
+  </div>
+  <div class="categories-list">
+    
+      <a href="/categories/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E5%85%B7/">
+        <div class="categories-list-item">
+          软件工具
+          <span class="categories-list-item-badge">7</span>
+        </div>
+      </a>
+    
+      <a href="/categories/Rust/">
+        <div class="categories-list-item">
+          Rust
+          <span class="categories-list-item-badge">1</span>
+        </div>
+      </a>
+    
+      <a href="/categories/%E8%99%9A%E6%8B%9F%E5%8C%96/">
+        <div class="categories-list-item">
+          虚拟化
+          <span class="categories-list-item-badge">2</span>
+        </div>
+      </a>
+    
+      <a href="/categories/Golang/">
+        <div class="categories-list-item">
+          Golang
+          <span class="categories-list-item-badge">1</span>
+        </div>
+      </a>
+    
+      <a href="/categories/%E5%AE%9E%E7%94%A8%E6%8A%80%E8%83%BD/">
+        <div class="categories-list-item">
+          实用技能
+          <span class="categories-list-item-badge">3</span>
+        </div>
+      </a>
+    
+      <a href="/categories/Assembly/">
+        <div class="categories-list-item">
+          Assembly
+          <span class="categories-list-item-badge">1</span>
+        </div>
+      </a>
+    
+      <a href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/">
+        <div class="categories-list-item">
+          数据结构与算法
+          <span class="categories-list-item-badge">1</span>
+        </div>
+      </a>
+    
+      <a href="/categories/C-Cpp/">
+        <div class="categories-list-item">
+          C-Cpp
+          <span class="categories-list-item-badge">3</span>
+        </div>
+      </a>
+    
+  </div>
+</div>
+  </article>
+  
+  <article class="card card-content tags-widget">
+    <div class="tags-card">
+  <div class="tags-header">
+    <i 
+      class="iconfont icon-biaoqian" 
+      style="padding-right: 2px;">
+    </i>热门标签
+  </div>
+  <div class="tags-list">
+    
+      <a 
+        href="/tags/Programming-language/" 
+        title="Programming language">
+        <div class="tags-list-item">Programming language</div>
+      </a>
+    
+      <a 
+        href="/tags/Editor/" 
+        title="Editor">
+        <div class="tags-list-item">Editor</div>
+      </a>
+    
+      <a 
+        href="/tags/Linux/" 
+        title="Linux">
+        <div class="tags-list-item">Linux</div>
+      </a>
+    
+      <a 
+        href="/tags/Vmware/" 
+        title="Vmware">
+        <div class="tags-list-item">Vmware</div>
+      </a>
+    
+      <a 
+        href="/tags/Algorithm/" 
+        title="Algorithm">
+        <div class="tags-list-item">Algorithm</div>
+      </a>
+    
+      <a 
+        href="/tags/Cmake/" 
+        title="Cmake">
+        <div class="tags-list-item">Cmake</div>
+      </a>
+    
+      <a 
+        href="/tags/Docker/" 
+        title="Docker">
+        <div class="tags-list-item">Docker</div>
+      </a>
+    
+      <a 
+        href="/tags/GCC-GDB/" 
+        title="GCC/GDB">
+        <div class="tags-list-item">GCC/GDB</div>
+      </a>
+    
+      <a 
+        href="/tags/Git/" 
+        title="Git">
+        <div class="tags-list-item">Git</div>
+      </a>
+    
+      <a 
+        href="/tags/Zsh/" 
+        title="Zsh">
+        <div class="tags-list-item">Zsh</div>
+      </a>
+    
+      <a 
+        href="/tags/Regex/" 
+        title="Regex">
+        <div class="tags-list-item">Regex</div>
+      </a>
+    
+  </div>
+</div>
+  </article>
+  
+  
+</div>
+            </aside>
+            <main class="main-column">
+              
+  <div class="image-wrapper">
+    <img 
+      src="/img/vim.png" 
+      data-src="/img/vim.png"
+      srcset="data:image/svg+xml,%3Csvg%20xmlns=&#39;http://www.w3.org/2000/svg&#39;%20viewBox=&#39;0%200%20300%20300&#39;%3E%3C/svg%3E"
+      class="image lozad"
+      alt="Vim操作指南 thumbnail">
+  </div>
+
+<article class="card card-content">
+  <header>
+    <h1 class="post-title">
+      Vim操作指南
+    </h1>
+  </header>
+  <div class="post-meta post-show-meta">
+    <time datetime="2022-04-18T16:00:00.000Z">
+      <i 
+        class="iconfont icon-calendar" 
+        style="margin-right: 2px;">
+      </i>
+      <span>2022-04-19</span>
+    </time>
+    
+      <span class="dot"></span>
+      
+        <a 
+          href="/categories/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E5%85%B7/" 
+          class="post-meta-link">
+          软件工具
+        </a>
+      
+    
+    
+      <span class="dot"></span>
+      <span>1.1k 字</span>
+    
+  </div>
+  
+    <div 
+      class="post-meta post-show-meta" 
+      style="margin-top: -10px;">
+      <div style="display: flex; align-items: center;">
+        <i 
+          class="iconfont icon-biaoqian" 
+          style="margin-right: 2px; font-size: 1.15rem;">
+        </i>
+        
+          
+          <a 
+            href="/tags/Editor/" 
+            class="post-meta-link">
+            Editor
+          </a>
+        
+      </div>
+    </div>
+  
+  </header>
+  <div 
+    id="section" 
+    class="post-content">
+    <h1> Vim </h1>
+## 一、普通模式
+<h3 id="1-光标移动"><a class="markdownIt-Anchor" href="#1-光标移动"></a> 1、光标移动</h3>
+<ul>
+<li><strong><mark>h j k l</mark></strong>  	左 下 上 右</li>
+<li><mark><strong>ctrl-b</strong></mark>       page up</li>
+<li><mark><strong>ctrl-f</strong></mark>        page down</li>
+<li><mark><strong>:%</strong></mark>             跳到匹配的大括号</li>
+<li><strong><mark>w W</mark></strong>          跳到下一个单词首（W不包含符号）</li>
+<li><mark>**e E  **</mark>          跳到下一个单词尾（E不包含符号）</li>
+<li><strong><mark>b B</mark></strong>            跳到上一个单词首（B不包含符号）</li>
+<li><strong><mark>0</mark></strong>               跳到行首</li>
+<li><strong><mark>^</mark></strong>               跳到该行第一个字符</li>
+<li><strong><mark>$</mark></strong>               跳到该行最后一个字符</li>
+<li><strong><mark>gg</mark></strong>             跳到第一行</li>
+<li><strong><mark>[N]G</mark></strong>         跳到第N行，不加N时跳到最后一行</li>
+<li><strong><mark>fx</mark></strong>              到下一个字符为x的位置</li>
+<li><strong><mark>tx</mark></strong>              到下一个字符为x的前一个位置</li>
+<li><mark><strong>Fx</strong></mark>             到前一个字符为x的位置</li>
+<li><mark><strong>× #</strong></mark>            显示当前游标下的所有字符串</li>
+<li><mark><strong>`.</strong></mark>               回到上一次编辑的位置</li>
+<li><mark><strong>H M L</strong></mark>      跳到当前页面的上，中，下处</li>
+<li><mark><strong>ma</strong></mark>            在光标处标记，命名为a</li>
+<li><strong><mark>`a</mark></strong>              跳到标记处</li>
+</ul>
+<h3 id="2-编辑"><a class="markdownIt-Anchor" href="#2-编辑"></a> 2、编辑</h3>
+<ul>
+<li><mark>**r **</mark>              替换单个字符</li>
+<li><mark><strong>J</strong></mark>               把当前行下面一行加到改行后面</li>
+<li><mark><strong>cc</strong></mark>             改变一整行</li>
+<li><mark>**cw **</mark>          改变当前位置到单词末尾</li>
+<li><strong><mark>c$</mark></strong>            改变当前位置到行该末尾</li>
+<li><strong><mark>s</mark></strong>               删除当前字符并进入插入模式</li>
+<li><strong><mark>S</mark></strong>              删除一整行并进入插入模式</li>
+<li><strong><mark>xp</mark></strong>            剪切粘贴（交换两个字符）</li>
+<li><strong><mark>u</mark></strong>              撤销</li>
+<li><strong><mark>ctrl-r</mark></strong>      和撤销相反</li>
+<li><strong><mark>.</mark></strong>               重复上条命令</li>
+<li><mark><strong>~</strong></mark>              切换大小写</li>
+<li><mark><strong>g~iw</strong></mark>        对整个单词切换大小写</li>
+<li><strong><mark>gUiw</mark></strong>       对当前单词切换为大写</li>
+<li><mark><strong>guiw</strong></mark>       对当前单词切换为小写</li>
+<li><mark><strong>&gt;&gt;</strong></mark>            右移</li>
+<li><strong><mark>&lt;&lt;</mark></strong>            左移</li>
+<li><strong><mark>==</mark></strong>            自动对齐（按标准格式化对齐）</li>
+</ul>
+<h3 id="3-剪切和粘贴"><a class="markdownIt-Anchor" href="#3-剪切和粘贴"></a> 3、剪切和粘贴</h3>
+<ul>
+<li><mark><strong>dd</strong></mark>             删除（剪切）一整行</li>
+<li><mark><strong>dw</strong></mark>            删除当前光标下的单词</li>
+<li><mark><strong>x</strong></mark>                删除当前字符</li>
+<li><mark><strong>X</strong></mark>               删除前一个字符</li>
+<li><mark><strong>D</strong></mark>               删除到该行最后</li>
+<li><strong><mark>yy</mark></strong>              复制一整行</li>
+<li><strong><mark>[N]yy</mark></strong>        复制N行</li>
+<li><mark><strong>yw</strong></mark>             复制一个单词</li>
+<li><mark><strong>y$</strong></mark>              复制到该行末尾</li>
+<li><mark><strong>p</strong></mark>                粘贴在光标之后</li>
+<li><mark><strong>P</strong></mark>                粘贴在光标之前</li>
+<li><mark><strong>]p</strong></mark>               自动粘贴到合适的位置</li>
+</ul>
+<h2 id="二-插入模式"><a class="markdownIt-Anchor" href="#二-插入模式"></a> 二、插入模式</h2>
+<h3 id="1-基本编辑操作"><a class="markdownIt-Anchor" href="#1-基本编辑操作"></a> 1、基本编辑操作</h3>
+<ul>
+<li>
+<p><strong><mark>i</mark></strong>              在游标位置进入插入模式</p>
+</li>
+<li>
+<p><strong><mark>I</mark></strong>              在当前行首进入插入模式</p>
+</li>
+<li>
+<p><mark><em>a</em></mark>             在游标之后位置进入插入模式</p>
+</li>
+<li>
+<p><mark><strong>A</strong></mark>            在当前行尾进入插入模式</p>
+</li>
+<li>
+<p><strong><mark>o</mark></strong>             在当前行下面插入一行并进入插入模式</p>
+</li>
+<li>
+<p><strong><mark>O</mark></strong>            在当前行上面插入一行并进入插入模式</p>
+</li>
+<li>
+<p><mark><strong>Esc</strong></mark>         推出插入模式并进入普通模式</p>
+</li>
+</ul>
+<h2 id="三-可视模式"><a class="markdownIt-Anchor" href="#三-可视模式"></a> 三、可视模式</h2>
+<h3 id="1-基本操作"><a class="markdownIt-Anchor" href="#1-基本操作"></a> 1、基本操作</h3>
+<ul>
+<li><mark><strong>v</strong></mark>              字符可视模式</li>
+<li><mark><strong>V</strong></mark>              行可视模式</li>
+<li><mark><strong>ctrl-v</strong></mark>       块可视模式</li>
+<li><mark><strong>o</strong></mark>               移动光标到标记文本的对角</li>
+<li><mark><strong>U</strong></mark>               把标记区域切换为大写</li>
+<li><mark><strong>O</strong></mark>               移动光标到标记文本的另一侧</li>
+<li><mark><strong>aw</strong></mark>             标记一个单词</li>
+<li><mark><strong>ab</strong></mark>              标记包括小括号在内的文本</li>
+<li><mark><strong>aB</strong></mark>              标记包括大括号在内的文本</li>
+<li><mark><strong>ib</strong></mark>               标记小括号内的文本</li>
+<li><mark>**iB **</mark>              标记大括号内的文本</li>
+</ul>
+<h3 id="2-命令行"><a class="markdownIt-Anchor" href="#2-命令行"></a> 2、命令行</h3>
+<ul>
+<li><strong><mark>&lt; &gt;</mark></strong>             左移，右移</li>
+<li><mark><strong>y</strong></mark>                 复制</li>
+<li><mark><strong>d</strong></mark>                 删除</li>
+<li><mark><strong>~</strong></mark>                 大小写切换</li>
+</ul>
+<h2 id="四-命令模式"><a class="markdownIt-Anchor" href="#四-命令模式"></a> 四、命令模式</h2>
+<h3 id="1-查找替换"><a class="markdownIt-Anchor" href="#1-查找替换"></a> 1、查找替换</h3>
+<ul>
+<li><mark><strong>/pattern</strong></mark>                    向后查找pattern</li>
+<li><mark><strong>?pattern</strong></mark>                   向前查找pattern</li>
+<li><mark><strong>n</strong></mark>                                 重复同向搜索</li>
+<li><mark><strong>N</strong></mark>                                重复反向搜索</li>
+<li><mark><strong>😒/old/new/g</strong></mark>           替换整个文件里面的old文本为new文本</li>
+<li><mark><strong>😒/old/new/gc</strong></mark>         与上面的不同之处在于需要挨个确认</li>
+</ul>
+<h3 id="2-退出"><a class="markdownIt-Anchor" href="#2-退出"></a> 2、退出</h3>
+<ul>
+<li><mark><em>:w</em></mark>                保存</li>
+<li><mark><em>:wq</em></mark>              保存并退出</li>
+<li><mark><strong>:x</strong></mark>                  保存并退出</li>
+<li><mark><strong>:q</strong></mark>                  退出（未保存的话退出失败）</li>
+<li><mark><strong>:q!</strong></mark>                 强制退出</li>
+</ul>
+<h3 id="3-多文件操作"><a class="markdownIt-Anchor" href="#3-多文件操作"></a> 3、多文件操作</h3>
+<ul>
+<li><mark><strong>:e filename</strong></mark>        在一个新的流中编辑文件</li>
+<li><mark><strong>:bn</strong></mark>                       去到下一个流中</li>
+<li><mark><strong>:bd</strong></mark>                        关闭一个文件</li>
+<li><mark><strong>:sp fn</strong></mark>                   在一个新的流中打开文件并分窗</li>
+<li><mark><strong>ctrl-w s</strong></mark>                分窗（水平）</li>
+<li><mark><strong>ctrl-w w</strong></mark>               切换窗口</li>
+<li><mark><strong>ctrl-w q</strong></mark>                退出一个窗口</li>
+<li><mark><strong>ctrl-w v</strong></mark>                分窗（垂直）</li>
+<li><mark><strong>:tabe fn</strong></mark>               在新tab里编辑文件</li>
+<li><mark><strong>gt</strong></mark>                           切换到下一个tab</li>
+<li><mark><strong>gT</strong></mark>                          切换到前一个tab</li>
+<li><mark>**:tabr **</mark>                     切换到第一个tab</li>
+<li><mark>**:tabl  **</mark>                    切换到最后一个tab</li>
+<li><mark><strong>:tabm [N]</strong></mark>              切换到tab N之后</li>
+</ul>
+<h2 id="五-插件"><a class="markdownIt-Anchor" href="#五-插件"></a> 五、插件</h2>
+<h3 id="1-快捷键"><a class="markdownIt-Anchor" href="#1-快捷键"></a> 1、快捷键</h3>
+<ul>
+<li><mark><strong>, + n</strong></mark>						打开目录树</li>
+<li><strong><mark>, + e</mark></strong>                        编辑vimrc</li>
+<li><strong><mark>, + s</mark></strong>                        重新加载vimrc</li>
+<li><strong><mark>, + h</mark></strong>                        查看帮助文档</li>
+<li><strong><mark>, + i</mark></strong>                        安装插件</li>
+<li><strong><mark>, + u</mark></strong>                       更新插件</li>
+<li><strong><mark>, + c</mark></strong>                       删除插件</li>
+<li><strong><mark>, + t</mark></strong>                         view</li>
+<li><strong><mark>ctrl + h j k l</mark></strong>              左，下，上，右</li>
+<li><strong><mark>, + y</mark></strong>                        复制</li>
+<li><strong><mark>, + p</mark></strong>                        粘贴</li>
+<li><strong><mark>ctrl + p, n, d</mark></strong>             切换buff（上一个，下一个，关闭）</li>
+<li><strong><mark>? + keyword</mark></strong>            查找</li>
+<li><strong><mark>, + w</mark></strong>                        快速定位</li>
+<li><strong><mark>ctrl + u, d</mark></strong>                 最顶部，最底部</li>
+</ul>
+
+  </div>
+  <div>
+    
+      <div 
+        class="post-note note-warning copyright" 
+        style="margin-top: 42px">
+        <p>
+          <span style="font-weight: bold;">作者：</span><a 
+            target="_blank" 
+            rel="nofollow noopener noreferrer" 
+            href="/about">
+            fetch150zy
+          </a>
+        </p>
+        <p>
+          <span style="font-weight: bold;">文章链接：</span><a 
+            target="_blank" 
+            rel="nofollow noopener noreferrer" 
+            href="https://fetch150zy.github.io/2022/04/19/Vim/">
+            https://fetch150zy.github.io/2022/04/19/Vim/
+          </a>
+        </p>
+        <p><span style="font-weight: bold;">版权声明：</span>本博客所有文章除特别声明外，均采用<a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh">CC BY-NC-SA 4.0 协议</a>。转载请注明出处！</p>
+      </div>
+    
+  </div>
+</article>
+<div class="nav">
+  
+    <div class="nav-item-prev">
+      <a 
+        href="/2022/07/10/xsscontroller/" 
+        class="nav-link">
+        <i class="iconfont icon-left nav-prev-icon"></i>
+        <div>
+          <div class="nav-label">上一篇</div>
+          
+            <div class="nav-title">在manjaro中使用xss手柄 </div>
+          
+        </div>
+      </a>
+    </div>
+  
+  
+    <div class="nav-item-next">
+      <a 
+        href="/2022/03/27/gcc/" 
+        class="nav-link">
+        <div>
+          <div class="nav-label">下一篇</div>
+          
+            <div class="nav-title">GCC/GDB </div>
+          
+        </div>
+        <i class="iconfont icon-right nav-next-icon"></i>
+      </a>
+    </div>
+  
+</div>
+
+  <div 
+    class="card card-content comment-card" 
+    style="margin-top: 16px;">
+    <div class="comment-card-title">评论</div>
+    
+  <div id="vcomments"></div>
+  
+  <script>
+    loadScript("https://cdn.jsdelivr.net/npm/valine@1.5.1/dist/Valine.min.js");
+    var oldLoadVa = window.onload;
+    window.onload = function () {
+      oldLoadVa && oldLoadVa();
+      new Valine({
+        el: '#vcomments',
+        appId: 'vuWq4iMUqb3CkE0CSnXIB7Fs-gzGzoHsz',
+        appKey: 'RXnAXYC2yE7O2PXOhFMaRJry',
+        placeholder: 'Just go go',
+        path: window.location.pathname,
+        avatar: 'mp',
+        meta: ["nick","mail","link"],
+        pageSize: '10',
+        lang: '',
+        visitor: 'false',
+        highlight: true,
+        recordIP: false,
+        
+        
+        
+        enableQQ: 'true',
+        requiredFields: [],
+      });
+    };
+  </script>
+
+  </div>
+
+<div 
+  class="card card-content toc-card" 
+  id="mobiletoc">
+  <div class="toc-header">
+  <i 
+    class="iconfont icon-menu" 
+    style="padding-right: 2px;">
+  </i>目录
+</div>
+<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-text"> Vim </span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%85%89%E6%A0%87%E7%A7%BB%E5%8A%A8"><span class="toc-text"> 1、光标移动</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E7%BC%96%E8%BE%91"><span class="toc-text"> 2、编辑</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%89%AA%E5%88%87%E5%92%8C%E7%B2%98%E8%B4%B4"><span class="toc-text"> 3、剪切和粘贴</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C-%E6%8F%92%E5%85%A5%E6%A8%A1%E5%BC%8F"><span class="toc-text"> 二、插入模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%9F%BA%E6%9C%AC%E7%BC%96%E8%BE%91%E6%93%8D%E4%BD%9C"><span class="toc-text"> 1、基本编辑操作</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89-%E5%8F%AF%E8%A7%86%E6%A8%A1%E5%BC%8F"><span class="toc-text"> 三、可视模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C"><span class="toc-text"> 1、基本操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%91%BD%E4%BB%A4%E8%A1%8C"><span class="toc-text"> 2、命令行</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B-%E5%91%BD%E4%BB%A4%E6%A8%A1%E5%BC%8F"><span class="toc-text"> 四、命令模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E6%9F%A5%E6%89%BE%E6%9B%BF%E6%8D%A2"><span class="toc-text"> 1、查找替换</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E9%80%80%E5%87%BA"><span class="toc-text"> 2、退出</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%A4%9A%E6%96%87%E4%BB%B6%E6%93%8D%E4%BD%9C"><span class="toc-text"> 3、多文件操作</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94-%E6%8F%92%E4%BB%B6"><span class="toc-text"> 五、插件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%BF%AB%E6%8D%B7%E9%94%AE"><span class="toc-text"> 1、快捷键</span></a></li></ol></li></ol></li></ol>
+</div>
+            </main>
+            <aside class="right-column">
+              <div class="sticky-widescreen">
+  
+  
+    <article class="card card-content toc-card">
+      <div class="toc-header">
+  <i 
+    class="iconfont icon-menu" 
+    style="padding-right: 2px;">
+  </i>目录
+</div>
+<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-text"> Vim </span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%85%89%E6%A0%87%E7%A7%BB%E5%8A%A8"><span class="toc-text"> 1、光标移动</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E7%BC%96%E8%BE%91"><span class="toc-text"> 2、编辑</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%89%AA%E5%88%87%E5%92%8C%E7%B2%98%E8%B4%B4"><span class="toc-text"> 3、剪切和粘贴</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C-%E6%8F%92%E5%85%A5%E6%A8%A1%E5%BC%8F"><span class="toc-text"> 二、插入模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%9F%BA%E6%9C%AC%E7%BC%96%E8%BE%91%E6%93%8D%E4%BD%9C"><span class="toc-text"> 1、基本编辑操作</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89-%E5%8F%AF%E8%A7%86%E6%A8%A1%E5%BC%8F"><span class="toc-text"> 三、可视模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C"><span class="toc-text"> 1、基本操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%91%BD%E4%BB%A4%E8%A1%8C"><span class="toc-text"> 2、命令行</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B-%E5%91%BD%E4%BB%A4%E6%A8%A1%E5%BC%8F"><span class="toc-text"> 四、命令模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E6%9F%A5%E6%89%BE%E6%9B%BF%E6%8D%A2"><span class="toc-text"> 1、查找替换</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E9%80%80%E5%87%BA"><span class="toc-text"> 2、退出</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%A4%9A%E6%96%87%E4%BB%B6%E6%93%8D%E4%BD%9C"><span class="toc-text"> 3、多文件操作</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94-%E6%8F%92%E4%BB%B6"><span class="toc-text"> 五、插件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%BF%AB%E6%8D%B7%E9%94%AE"><span class="toc-text"> 1、快捷键</span></a></li></ol></li></ol></li></ol>
+    </article>
+  
+  
+  <article class="card card-content">
+    <div class="recent-posts-card">
+  <div class="recent-posts-header">
+    <i 
+      class="iconfont icon-wenzhang_huaban" 
+      style="padding-right: 2px;">
+    </i>最近文章
+  </div>
+  <div class="recent-posts-list">
+    
+      <div class="recent-posts-item">
+        <div class="recent-posts-item-title">2023-01-16</div>
+        <a href="/2023/01/16/regex/"><div class="recent-posts-item-content">Regex正则表达式</div></a>
+      </div>
+    
+      <div class="recent-posts-item">
+        <div class="recent-posts-item-title">2023-01-09</div>
+        <a href="/2023/01/09/linux/"><div class="recent-posts-item-content">Linux指南</div></a>
+      </div>
+    
+      <div class="recent-posts-item">
+        <div class="recent-posts-item-title">2022-12-29</div>
+        <a href="/2022/12/29/vmware/"><div class="recent-posts-item-content">在Manjaro中使用Vmware虚拟机</div></a>
+      </div>
+    
+      <div class="recent-posts-item">
+        <div class="recent-posts-item-title">2022-12-18</div>
+        <a href="/2022/12/18/docker/"><div class="recent-posts-item-content">Docker</div></a>
+      </div>
+    
+  </div>
+</div>
+  </article>
+  
+  
+</div>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </div>
+     
+    <footer class="footer">
+  <div class="footer-container">
+    <div>
+      <div class="footer-dsc">
+        <span>
+          Copyright ©
+          
+            2021
+          
+          
+                - 
+                2023
+          
+        </span>
+        &nbsp;
+        <a 
+          href="/" 
+          class="footer-link">
+          fetch150zy'blog
+        </a>
+      </div>
+    </div>
+
+    
+      <div class="footer-dsc">
+        
+          Powered by
+          <a 
+            href="https://hexo.io/" 
+            class="footer-link" 
+            target="_blank" 
+            rel="nofollow noopener noreferrer">
+            &nbsp;Hexo
+          </a>
+        
+        
+          <span>&nbsp;|&nbsp;</span>
+        
+        
+          Theme -
+          <a 
+            href="https://github.com/theme-kaze" 
+            class="footer-link" 
+            target="_blank"
+            rel="nofollow noopener noreferrer">
+            &nbsp;Kaze
+          </a>
+        
+      </div>
+    
+    
+    
+    
+      <div class="footer-dsc">
+        
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        
+        
+          <span>&nbsp;|&nbsp;</span>
+        
+        
+          本站总访客数<span id="busuanzi_value_site_uv"></span>次
+        
+      </div>
+      
+    
+</footer>
+ 
+    
+  <a 
+    role="button" 
+    id="scrollbutton" 
+    class="basebutton" 
+    aria-label="回到顶部">
+    <i class="iconfont icon-arrowleft button-icon"></i>
+  </a>
+
+<a 
+  role="button" 
+  id="menubutton"
+  aria-label="menu button"
+  class="basebutton">
+  <i class="iconfont icon-menu button-icon"></i>
+</a>
+<a 
+  role="button" 
+  id="popbutton" 
+  class="basebutton" 
+  aria-label="控制中心">
+  <i class="iconfont icon-expand button-icon"></i>
+</a>
+<a 
+  role="button" 
+  id="darkbutton" 
+  class="basebutton darkwidget" 
+  aria-label="夜色模式">
+  <i class="iconfont icon-weather button-icon"></i>
+</a>
+<a 
+  role="button" 
+  id="searchbutton" 
+  class="basebutton searchwidget" 
+  aria-label="搜索">
+  <i class="iconfont icon-search button-icon"></i>
+</a> 
+     
+     
+      
+ 
+     
+     
+      <script>
+  var addImgLayout = function () {
+    var img = document.querySelectorAll('.post-content img')
+    var i
+    for (i = 0; i < img.length; i++) {
+      var wrapper = document.createElement('a')
+      wrapper.setAttribute('href', img[i].getAttribute('data-src'))
+      wrapper.setAttribute('aria-label', 'illustration')
+      wrapper.style.cssText =
+        'width: 100%; display: flex; justify-content: center;'
+      if (img[i].alt) wrapper.dataset.caption = img[i].alt
+      wrapper.dataset.nolink = true
+      img[i].before(wrapper)
+      wrapper.append(img[i])
+      var divWrap = document.createElement('div')
+      divWrap.classList.add('gallery')
+      wrapper.before(divWrap)
+      divWrap.append(wrapper)
+    }
+    baguetteBox.run('.gallery')
+  }
+</script>
+<script>
+  loadScript(
+    "/js/lib/lightbox/baguetteBox.min.js",
+    addImgLayout
+  )
+</script>
+ 
+     
+     
+    <script src="/js/main.js"></script> 
+    
+      <script> 
+        loadScript('/js/lib/busuanzi.min.js') 
+      </script>
+     
+    
+      <script>
+        var addLazyload = function () {
+          var observer = lozad('.lozad', {
+            load: function (el) {
+              el.srcset = el.getAttribute('data-src')
+            },
+            loaded: function (el) {
+              el.classList.add('loaded')
+            },
+          })
+          observer.observe()
+        }
+      </script>
+      <script>
+        loadScript('/js/lib/lozad.min.js', addLazyload)
+      </script>
+    
+    <script src="//instant.page/5.1.0" type="module"
+      integrity="sha384-by67kQnR+pyfy8yWP4kPO12fHKRLHZPfEsiSXR8u2IKcTdxD805MGUXBzVPnkLHw"></script>
+    
+    
+      <script>
+        setTimeout(() => {localSearch("search.json")}, 0)
+      </script>
+    
+  </body>
+</html>
