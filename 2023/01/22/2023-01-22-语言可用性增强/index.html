@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="keywords" content="computer science">
+    
+    <meta name="author" content="fetch150zy">
+    <!-- preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    
+    <!--- Seo Part-->
+    
+    <link rel="canonical" href="https://fetch150zy.github.io/2023/01/22/2023-01-22-语言可用性增强/"/>
+    <meta name="robots" content="index,follow">
+    <meta name="googlebot" content="index,follow">
+    <meta name="revisit-after" content="1 days">
+    
+        <meta name="description" content="关于C++（Modern）中对语言可用性的强化  语言可用性的强化常量nullptr VS NULLnullptr出现的目标是为了替代NULL，传统C++会把NULL，0视为同一种东西，这取决于编译器如何定义NULL，有些编译器会把NULL定义为((void*)0)，有些则会直接将其定义为0 而在C++中不允许直接将void *隐式转换到其他类型 :kissing: example 1234">
+<meta property="og:type" content="article">
+<meta property="og:title" content="语言可用性增强">
+<meta property="og:url" content="https://fetch150zy.github.io/2023/01/22/2023-01-22-%E8%AF%AD%E8%A8%80%E5%8F%AF%E7%94%A8%E6%80%A7%E5%A2%9E%E5%BC%BA/index.html">
+<meta property="og:site_name" content="fetch150zy&#39;blog">
+<meta property="og:description" content="关于C++（Modern）中对语言可用性的强化  语言可用性的强化常量nullptr VS NULLnullptr出现的目标是为了替代NULL，传统C++会把NULL，0视为同一种东西，这取决于编译器如何定义NULL，有些编译器会把NULL定义为((void*)0)，有些则会直接将其定义为0 而在C++中不允许直接将void *隐式转换到其他类型 :kissing: example 1234">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-01-22T04:00:00.000Z">
+<meta property="article:modified_time" content="2024-03-23T05:46:02.263Z">
+<meta property="article:author" content="fetch150zy">
+<meta property="article:tag" content="Cpp">
+<meta name="twitter:card" content="summary">
+    
+    
+    <!--- Icon Part-->
+    <link rel="icon" type="image/png" href="/img/pacman.png" sizes="192x192">
+    <link rel="apple-touch-icon" sizes="180x180" href="/img/pacman.png">
+    <meta name="theme-color" content="#7FCDCD">
+    <link rel="shortcut icon" href="/img/pacman.png">
+    <!--- Page Info-->
+    
+    <title>
+        
+            语言可用性增强 -
+        
+        fetch150zy&#39;s blog
+    </title>
+
+    
+<link rel="stylesheet" href="/fonts/Chillax/chillax.css">
+
+
+    <!--- Inject Part-->
+    
+
+    
+        <style>
+    :root {
+        --preloader-background-color: #fff;
+        --preloader-text-color: #000;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --preloader-background-color: #202124;
+            --preloader-text-color: #fff;
+        }
+    }
+
+    @media (prefers-color-scheme: light) {
+        :root {
+            --preloader-background-color: #fff;
+            --preloader-text-color: #000;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .ml13 {
+            font-size: 2.6rem !important; /* Adjust this value as needed */
+        }
+    }
+
+    .preloader {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem; /* Tailwind 'gap-4' is 1rem */
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        padding: 12px;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh; /* 'h-screen' is 100% of the viewport height */
+        background-color: var(--preloader-background-color);
+        z-index: 1100; /* 'z-[1100]' sets the z-index */
+        transition: opacity 0.2s ease-in-out;
+    }
+
+    .ml13 {
+        font-size: 3.2rem;
+        /* text-transform: uppercase; */
+        color: var(--preloader-text-color);
+        letter-spacing: -1px;
+        font-weight: 500;
+        font-family: 'Chillax-Variable', sans-serif;
+        text-align: center;
+    }
+
+    .ml13 .word {
+        display: inline-flex;
+        flex-wrap: wrap;
+        white-space: nowrap;
+    }
+
+    .ml13 .letter {
+        display: inline-block;
+        line-height: 1em;
+    }
+</style>
+
+<div class="preloader">
+    
+<script src="/js/libs/anime.min.js"></script>
+
+    <h1 class="ml13">
+        fetch150zy&#39;s blog
+    </h1>
+    <script>
+        var textWrapper = document.querySelector('.ml13');
+        // Split text into words
+        var words = textWrapper.textContent.trim().split(' ');
+
+        // Clear the existing content
+        textWrapper.innerHTML = '';
+
+        // Wrap each word and its letters in spans
+        words.forEach(function(word) {
+            var wordSpan = document.createElement('span');
+            wordSpan.classList.add('word');
+            wordSpan.innerHTML = word.replace(/\S/g, "<span class='letter'>$&</span>");
+            textWrapper.appendChild(wordSpan);
+            textWrapper.appendChild(document.createTextNode(' ')); // Add space between words
+        });
+
+
+        anime.timeline({loop: true})
+            .add({
+                targets: '.ml13 .letter',
+                translateY: [100,0],
+                translateZ: 0,
+                opacity: [0,1],
+                easing: "easeOutExpo",
+                duration: 1400,
+                delay: (el, i) => 300 + 30 * i
+            }).add({
+            targets: '.ml13 .letter',
+            translateY: [0,-100],
+            opacity: [1,0],
+            easing: "easeInExpo",
+            duration: 1200,
+            delay: (el, i) => 100 + 30 * i
+        });
+
+        let themeStatus = JSON.parse(localStorage.getItem('REDEFINE-THEME-STATUS'))?.isDark;
+
+        // If the theme status is not found in local storage, check the preferred color scheme
+        if (themeStatus === undefined || themeStatus === null) {
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                themeStatus = 'dark';
+            } else {
+                themeStatus = 'light';
+            }
+        }
+
+        // Now you can use the themeStatus variable in your code
+        if (themeStatus) {
+            document.documentElement.style.setProperty('--preloader-background-color', '#202124');
+            document.documentElement.style.setProperty('--preloader-text-color', '#fff');
+        } else {
+            document.documentElement.style.setProperty('--preloader-background-color', '#fff');
+            document.documentElement.style.setProperty('--preloader-text-color', '#000');
+        }
+
+        window.addEventListener('load', function () {
+            hidePreloaderAfterTimeout(1000); // Hide after 1000 milliseconds once the window has loaded
+        });
+
+        // Backup failsafe: Hide preloader after a maximum of 5000 milliseconds, regardless of the window load event
+        hidePreloaderAfterTimeout(5000);
+
+        function hidePreloaderAfterTimeout(delay) {
+            setTimeout(function () {
+                var preloader = document.querySelector('.preloader');
+                preloader.style.opacity = '0';
+                setTimeout(function () {
+                    preloader.style.display = 'none';
+                }, 200);
+            }, delay);
+        }
+    </script>
+</div>
+    
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+
+    
+        
+<link rel="stylesheet" href="/assets/build/styles.css">
+
+    
+
+    
+<link rel="stylesheet" href="/fonts/fonts.css">
+
+    
+<link rel="stylesheet" href="/fonts/Satoshi/satoshi.css">
+
+    <!--- Font Part-->
+    
+    
+    
+    
+
+
+    <script id="hexo-configurations">
+    window.config = {"hostname":"fetch150zy.github.io","root":"/","language":"zh-CN"};
+    window.theme = {"articles":{"style":{"font_size":"18px","line_height":1.4,"image_border_radius":"14px","image_alignment":"center","image_caption":false,"link_icon":true,"title_alignment":"center","headings_top_spacing":{"h1":"5rem","h2":"4rem","h3":"2.8rem","h4":"2.5rem","h5":"2.2rem","h6":"2rem"}},"word_count":{"enable":false,"count":false,"min2read":false},"author_label":{"enable":false,"auto":false,"list":[]},"code_block":{"copy":false,"style":"mac","font":{"enable":false,"family":null,"url":null}},"toc":{"enable":true,"max_depth":6,"number":false,"expand":true,"init_open":true},"copyright":{"enable":false,"default":"cc_by_nc_sa"},"lazyload":true,"recommendation":{"enable":false,"title":"推荐阅读","limit":3,"mobile_limit":2,"placeholder":null,"skip_dirs":[]}},"colors":{"primary":"#7FCDCD","secondary":null,"default_mode":"dark"},"global":{"fonts":{"chinese":{"enable":null,"family":null,"url":null},"english":{"enable":null,"family":null,"url":null}},"content_max_width":"1000px","sidebar_width":"210px","hover":{"shadow":true,"scale":true},"scroll_progress":{"bar":false,"percentage":true},"website_counter":{"url":"https://cn.vercount.one/js","enable":false,"site_pv":false,"site_uv":false,"post_pv":false},"single_page":true,"preloader":true,"open_graph":true,"google_analytics":{"enable":false,"id":null}},"home_banner":{"enable":true,"style":"fixed","image":{"light":"/img/bg15.jpg","dark":"/img/bg15.jpg"},"title":"fetch150zy's blog","subtitle":{"text":["年年岁岁花相似，岁岁年年人不同"],"hitokoto":{"enable":false,"api":"https://v1.hitokoto.cn"},"typing_speed":100,"backing_speed":80,"starting_delay":500,"backing_delay":1500,"loop":true,"smart_backspace":true},"text_color":{"light":"#fff","dark":"#d1d1b6"},"text_style":{"title_size":"2.8rem","subtitle_size":"1.5rem","line_height":1.3},"custom_font":{"enable":false,"family":null,"url":null},"social_links":{"enable":true,"style":"default","links":{"github":"https://github.com/fetch150zy","bilibili":"https://space.bilibili.com/505867894","stack-overflow":"https://stackoverflow.com/users/16738249/fetch150zy","email":"mailto:mars_zhewei@outlook.com"},"qrs":{"weixin":"https://pic.fetch150zy.cn/weixin.png"}}},"plugins":{"feed":{"enable":false},"aplayer":{"enable":false,"type":"fixed","audios":[{"name":null,"artist":null,"url":null,"cover":null,"lrc":null}]},"mermaid":{"enable":false,"version":"9.3.0"}},"version":"2.6.1","navbar":{"auto_hide":false,"color":{"left":"#f78736","right":"#367df7","transparency":35},"width":{"home":"1200px","pages":"1000px"},"links":{"Home":{"path":"/","icon":"fa-regular fa-house"},"Archives":{"path":"/archives","icon":"fa-regular fa-archive"},"About":{"icon":"fa-regular fa-user","submenus":{"Me":"/about","Blog":"https://fetch150zy.cn","Github":"https://github.com/fetch150zy"}}},"search":{"enable":false,"preload":true}},"page_templates":{"friends_column":3,"tags_style":"blur"},"home":{"sidebar":{"enable":true,"position":"right","first_item":"info","announcement":null,"show_on_mobile":true,"links":{"Archives":{"path":"/archives","icon":"fa-regular fa-archive"},"Tags":{"path":"/tags","icon":"fa-regular fa-tags"},"Categories":{"path":"/categories","icon":"fa-regular fa-folder"}}},"article_date_format":"YYYY-MM-DD","categories":{"enable":true,"limit":3},"tags":{"enable":true,"limit":3}},"footerStart":null};
+    window.lang_ago = {"second":"%s 秒前","minute":"%s 分钟前","hour":"%s 小时前","day":"%s 天前","week":"%s 周前","month":"%s 个月前","year":"%s 年前"};
+    window.data = {"masonry":false};
+  </script>
+    
+    <!--- Fontawesome Part-->
+    
+<link rel="stylesheet" href="/fontawesome/fontawesome.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/brands.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/solid.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/regular.min.css">
+
+    
+    
+    
+    
+        
+<link rel="stylesheet" href="/fontawesome/sharp-solid.min.css">
+
+    
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+
+<body>
+<div class="progress-bar-container">
+    
+
+    
+        <span class="pjax-progress-bar"></span>
+<!--        <span class="swup-progress-icon">-->
+<!--            <i class="fa-solid fa-circle-notch fa-spin"></i>-->
+<!--        </span>-->
+    
+</div>
+
+
+<main class="page-container" id="swup">
+
+    
+
+    <div class="main-content-container">
+
+
+        <div class="main-content-header">
+            <header class="navbar-container px-6 md:px-12">
+
+    <div class="navbar-content ">
+        <div class="left">
+            
+                <a class="logo-image" href="/">
+                    <img src="/img/pacman.png">
+                </a>
+            
+            <a class="logo-title" href="/">
+                
+                fetch150zy&#39;s blog
+                
+            </a>
+        </div>
+
+        <div class="right">
+            <!-- PC -->
+            <div class="desktop">
+                <ul class="navbar-list">
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/"
+                                        >
+                                    <i class="fa-regular fa-house fa-fw"></i>
+                                    首页
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/archives"
+                                        >
+                                    <i class="fa-regular fa-archive fa-fw"></i>
+                                    归档
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class="has-dropdown"
+                                   href="#"
+                                        onClick=&#34;return false;&#34;>
+                                    <i class="fa-regular fa-user fa-fw"></i>
+                                    关于
+                                    <i class="fa-solid fa-chevron-down fa-fw"></i>
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                                    <ul class="sub-menu">
+                                        
+                                            <li>
+                                                <a href="/about">
+                                                    ME
+                                                </a>
+                                            </li>
+                                        
+                                            <li>
+                                                <a target="_blank" rel="noopener" href="https://fetch150zy.cn">
+                                                    BLOG
+                                                </a>
+                                            </li>
+                                        
+                                            <li>
+                                                <a target="_blank" rel="noopener" href="https://github.com/fetch150zy">
+                                                    GITHUB
+                                                </a>
+                                            </li>
+                                        
+                                    </ul>
+                                
+                            </li>
+                    
+                    
+                </ul>
+            </div>
+            <!-- Mobile -->
+            <div class="mobile">
+                
+                <div class="icon-item navbar-bar">
+                    <div class="navbar-bar-middle"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile sheet -->
+    <div class="navbar-drawer h-screen w-full absolute top-0 left-0 bg-background-color flex flex-col justify-between">
+        <ul class="drawer-navbar-list flex flex-col px-4 justify-center items-start">
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/"
+                        >
+                            <span>
+                                首页
+                            </span>
+                            
+                                <i class="fa-regular fa-house fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/archives"
+                        >
+                            <span>
+                                归档
+                            </span>
+                            
+                                <i class="fa-regular fa-archive fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item-sub text-base my-1.5 flex flex-col w-full">
+                        
+                        <div class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary cursor-pointer text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                             navbar-data-toggle="submenu-About"
+                        >
+                            <span>
+                                关于
+                            </span>
+                            
+                                <i class="fa-solid fa-chevron-right fa-sm fa-fw transition-all"></i>
+                            
+                        </div>
+                        
+
+                        
+                            <div class="flex-col items-start px-2 py-2 hidden" data-target="submenu-About">
+                                
+                                    <div class="drawer-navbar-item text-base flex flex-col justify-center items-start hover:underline active:underline hover:underline-offset-1 rounded-3xl">
+                                        <a class=" text-third-text-color text-xl"
+                                           href="/about">ME</a>
+                                    </div>
+                                
+                                    <div class="drawer-navbar-item text-base flex flex-col justify-center items-start hover:underline active:underline hover:underline-offset-1 rounded-3xl">
+                                        <a class=" text-third-text-color text-xl"
+                                           target="_blank" rel="noopener" href="https://fetch150zy.cn">BLOG</a>
+                                    </div>
+                                
+                                    <div class="drawer-navbar-item text-base flex flex-col justify-center items-start hover:underline active:underline hover:underline-offset-1 rounded-3xl">
+                                        <a class=" text-third-text-color text-xl"
+                                           target="_blank" rel="noopener" href="https://github.com/fetch150zy">GITHUB</a>
+                                    </div>
+                                
+                            </div>
+                        
+                    </li>
+            
+
+            
+            
+                
+                    
+                    
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full active"
+                           href="/tags"
+                        >
+                            <span>Tags</span>
+                            <i class="fa-regular fa-tags fa-sm fa-fw"></i>
+                        </a>
+                    </li>
+                
+                    
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full active"
+                           href="/categories"
+                        >
+                            <span>Categories</span>
+                            <i class="fa-regular fa-folder fa-sm fa-fw"></i>
+                        </a>
+                    </li>
+                
+            
+        </ul>
+
+        <div class="statistics flex justify-around my-2.5">
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/tags">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">20</div>
+        <div class="label text-third-text-color text-sm">标签</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/categories">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">18</div>
+        <div class="label text-third-text-color text-sm">分类</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/archives">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">52</div>
+        <div class="label text-third-text-color text-sm">文章</div>
+    </a>
+</div>
+    </div>
+
+    <div class="window-mask"></div>
+
+</header>
+
+
+        </div>
+
+        <div class="main-content-body">
+
+            
+
+            <div class="main-content">
+
+                
+                    <div class="post-page-container flex relative justify-between box-border w-full h-full">
+    <div class="article-content-container">
+
+        <div class="article-title relative w-full">
+            
+                
+                
+                <img src="/../img/bg/25.png" alt="语言可用性增强" class="w-full h-60 sm:h-72 md:h-80 object-cover sm:rounded-t-large dark:brightness-75"/>
+                
+                <div class="w-full flex items-center absolute bottom-0 justify-center">
+                    <h1 class="article-title-cover text-center mx-6 my-6 text-second-text-color bg-background-color-transparent px-4 py-3 text-3xl sm:text-4xl md:text-5xl font-bold backdrop-blur-lg rounded-xl border border-border-color ">语言可用性增强</h1>
+                </div>
+            
+            </div>
+
+        
+            <div class="article-header flex flex-row gap-2 items-center px-2 sm:px-6 md:px-8">
+                <div class="avatar w-[46px] h-[46px] flex-shrink-0 rounded-medium border border-border-color p-[1px]">
+                    <img src="/img/avatar.jpg">
+                </div>
+                <div class="info flex flex-col justify-between">
+                    <div class="author flex items-center">
+                        <span class="name text-default-text-color text-lg font-semibold">fetch150zy</span>
+                        
+                    </div>
+                    <div class="meta-info">
+                        <div class="article-meta-info">
+    <span class="article-date article-meta-item">
+        <i class="fa-regular fa-pen-fancy"></i>&nbsp;
+        <span class="desktop">2023-01-22 12:00</span>
+        <span class="mobile">2023-01-22 12:00</span>
+        <span class="hover-info">创建</span>
+    </span>
+    
+        <span class="article-date article-meta-item">
+            <i class="fa-regular fa-wrench"></i>&nbsp;
+            <span class="desktop">2024-03-23 13:46:02</span>
+            <span class="mobile">2024-03-23 13:46:02</span>
+            <span class="hover-info">更新</span>
+        </span>
+    
+
+    
+        <span class="article-categories article-meta-item">
+            <i class="fa-regular fa-folders"></i>&nbsp;
+            <ul>
+                
+                
+                    
+                        
+                        <li>
+                            <a href="/categories/Cpp/">Cpp</a>&nbsp;
+                        </li>
+                    
+                    
+                
+            </ul>
+        </span>
+    
+    
+        <span class="article-tags article-meta-item">
+            <i class="fa-regular fa-tags"></i>&nbsp;
+            <ul>
+                
+                    <li>
+                        <a href="/tags/Cpp/">Cpp</a>&nbsp;
+                    </li>
+                
+            </ul>
+        </span>
+    
+
+    
+    
+    
+    
+</div>
+
+                    </div>
+                </div>
+            </div>
+        
+
+        
+
+
+        <div class="article-content markdown-body px-2 sm:px-6 md:px-8 pb-8">
+            <blockquote>
+<p>  关于C++（Modern）中对语言可用性的强化</p>
+</blockquote>
+<h1 id="语言可用性的强化"><a href="#语言可用性的强化" class="headerlink" title="语言可用性的强化"></a>语言可用性的强化</h1><h2 id="常量"><a href="#常量" class="headerlink" title="常量"></a>常量</h2><h3 id="nullptr-VS-NULL"><a href="#nullptr-VS-NULL" class="headerlink" title="nullptr VS NULL"></a>nullptr VS NULL</h3><p>nullptr出现的目标是为了替代NULL，传统C++会把NULL，0视为同一种东西，这取决于编译器如何定义NULL，有些编译器会把NULL定义为<code>((void*)0)</code>，有些则会直接将其定义为0</p>
+<p>而在C++中不允许直接将<code>void *</code>隐式转换到其他类型</p>
+<p>:kissing: example</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">foo</span><span class="params">(<span class="type">char</span> *)</span></span>;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">foo</span><span class="params">(<span class="type">int</span>)</span></span>;</span><br><span class="line"><span class="comment">// will call foo(int)</span></span><br><span class="line"><span class="built_in">foo</span>(<span class="literal">NULL</span>)</span><br></pre></td></tr></table></figure></div>
+
+<p><strong>C++11引入<code>nullptr</code>关键字，专门用来区分空指针和0；<code>nullptr</code>的类型为<code>nullptr_t</code>，能够隐式的转换为任何指针或成员指针的类型</strong></p>
+<h3 id="constexpr"><a href="#constexpr" class="headerlink" title="constexpr"></a>constexpr</h3><p><code>const</code>常数不等同于常量表达式</p>
+<p>:worried: example</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">const</span> <span class="type">int</span> len = <span class="number">1</span> + <span class="number">1</span>;</span><br><span class="line"><span class="type">char</span> arr[len];				<span class="comment">// invalid</span></span><br></pre></td></tr></table></figure></div>
+
+<blockquote>
+<p>  上面这种行为在大多数编译器中都支持，但是这是一个非法的行为</p>
+</blockquote>
+<p><em>tips: 现在大部分编译器都带有自身编译优化，很多非法行为在编译器的优化的加持下会变得合法</em></p>
+<p>C++11提供了<code>constexpr</code>让用户显式的声明函数或对象构造函数在编译期会成为常量表达式，这个关键字明确的告诉编译器应该去验证常量表达式</p>
+<p><code>constexpr</code>修饰的函数可以使用递归：</p>
+<p>:grinning: example</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">constexpr</span> <span class="type">int</span> <span class="title">fibonacci</span><span class="params">(<span class="type">const</span> <span class="type">int</span> n)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> n == <span class="number">1</span> || n == <span class="number">2</span> ? <span class="number">1</span> : <span class="built_in">fibonacci</span>(n - <span class="number">1</span>) + <span class="built_in">fibonacci</span>(n - <span class="number">2</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>C++14开始，<code>constexpr</code>函数可以在内部使用局部变量，循环和分支等简单语句</p>
+<p>:grinning: example</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// C++14起可以通过编译</span></span><br><span class="line"><span class="function"><span class="keyword">constexpr</span> <span class="type">int</span> <span class="title">fibonacci</span><span class="params">(<span class="type">const</span> <span class="type">int</span> n)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (n == <span class="number">1</span>) <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">if</span> (n == <span class="number">2</span>) <span class="keyword">return</span> <span class="number">2</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">fibonacci</span>(n - <span class="number">1</span>) + <span class="built_in">fibonacci</span>(n - <span class="number">2</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+
+
+<h2 id="变量及其初始化"><a href="#变量及其初始化" class="headerlink" title="变量及其初始化"></a>变量及其初始化</h2><h3 id="if-switch变量声明强化"><a href="#if-switch变量声明强化" class="headerlink" title="if&#x2F;switch变量声明强化"></a>if&#x2F;switch变量声明强化</h3><p>C++17起，可在if和switch语句中声明一个临时变量</p>
+<p>:astonished: example</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (<span class="type">const</span> <span class="keyword">auto</span> iter = std::<span class="built_in">find</span>(vec.<span class="built_in">begin</span>(), vec.<span class="built_in">end</span>(), <span class="number">3</span>); iter != vec.<span class="built_in">end</span>()) &#123; </span><br><span class="line">    ... </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+
+
+<h3 id="初始化列表"><a href="#初始化列表" class="headerlink" title="初始化列表"></a>初始化列表</h3><p>在传统C++中，不同对象有着不同的初始化方法；对于数组和POD类型都可以使用{}进行初始化，而对于类对象的初始化，要么需要拷贝构造、要么就需要使用()进行</p>
+<p>为了解决这个问题，C++11把初始化列表的概念绑定到类型上<code>std::initializer_list</code>，允许构造函数像其他函数参数一样使用初始化列表，为类对象的初始化与普通数组和POD的初始化方法提供统一的桥梁</p>
+<p>:weary: example</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Foo</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">Foo</span>(std::initializer_list&lt;T&gt; list);</span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">// use by this</span></span><br><span class="line">Foo foo = &#123;....&#125;;</span><br></pre></td></tr></table></figure></div>
+
+
+
+<h3 id="结构化绑定"><a href="#结构化绑定" class="headerlink" title="结构化绑定"></a>结构化绑定</h3><blockquote>
+<p>  结构化绑定提供了类似其他语言中提供的多返回值的功能</p>
+</blockquote>
+<p>C++11&#x2F;14给我们提供了<code>std::tuple</code>来构造一个元组，进而囊括多个返回值；但并未提供简单的方式从元组中拿到并定义元组中的元素(使用<code>std::tie</code>对元组拆包)；C++17给出了结构化绑定</p>
+<p>:yum: example</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">std::tuple&lt;<span class="type">int</span>, <span class="type">double</span>, std::string&gt; <span class="title">f</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> std::<span class="built_in">make_tuple</span>(<span class="number">1</span>, <span class="number">2.3</span>, <span class="string">&quot;456&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">auto</span> [x, y, z] = <span class="built_in">f</span>();</span><br></pre></td></tr></table></figure></div>
+
+
+
+<h2 id="类型推导"><a href="#类型推导" class="headerlink" title="类型推导"></a>类型推导</h2><p>C++11引入了<code>auto</code>和<code>decltype</code>实现类型推导</p>
+<h3 id="auto"><a href="#auto" class="headerlink" title="auto"></a>auto</h3><p><em>tips: auto很早就存在于C++，但始终作为一个存储类型的指示符，与register并存</em></p>
+<p>C++20起，auto甚至能用于函数传参</p>
+<p>:confused: example</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">add</span><span class="params">(<span class="keyword">auto</span> x, <span class="keyword">auto</span> y)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> x + y;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+
+
+<h3 id="decltype"><a href="#decltype" class="headerlink" title="decltype"></a>decltype</h3><p><code>decltype</code>关键字是为了解决auto关键字只能对变量进行类型推导的缺陷而出现的，类似于typeof(非C++标准)</p>
+<p>:sunglasses: example</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">decltype</span>(expr);</span><br><span class="line"><span class="comment">// can be used to compare type</span></span><br><span class="line"><span class="keyword">if</span> (std::is_same&lt;<span class="keyword">decltype</span>(x), <span class="keyword">decltype</span>(y)&gt;::value)</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure></div>
+
+
+
+<h3 id="尾返回类型推导"><a href="#尾返回类型推导" class="headerlink" title="尾返回类型推导"></a>尾返回类型推导</h3><p>在传统C++中我们必须这么做：</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> R, <span class="keyword">typename</span> T, <span class="keyword">typename</span> U&gt;</span></span><br><span class="line"><span class="function">R <span class="title">add</span><span class="params">(T x, U y)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> x + y;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>C++11起这个问题得以解决：</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">decltype</span>(x + y) <span class="built_in">add</span>(T x, U y);</span><br></pre></td></tr></table></figure></div>
+
+<blockquote>
+<p>  但是这种写法并不能通过编译，C++11引入尾返回类型(trailing return type)，利用auto关键字将返回类型后置</p>
+</blockquote>
+<p>:hushed: example</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> U&gt;</span></span><br><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">add</span><span class="params">(T x, U y)</span> -&gt; <span class="title">decltype</span><span class="params">(x + y)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> x + y;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>C++14起可以直接让普通函数具备返回值推导，下面这种写法也就合法了</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> U&gt;</span></span><br><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">add</span><span class="params">(T x, U y)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> x + y;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+
+
+<h3 id="decltype-auto"><a href="#decltype-auto" class="headerlink" title="decltype(auto)"></a>decltype(auto)</h3><p>涉及参数转发，<code>decltype(auto)</code>主要用于对转发函数或封装的返回值类型进行推导，使得我们无需显式指定decltype的参数表达式</p>
+<p>example</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">std::string <span class="title">lookup1</span><span class="params">()</span></span>;</span><br><span class="line"><span class="function">std::string&amp; <span class="title">lookup2</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// in C++11</span></span><br><span class="line"><span class="function">std::string <span class="title">lookup_string_1</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">lookup1</span>();</span><br><span class="line">&#125;</span><br><span class="line"><span class="function">std::string&amp; <span class="title">lookup_string_2</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">lookup2</span>();</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// by decltype(auto) in C++14</span></span><br><span class="line"><span class="function"><span class="keyword">decltype</span>(<span class="keyword">auto</span>) <span class="title">lookup_string_1</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">lookup1</span>();</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">decltype</span>(<span class="keyword">auto</span>) <span class="title">lookup_string_2</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">lookup2</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+
+
+<h2 id="控制流"><a href="#控制流" class="headerlink" title="控制流"></a>控制流</h2><h3 id="if-constexpr"><a href="#if-constexpr" class="headerlink" title="if constexpr"></a>if constexpr</h3><p>C++11引入<code>constexpr</code>关键字，将表达式或函数编译为常量结果，将其加入到条件判断中让代码在编译期就完成分支判断</p>
+<p>:smirk: example</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span></span><br><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">print_type_info</span><span class="params">(<span class="type">const</span> T&amp; t)</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">if</span> <span class="title">constexpr</span> <span class="params">(std::is_integral&lt;T&gt;::value)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> t + <span class="number">1</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> t + <span class="number">0.01</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 在编译时，实际代码如下</span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">print_type_info</span><span class="params">(<span class="type">const</span> <span class="type">int</span>&amp; t)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> t + <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">double</span> <span class="title">print_type_info</span><span class="params">(<span class="type">const</span> <span class="type">double</span>&amp; t)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> t + <span class="number">0.01</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+
+
+<h3 id="区间for迭代"><a href="#区间for迭代" class="headerlink" title="区间for迭代"></a>区间for迭代</h3><p>C++11引入基于范围的迭代写法</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// in c++ 17</span></span><br><span class="line">std::array data = &#123;<span class="string">&quot;hello&quot;</span>, <span class="string">&quot;,&quot;</span>, <span class="string">&quot;world&quot;</span>&#125;;</span><br><span class="line">std::<span class="type">size_t</span> i = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">auto</span> &amp; d: data) &#123;</span><br><span class="line">    std::cout &lt;&lt; i++ &lt;&lt; <span class="string">&#x27; &#x27;</span> &lt;&lt; d &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// in c++ 20</span></span><br><span class="line"><span class="keyword">for</span> (std::<span class="type">size_t</span> i = <span class="number">0</span>; <span class="keyword">auto</span> <span class="type">const</span> &amp; d: data) &#123;</span><br><span class="line">    std::cout &lt;&lt; i++ &lt;&lt; <span class="string">&#x27; &#x27;</span> &lt;&lt; d &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+
+
+<h2 id="模板"><a href="#模板" class="headerlink" title="模板"></a>模板</h2><p>模板的哲学在于将一切能够在编译期处理的问题丢到编译期进行处理，仅在运行时处理那些最核心的动态服务，进而大幅优化运行期的性能</p>
+<h3 id="外部模板"><a href="#外部模板" class="headerlink" title="外部模板"></a>外部模板</h3><blockquote>
+<p>  在传统C++中，模板只有在使用时才会被编译期实例化：只要在每个编译单元中编译的代码中遇到被完整定义的模板，都会实例化（产生了重复实例化而导致的编译时间增加，并且没有办法通知编译器不要触发模板的实例化）</p>
+</blockquote>
+<p>C++11引入外部模板，扩充了原来的强制编译器在特定位置实例化模板的语法，使得我们能够显式的通知编译器何时进行模板的实例化</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> <span class="keyword">class</span> <span class="title class_">std</span>::vector&lt;<span class="type">bool</span>&gt;;		<span class="comment">// 强制实例化</span></span><br><span class="line"><span class="keyword">extern</span> <span class="keyword">template</span> <span class="keyword">class</span> <span class="title class_">std</span>::vector&lt;<span class="type">double</span>&gt;;	<span class="comment">// 不在当前编译文件中实例化模板</span></span><br></pre></td></tr></table></figure></div>
+
+
+
+<h3 id="类型别名模板"><a href="#类型别名模板" class="headerlink" title="类型别名模板"></a>类型别名模板</h3><p><strong>模板是用来产生类型的</strong>，在传统C++中，<code>typedef</code>可以为类型定义一个新的名称，但是却没有办法为模板定义一个新的名称</p>
+<p>C++11使用<code>using</code>引入了下面这种形式的写法，并且同时支持对传统<code>typedef</code>相同的功效</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> NewName = OldName&lt;xxx, xxx&gt;;</span><br></pre></td></tr></table></figure></div>
+
+
+
+<h3 id="变长参数模板"><a href="#变长参数模板" class="headerlink" title="变长参数模板"></a>变长参数模板</h3><p>C++11加入了新的表示方法，允许任意个数、任意类别的模板参数，同时也不需要在定义时将参数的个数固定</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span>... Ts&gt; <span class="keyword">class</span> <span class="title class_">Magic</span>;</span><br></pre></td></tr></table></figure></div>
+
+<blockquote>
+<p>  模板类Magic的对象，能够接受不受限制个数的typename作为模板的形式参数（包括0个参数）</p>
+</blockquote>
+<p>使用变长参数模板实现变长参数函数</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span>... Args&gt; <span class="type">void</span> <span class="title">printf</span><span class="params">(<span class="type">const</span> std::string &amp;str, Args... args)</span></span>;</span><br></pre></td></tr></table></figure></div>
+
+<p><strong>对参数解包</strong></p>
+<p>:smirk: example</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span>... Ts&gt;</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">magic</span><span class="params">(Ts... args)</span> </span>&#123; <span class="comment">// 使用sizeof...获取参数个数</span></span><br><span class="line">    std::cout &lt;&lt; <span class="keyword">sizeof</span>...(args) &lt;&lt; std::endl;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<ol>
+<li><p>递归模板函数</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T0&gt;</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">printf</span><span class="params">(T0 value)</span> </span>&#123;</span><br><span class="line">    std::cout &lt;&lt; value &lt;&lt; std::endl;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span>... Ts&gt;</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">printf</span><span class="params">(T value, Ts... args)</span> </span>&#123;</span><br><span class="line">    std::cout &lt;&lt; value &lt;&lt; std::endl;</span><br><span class="line">    <span class="built_in">printf1</span>(args...);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+</li>
+<li><p>变参模板展开</p>
+<p>C++17中增加了变参模板展开的支持</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T0, <span class="keyword">typename</span>... T&gt;</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">printf</span><span class="params">(T0 t0, T... t)</span> </span>&#123;</span><br><span class="line">    std::cout &lt;&lt; t0 &lt;&lt; std::endl;</span><br><span class="line">    <span class="function"><span class="keyword">if</span> <span class="title">constexpr</span> <span class="params">(<span class="keyword">sizeof</span>...(t) &gt; <span class="number">0</span>)</span></span></span><br><span class="line"><span class="function">        <span class="title">printf</span><span class="params">(t...)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+</li>
+<li><p>初始化列表展开</p>
+<blockquote>
+<p>  黑魔法（利用了<code>std::initializer_list</code>强制顺序求值的特性）</p>
+</blockquote>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span>... Ts&gt;</span></span><br><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">printf</span><span class="params">(T value, Ts... args)</span> </span>&#123;</span><br><span class="line">    std::cout &lt;&lt; value &lt;&lt; std::endl;</span><br><span class="line">    (<span class="type">void</span>) std::initializer_list&lt;T&gt;&#123;([&amp;args] &#123;</span><br><span class="line">        std::cout &lt;&lt; args &lt;&lt; std::endl;</span><br><span class="line">    &#125;(), value)...&#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div></li>
+</ol>
+<h3 id="折叠表达式"><a href="#折叠表达式" class="headerlink" title="折叠表达式"></a>折叠表达式</h3><div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span>... T&gt;</span></span><br><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">sum</span><span class="params">(T... t)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> (t + ...);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+
+
+<h3 id="非类型模板参数推导"><a href="#非类型模板参数推导" class="headerlink" title="非类型模板参数推导"></a>非类型模板参数推导</h3><p>使用不同字面量作为模板参数</p>
+<p>:satisfied: example</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T, <span class="type">int</span> BufSize&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">buffer_t</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function">T&amp; <span class="title">alloc</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">free</span><span class="params">(T&amp; item)</span></span>;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    T data[BufSize];</span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">// use</span></span><br><span class="line"><span class="type">buffer_t</span>&lt;<span class="type">int</span>, <span class="number">100</span>&gt; buf;</span><br></pre></td></tr></table></figure></div>
+
+<p><em>tips: 也可使用auto来进行类型推导</em></p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">auto</span> value&gt; <span class="type">void</span> <span class="title">foo</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ....</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">foo</span>&lt;<span class="number">10</span>&gt;(); <span class="comment">// value被推导为int类型</span></span><br></pre></td></tr></table></figure></div>
+
+
+
+<h2 id="面向对象"><a href="#面向对象" class="headerlink" title="面向对象"></a>面向对象</h2><h3 id="final-keyword"><a href="#final-keyword" class="headerlink" title="final keyword"></a>final keyword</h3><p>C++11引入：限制类的继承以及阻止成员函数的覆盖</p>
+<ul>
+<li><p>阻止类被继承</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Base</span> <span class="keyword">final</span> &#123; &#125;;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Derived</span> : <span class="keyword">public</span> Base &#123; <span class="comment">/* 编译错误：Base 是一个 final 类，不能被继承 */</span> &#125;;</span><br></pre></td></tr></table></figure></div>
+</li>
+<li><p>阻止派生类中覆盖方法</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Base</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="type">void</span> <span class="title">foo</span><span class="params">()</span> <span class="keyword">final</span> </span>&#123;  <span class="comment">/* foo 函数不能在派生类中被覆盖 */</span> &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Derived</span> : <span class="keyword">public</span> Base &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">foo</span><span class="params">()</span> <span class="keyword">override</span> </span>&#123;  <span class="comment">/* 编译错误：foo 被声明为 final，不能被覆盖 */</span> &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></div></li>
+</ul>
+<h3 id="static-members"><a href="#static-members" class="headerlink" title="static members"></a>static members</h3><p>类的静态成员是与类本身相关联的成员，而不是与类的各个实例相关联的</p>
+<p><strong>静态成员变量</strong></p>
+<ol>
+<li>共享：静态成员变量为类的所有对象所共享。无论创建了多少个类的实例，都只有一个静态成员变量的拷贝</li>
+<li>独立于任何对象：即使没有创建类的实例，静态成员变量也存在，它们与类类型自身关联，而不是与特定的实例关联</li>
+<li>初始化：静态成员变量需要在类定义外进行初始化（通常在源文件中），对于整型或枚举类型的常量静态成员，可以在类内直接初始化</li>
+<li>访问：静态成员变量可以通过类名和作用域解析运算符 <code>::</code> 访问，也可以通过类的对象或引用访问</li>
+</ol>
+<p><strong>静态成员函数</strong></p>
+<ol>
+<li>独立于对象：静态成员函数不依赖于类的任何特定实例。它们不能访问类的非静态成员变量，也不能调用非静态成员函数</li>
+<li>全局访问：静态成员函数可以在不创建类的实例的情况下调用</li>
+<li>访问限制：静态成员函数遵循正常的访问控制规则（<code>public</code>、<code>protected</code>、<code>private</code>）</li>
+</ol>
+<p>:confused: example</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">MyClass</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="type">static</span> <span class="type">int</span> staticVar; <span class="comment">// 静态成员变量声明</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">static</span> <span class="type">void</span> <span class="title">staticFunc</span><span class="params">()</span> </span>&#123; <span class="comment">// 静态成员函数</span></span><br><span class="line">        <span class="comment">// 可以访问静态成员变量，但不能访问非静态成员变量</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> MyClass::staticVar = <span class="number">0</span>; <span class="comment">// 静态成员变量定义和初始化</span></span><br></pre></td></tr></table></figure></div>
+
+<blockquote>
+<p>  静态成员变量通常用于存储与类相关的信息，如对象计数器或类特定的常量值</p>
+<p>  静态成员函数常用于实现与类的具体实例无关的功能，如工厂方法或辅助函数</p>
+</blockquote>
+<h2 id="构造函数"><a href="#构造函数" class="headerlink" title="构造函数"></a>构造函数</h2><h3 id="Rule-of-3-5"><a href="#Rule-of-3-5" class="headerlink" title="Rule of 3&#x2F;5"></a>Rule of 3&#x2F;5</h3><p>:astonished: <strong>Good practice: The rule of 3&#x2F;5(C++98&#x2F;C++11)</strong></p>
+<ul>
+<li><p>Rule of three</p>
+<p>如果你的类需要自定义析构函数、拷贝构造函数或拷贝赋值操作符中的任何一个，那么你很可能需要自定义所有这三个</p>
+<p>这是因为自定义析构函数通常意味着你的类在管理（如分配和释放）资源，这通常需要自定义的拷贝控制来正确地复制或赋值这些资源</p>
+</li>
+<li><p>Rule of five</p>
+<p>规则五包括规则三中的三个函数（析构函数、拷贝构造函数、拷贝赋值操作符）以及两个新的函数：移动构造函数和移动赋值操作符</p>
+<p>如果你需要自定义析构函数，你很可能也需要自定义所有五个函数，以正确处理移动语义，从而提高效率</p>
+</li>
+</ul>
+<h3 id="构造函数中的初始化列表"><a href="#构造函数中的初始化列表" class="headerlink" title="构造函数中的初始化列表"></a>构造函数中的初始化列表</h3><p>:+1: <strong>成员初始化列表提供的值优先于类定义处的默认值</strong> </p>
+<blockquote>
+<p>  成员初始化列表直接初始化成员变量，而不是先默认初始化然后赋值；对于某些类型（如引用和常量成员），这是必需的，因为它们不能被赋值</p>
+</blockquote>
+<p>其次就是在效率方面：对于非内置类型的成员，使用初始化列表通常比在构造函数中赋值更高效，避免了额外的构造和赋值</p>
+<h3 id="默认构造函数"><a href="#默认构造函数" class="headerlink" title="默认构造函数"></a>默认构造函数</h3><ul>
+<li><p>定义：如果一个构造函数可以不带任何参数被调用（或者所有参数都有默认值），则称为默认构造函数</p>
+</li>
+<li><p>作用：在不提供任何初始化值的情况下创建对象</p>
+</li>
+<li><p>示例：</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Example</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">Example</span>() = <span class="keyword">default</span>;	<span class="comment">// 保持了特殊成员函数的自动生成：比如拷贝构造函数，析构函数等</span></span><br><span class="line">	<span class="built_in">Example</span>() &#123; &#125; 			<span class="comment">// 破坏了类的聚合类型属性，可能会阻止编译器生成其他特殊成员函数</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></div></li>
+</ul>
+<p><strong>行为：</strong></p>
+<ol>
+<li>对于内置类型的成员：默认构造函数不会初始化这些成员，它们的初始值是未定义的，除非它们被显示初始化</li>
+<li>对于类类型的成员：这些成员的默认构造函数将被调用来初始化它们</li>
+<li>对于继承的情况：如果类是从其他类继承的，基类的默认构造函数将被调用</li>
+<li>对于带有默认成员初始化的成员：在C++11及更高版本中，可以在类定义中直接给成员变量赋初值，如果这样做了，即使是默认的构造函数，这些成员也会被初始化为指定的值</li>
+</ol>
+<h3 id="参数化构造函数"><a href="#参数化构造函数" class="headerlink" title="参数化构造函数"></a>参数化构造函数</h3><ul>
+<li><p>定义：带有一个或多个参数的构造函数，用于根据提供的参数初始化对象</p>
+</li>
+<li><p>作用：提供更灵活的初始化方式，允许在创建对象时指定初始值</p>
+</li>
+<li><p>示例：</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Example</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">Example</span>(...args) &#123; <span class="comment">/* 构造函数体 */</span> &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></div></li>
+</ul>
+<p><strong>行为：</strong></p>
+<ol>
+<li>实现类型转换：如果参数化构造函数没有被声明为<code>explicit</code>，它还可能用于隐式类型转换</li>
+</ol>
+<h3 id="拷贝构造函数"><a href="#拷贝构造函数" class="headerlink" title="拷贝构造函数"></a>拷贝构造函数</h3><ul>
+<li><p>定义：参数为对同类型对象的引用（通常为常量引用）的构造函数</p>
+</li>
+<li><p>作用：用于通过复制另一个同类型对象来初始化新对象</p>
+</li>
+<li><p>示例：</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Example</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">Example</span>(<span class="type">const</span> Example &amp; other) &#123; <span class="comment">/* 拷贝构造函数体 */</span> &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></div></li>
+</ul>
+<p><strong>行为：</strong></p>
+<ol>
+<li>创建对象副本：拷贝构造函数通过接收一个同类型对象的引用作为参数来创建新对象的副本。这个过程包括复制现有对象所有的成员变量的值</li>
+<li>被隐式调用：当函数通过值传递或者函数返回对象时，拷贝构造函数会被隐式调用</li>
+</ol>
+<h3 id="移动构造函数（C-11引入）"><a href="#移动构造函数（C-11引入）" class="headerlink" title="移动构造函数（C++11引入）"></a>移动构造函数（C++11引入）</h3><ul>
+<li><p>定义：参数为同类型对象的右值引用的构造函数</p>
+</li>
+<li><p>作用：允许资源的转移，提高效率，尤其用于临时对象</p>
+</li>
+<li><p>示例：</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Example</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">Example</span>(Example &amp;&amp; other) &#123; <span class="comment">/* 移动构造函数体 */</span> &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></div></li>
+</ul>
+<p><strong>行为：</strong></p>
+<ol>
+<li>参数类型：移动构造函数接受一个同类型对象的右值引用作为参考</li>
+<li>资源转移：与拷贝构造函数（进行深拷贝）不同，移动构造函数设计用来窃取源对象的资源。这意味着它通过将资源从源对象转移到新创建的对象，来实现快速构造，而不是复制资源</li>
+<li>优化临时对象：移动构造函数特别适用于临时对象或将要销毁的对象，因为这些情况下资源转移是安全的。比如在函数返回临时对象或进行对象赋值时，移动构造函数可以显著提高效率</li>
+<li>自动生成规则：如果一个类没有自定义拷贝构造函数、拷贝赋值操作符、移动赋值操作符以及析构函数，编译器可能会自动生成移动构造函数</li>
+</ol>
+<h3 id="委托构造函数（C-11引入）"><a href="#委托构造函数（C-11引入）" class="headerlink" title="委托构造函数（C++11引入）"></a>委托构造函数（C++11引入）</h3><p>定义：一个构造函数在其初始化列表中调用同一类的另一个构造函数</p>
+<ul>
+<li><p>作用：简化多个构造函数的代码，避免重复</p>
+</li>
+<li><p>示例：</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Example</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">Example</span>(<span class="type">int</span> x): <span class="built_in">m_x</span>(x) &#123;&#125;</span><br><span class="line">    <span class="built_in">Example</span>(<span class="type">int</span> x, <span class="type">int</span> y): <span class="built_in">Example</span>(x), <span class="built_in">m_y</span>(y) &#123;&#125; <span class="comment">// 委托构造函数和成员初始化列表不能同时存在 </span></span><br><span class="line">    <span class="built_in">Example</span>(<span class="type">int</span> x, <span class="type">int</span> y): <span class="built_in">Example</span>(x) &#123; <span class="keyword">this</span>-&gt;m_y = y; &#125; <span class="comment">// ok</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="type">int</span> m_x, m_y;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></div></li>
+</ul>
+<p><strong>行为：</strong></p>
+<ol>
+<li>减少重复代码：委托构造函数可以减少在多个构造函数中重复相同的初始化代码。这有助于提高代码的可维护性和一致性</li>
+<li>初始化顺序：在委托构造函数中，首先执行被调用的构造函数，然后才执行调用构造函数的主体部分</li>
+<li>限制：不能在同一个构造函数中同时使用委托构造函数和成员初始化列表</li>
+<li>使用场景：适合于那些有多个构造函数，且这些构造函数之间有共同初始化逻辑</li>
+</ol>
+<h3 id="显式构造函数"><a href="#显式构造函数" class="headerlink" title="显式构造函数"></a>显式构造函数</h3><ul>
+<li><p>定义：使用 <code>explicit</code> 关键字标记的构造函数</p>
+</li>
+<li><p>作用：防止隐式类型转换和意外的构造函数调用</p>
+</li>
+<li><p>示例：</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Example</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">explicit</span> <span class="title">Example</span><span class="params">(...)</span> </span>&#123; <span class="comment">/* 构造函数体 */</span> &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></div></li>
+</ul>
+<h3 id="隐式构造函数"><a href="#隐式构造函数" class="headerlink" title="隐式构造函数"></a>隐式构造函数</h3><ul>
+<li>定义：未用 <code>explicit</code> 关键字标记的构造函数</li>
+<li>作用：允许编译器在需要时自动调用该构造函数进行类型转换</li>
+</ul>
+<h3 id="删除的构造函数（C-11引入）"><a href="#删除的构造函数（C-11引入）" class="headerlink" title="删除的构造函数（C++11引入）"></a>删除的构造函数（C++11引入）</h3><ul>
+<li><p>定义：使用 <code>delete</code> 关键字明确禁止的构造函数</p>
+</li>
+<li><p>作用：防止生成默认的构造函数或禁止某些类型的对象构造</p>
+</li>
+<li><p>示例：</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Example</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">Example</span>() = <span class="keyword">delete</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></div></li>
+</ul>
+<h3 id="继承的构造函数（C-11引入）"><a href="#继承的构造函数（C-11引入）" class="headerlink" title="继承的构造函数（C++11引入）"></a>继承的构造函数（C++11引入）</h3><ul>
+<li><p>定义：子类可以使用 <code>using</code> 语句继承基类的构造函数</p>
+</li>
+<li><p>作用：允许子类继承基类的构造函数，简化代码</p>
+</li>
+<li><p>示例：</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Base</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">Base</span>(...) &#123;&#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Derived</span>: <span class="keyword">public</span> Base &#123;</span><br><span class="line">	<span class="keyword">using</span> Base::Base;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div></li>
+</ul>
+<p><strong>行为：</strong></p>
+<ol>
+<li>自动转发参数：当使用基类的构造函数创建派生类对象时，构造函数的参数会被自动转发给基类的对应构造函数</li>
+</ol>
+<blockquote>
+<p>  不支持函数重载</p>
+</blockquote>
+<p><strong>关于委托构造函数和直接初始化的一些细节：</strong></p>
+<blockquote>
+<p>  在需要代码重用和保持初始化逻辑一致时有限考虑委托构造函数</p>
+<p>  构造函数初始化逻辑和独立且简单时优先考虑直接初始化</p>
+</blockquote>
+<h2 id="强类型枚举"><a href="#强类型枚举" class="headerlink" title="强类型枚举"></a>强类型枚举</h2><p>传统C++中枚举类型并非安全类型，枚举类型会被视为整数（甚至同一个命名空间中的不同枚举类型的枚举值名字不能相同）</p>
+<p>C++11引入枚举类</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">enum class</span> <span class="title class_">new_enum</span> : <span class="type">unsigned</span> <span class="type">int</span> &#123; <span class="comment">// 未指定枚举值类型时默认为int</span></span><br><span class="line">    value1,</span><br><span class="line">    value2,</span><br><span class="line">    value3 = <span class="number">100</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></div>
+
+<blockquote>
+<p>  不能被隐式的转换为整数，同时也不能够将其与整数数字进行比较</p>
+</blockquote>
+<p>:wink: nice code (获取枚举值)</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line">std::ostream&amp; <span class="keyword">operator</span>&lt;&lt;(</span><br><span class="line">	<span class="keyword">typename</span> std::<span class="built_in">enable_if</span>(std::is_enum&lt;T&gt;::value),</span><br><span class="line">    	std::ostream&gt;::type&amp; stream, <span class="type">const</span> T&amp; e)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> stream &lt;&lt; <span class="keyword">static_cast</span>&lt;<span class="keyword">typename</span> std::underlying_type&lt;T&gt;::type&gt;(e);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+
+
+
+
+
+        </div>
+
+        
+
+        
+            <ul class="post-tags-box text-lg mt-1.5 flex-wrap justify-center flex md:hidden">
+                
+                    <li class="tag-item mx-0.5">
+                        <a href="/tags/Cpp/">#Cpp</a>&nbsp;
+                    </li>
+                
+            </ul>
+        
+
+        
+
+        
+            <div class="article-nav my-8 flex justify-between items-center px-2 sm:px-6 md:px-8">
+                
+                    <div class="article-prev border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
+                        <a class="prev"
+                        rel="prev"
+                        href="/2023/02/02/2023-02-02-core-modern-cpp/"
+                        >
+                            <span class="left arrow-icon flex justify-center items-center">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </span>
+                            <span class="title flex justify-center items-center">
+                                <span class="post-nav-title-item">Cpp核心</span>
+                                <span class="post-nav-item">上一篇</span>
+                            </span>
+                        </a>
+                    </div>
+                
+                
+                    <div class="article-next border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
+                        <a class="next"
+                        rel="next"
+                        href="/2023/01/12/2023-01-12-%E6%99%BA%E8%83%BD%E6%8C%87%E9%92%88%E5%92%8C%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/"
+                        >
+                            <span class="title flex justify-center items-center">
+                                <span class="post-nav-title-item">智能指针和内存管理</span>
+                                <span class="post-nav-item">下一篇</span>
+                            </span>
+                            <span class="right arrow-icon flex justify-center items-center">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </span>
+                        </a>
+                    </div>
+                
+            </div>
+        
+
+
+        
+    </div>
+
+    
+        <div class="toc-content-container">
+            <div class="post-toc-wrap">
+    <div class="post-toc">
+        <div class="toc-title">此页目录</div>
+        <div class="page-title">语言可用性增强</div>
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%AF%AD%E8%A8%80%E5%8F%AF%E7%94%A8%E6%80%A7%E7%9A%84%E5%BC%BA%E5%8C%96"><span class="nav-text">语言可用性的强化</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B8%B8%E9%87%8F"><span class="nav-text">常量</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#nullptr-VS-NULL"><span class="nav-text">nullptr VS NULL</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#constexpr"><span class="nav-text">constexpr</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%98%E9%87%8F%E5%8F%8A%E5%85%B6%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="nav-text">变量及其初始化</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#if-switch%E5%8F%98%E9%87%8F%E5%A3%B0%E6%98%8E%E5%BC%BA%E5%8C%96"><span class="nav-text">if&#x2F;switch变量声明强化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96%E5%88%97%E8%A1%A8"><span class="nav-text">初始化列表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%93%E6%9E%84%E5%8C%96%E7%BB%91%E5%AE%9A"><span class="nav-text">结构化绑定</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B1%BB%E5%9E%8B%E6%8E%A8%E5%AF%BC"><span class="nav-text">类型推导</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#auto"><span class="nav-text">auto</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#decltype"><span class="nav-text">decltype</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%BE%E8%BF%94%E5%9B%9E%E7%B1%BB%E5%9E%8B%E6%8E%A8%E5%AF%BC"><span class="nav-text">尾返回类型推导</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#decltype-auto"><span class="nav-text">decltype(auto)</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8E%A7%E5%88%B6%E6%B5%81"><span class="nav-text">控制流</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#if-constexpr"><span class="nav-text">if constexpr</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8C%BA%E9%97%B4for%E8%BF%AD%E4%BB%A3"><span class="nav-text">区间for迭代</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A8%A1%E6%9D%BF"><span class="nav-text">模板</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%96%E9%83%A8%E6%A8%A1%E6%9D%BF"><span class="nav-text">外部模板</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%B1%BB%E5%9E%8B%E5%88%AB%E5%90%8D%E6%A8%A1%E6%9D%BF"><span class="nav-text">类型别名模板</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%98%E9%95%BF%E5%8F%82%E6%95%B0%E6%A8%A1%E6%9D%BF"><span class="nav-text">变长参数模板</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8A%98%E5%8F%A0%E8%A1%A8%E8%BE%BE%E5%BC%8F"><span class="nav-text">折叠表达式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9D%9E%E7%B1%BB%E5%9E%8B%E6%A8%A1%E6%9D%BF%E5%8F%82%E6%95%B0%E6%8E%A8%E5%AF%BC"><span class="nav-text">非类型模板参数推导</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1"><span class="nav-text">面向对象</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#final-keyword"><span class="nav-text">final keyword</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#static-members"><span class="nav-text">static members</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0"><span class="nav-text">构造函数</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Rule-of-3-5"><span class="nav-text">Rule of 3&#x2F;5</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E4%B8%AD%E7%9A%84%E5%88%9D%E5%A7%8B%E5%8C%96%E5%88%97%E8%A1%A8"><span class="nav-text">构造函数中的初始化列表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%BB%98%E8%AE%A4%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0"><span class="nav-text">默认构造函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E6%95%B0%E5%8C%96%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0"><span class="nav-text">参数化构造函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8B%B7%E8%B4%9D%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0"><span class="nav-text">拷贝构造函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A7%BB%E5%8A%A8%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%EF%BC%88C-11%E5%BC%95%E5%85%A5%EF%BC%89"><span class="nav-text">移动构造函数（C++11引入）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A7%94%E6%89%98%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%EF%BC%88C-11%E5%BC%95%E5%85%A5%EF%BC%89"><span class="nav-text">委托构造函数（C++11引入）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%98%BE%E5%BC%8F%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0"><span class="nav-text">显式构造函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9A%90%E5%BC%8F%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0"><span class="nav-text">隐式构造函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%A0%E9%99%A4%E7%9A%84%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%EF%BC%88C-11%E5%BC%95%E5%85%A5%EF%BC%89"><span class="nav-text">删除的构造函数（C++11引入）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%A7%E6%89%BF%E7%9A%84%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%EF%BC%88C-11%E5%BC%95%E5%85%A5%EF%BC%89"><span class="nav-text">继承的构造函数（C++11引入）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%BA%E7%B1%BB%E5%9E%8B%E6%9E%9A%E4%B8%BE"><span class="nav-text">强类型枚举</span></a></li></ol></li></ol>
+
+    </div>
+</div>
+        </div>
+    
+</div>
+
+
+
+                
+
+            </div>
+
+            
+
+        </div>
+
+        <div class="main-content-footer">
+            <footer class="footer mt-5 py-5 h-auto text-base text-third-text-color relative border-t-2 border-t-border-color">
+    <div class="info-container py-3 text-center">
+        
+        <div class="text-center">
+            &copy;
+            
+            2024&nbsp;&nbsp;<i class="fa-solid fa-heart fa-beat" style="--fa-animation-duration: 0.5s; color: #f54545"></i>&nbsp;&nbsp;<a href="/">fetch150zy</a>
+            
+                
+                <p class="post-count space-x-0.5">
+                    <span>
+                        共 52 篇文章
+                    </span>
+                    
+                </p>
+            
+        </div>
+        
+        <div class="relative text-center lg:absolute lg:left-[20px] lg:top-1/2 lg:-translate-y-1/2 lg:text-left">
+            <span class="lg:block text-sm">由 <?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg class="relative top-[2px] inline-block align-baseline" version="1.1" id="圖層_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="1rem" height="1rem" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve"><path fill="#0E83CD" d="M256.4,25.8l-200,115.5L56,371.5l199.6,114.7l200-115.5l0.4-230.2L256.4,25.8z M349,354.6l-18.4,10.7l-18.6-11V275H200v79.6l-18.4,10.7l-18.6-11v-197l18.5-10.6l18.5,10.8V237h112v-79.6l18.5-10.6l18.5,10.8V354.6z"/></svg><a target="_blank" class="text-base" href="https://hexo.io">Hexo</a> 驱动</span>
+            <span class="text-sm lg:block">主题&nbsp;<a class="text-base" target="_blank" href="https://github.com/EvanNotFound/hexo-theme-redefine">Redefine v2.6.1</a></span>
+        </div>
+        
+        
+        
+        
+        
+    </div>  
+</footer>
+        </div>
+    </div>
+
+    
+        <div class="post-tools">
+            <div class="post-tools-container">
+    <ul class="article-tools-list">
+        <!-- TOC aside toggle -->
+        
+            <li class="right-bottom-tools page-aside-toggle">
+                <i class="fa-regular fa-outdent"></i>
+            </li>
+        
+
+        <!-- go comment -->
+        
+    </ul>
+</div>
+
+        </div>
+    
+
+    <div class="right-side-tools-container">
+        <div class="side-tools-container">
+    <ul class="hidden-tools-list">
+        <li class="right-bottom-tools tool-font-adjust-plus flex justify-center items-center">
+            <i class="fa-regular fa-magnifying-glass-plus"></i>
+        </li>
+
+        <li class="right-bottom-tools tool-font-adjust-minus flex justify-center items-center">
+            <i class="fa-regular fa-magnifying-glass-minus"></i>
+        </li>
+
+        <li class="right-bottom-tools tool-dark-light-toggle flex justify-center items-center">
+            <i class="fa-regular fa-moon"></i>
+        </li>
+
+        <!-- rss -->
+        
+
+        
+
+        <li class="right-bottom-tools tool-scroll-to-bottom flex justify-center items-center">
+            <i class="fa-regular fa-arrow-down"></i>
+        </li>
+    </ul>
+
+    <ul class="visible-tools-list">
+        <li class="right-bottom-tools toggle-tools-list flex justify-center items-center">
+            <i class="fa-regular fa-cog fa-spin"></i>
+        </li>
+        
+            <li class="right-bottom-tools tool-scroll-to-top flex justify-center items-center">
+                <i class="arrow-up fas fa-arrow-up"></i>
+                <span class="percent"></span>
+            </li>
+        
+        
+    </ul>
+</div>
+
+    </div>
+
+    <div class="image-viewer-container">
+    <img src="">
+</div>
+
+
+    
+
+</main>
+
+
+    
+<script src="/js/libs/Swup.min.js"></script>
+
+<script src="/js/libs/SwupSlideTheme.min.js"></script>
+
+<script src="/js/libs/SwupScriptsPlugin.min.js"></script>
+
+<script src="/js/libs/SwupProgressPlugin.min.js"></script>
+
+<script src="/js/libs/SwupScrollPlugin.min.js"></script>
+
+<script src="/js/libs/SwupPreloadPlugin.min.js"></script>
+
+<script>
+    const swup = new Swup({
+        plugins: [
+            new SwupScriptsPlugin({
+                optin: true,
+            }),
+            new SwupProgressPlugin(),
+            new SwupScrollPlugin({
+                offset: 80,
+            }),
+            new SwupSlideTheme({
+                mainElement: ".main-content-body",
+            }),
+            new SwupPreloadPlugin(),
+        ],
+        containers: ["#swup"],
+    });
+</script>
+
+
+
+
+
+
+
+<script src="/js/tools/imageViewer.js" type="module"></script>
+
+<script src="/js/utils.js" type="module"></script>
+
+<script src="/js/main.js" type="module"></script>
+
+<script src="/js/layouts/navbarShrink.js" type="module"></script>
+
+<script src="/js/tools/scrollTopBottom.js" type="module"></script>
+
+<script src="/js/tools/lightDarkSwitch.js" type="module"></script>
+
+<script src="/js/layouts/categoryList.js" type="module"></script>
+
+
+
+
+
+
+
+    
+<script src="/js/layouts/lazyload.js" type="module"></script>
+
+
+
+
+
+
+  
+<script src="/js/libs/Typed.min.js"></script>
+
+  
+<script src="/js/plugins/typed.js" type="module"></script>
+
+
+
+
+
+
+
+
+
+<div class="post-scripts" data-swup-reload-script>
+    
+        
+<script src="/js/tools/tocToggle.js" type="module"></script>
+
+<script src="/js/layouts/toc.js" type="module"></script>
+
+<script src="/js/plugins/tabs.js" type="module"></script>
+
+    
+</div>
+
+
+</body>
+</html>

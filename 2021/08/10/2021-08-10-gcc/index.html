@@ -1,0 +1,1424 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="keywords" content="computer science">
+    
+    <meta name="author" content="fetch150zy">
+    <!-- preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    
+    <!--- Seo Part-->
+    
+    <link rel="canonical" href="https://fetch150zy.github.io/2021/08/10/2021-08-10-gcc/"/>
+    <meta name="robots" content="index,follow">
+    <meta name="googlebot" content="index,follow">
+    <meta name="revisit-after" content="1 days">
+    
+        <meta name="description" content="gcc&amp;gdb常规操作 静态库、动态库的创建和链接 GCC   GCC是Linux下的编译工具集，是GNU Compiler Collection的缩写，包含gcc g++等编译器  gcc工作流程   gcc编译器对程序的编译分为四个阶段：预处理（预编译）、编译、汇编、链接   预处理：展开头文件、宏替换、去注释    gcc调用预处理器来完成，得到的还是文本格式的源文件   编译：gc">
+<meta property="og:type" content="article">
+<meta property="og:title" content="GCC">
+<meta property="og:url" content="https://fetch150zy.github.io/2021/08/10/2021-08-10-gcc/index.html">
+<meta property="og:site_name" content="fetch150zy&#39;blog">
+<meta property="og:description" content="gcc&amp;gdb常规操作 静态库、动态库的创建和链接 GCC   GCC是Linux下的编译工具集，是GNU Compiler Collection的缩写，包含gcc g++等编译器  gcc工作流程   gcc编译器对程序的编译分为四个阶段：预处理（预编译）、编译、汇编、链接   预处理：展开头文件、宏替换、去注释    gcc调用预处理器来完成，得到的还是文本格式的源文件   编译：gc">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-08-10T04:00:00.000Z">
+<meta property="article:modified_time" content="2024-03-23T05:43:20.350Z">
+<meta property="article:author" content="fetch150zy">
+<meta property="article:tag" content="CLI Tools">
+<meta name="twitter:card" content="summary">
+    
+    
+    <!--- Icon Part-->
+    <link rel="icon" type="image/png" href="/img/pacman.png" sizes="192x192">
+    <link rel="apple-touch-icon" sizes="180x180" href="/img/pacman.png">
+    <meta name="theme-color" content="#7FCDCD">
+    <link rel="shortcut icon" href="/img/pacman.png">
+    <!--- Page Info-->
+    
+    <title>
+        
+            GCC -
+        
+        fetch150zy&#39;s blog
+    </title>
+
+    
+<link rel="stylesheet" href="/fonts/Chillax/chillax.css">
+
+
+    <!--- Inject Part-->
+    
+
+    
+        <style>
+    :root {
+        --preloader-background-color: #fff;
+        --preloader-text-color: #000;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --preloader-background-color: #202124;
+            --preloader-text-color: #fff;
+        }
+    }
+
+    @media (prefers-color-scheme: light) {
+        :root {
+            --preloader-background-color: #fff;
+            --preloader-text-color: #000;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .ml13 {
+            font-size: 2.6rem !important; /* Adjust this value as needed */
+        }
+    }
+
+    .preloader {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem; /* Tailwind 'gap-4' is 1rem */
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        padding: 12px;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh; /* 'h-screen' is 100% of the viewport height */
+        background-color: var(--preloader-background-color);
+        z-index: 1100; /* 'z-[1100]' sets the z-index */
+        transition: opacity 0.2s ease-in-out;
+    }
+
+    .ml13 {
+        font-size: 3.2rem;
+        /* text-transform: uppercase; */
+        color: var(--preloader-text-color);
+        letter-spacing: -1px;
+        font-weight: 500;
+        font-family: 'Chillax-Variable', sans-serif;
+        text-align: center;
+    }
+
+    .ml13 .word {
+        display: inline-flex;
+        flex-wrap: wrap;
+        white-space: nowrap;
+    }
+
+    .ml13 .letter {
+        display: inline-block;
+        line-height: 1em;
+    }
+</style>
+
+<div class="preloader">
+    
+<script src="/js/libs/anime.min.js"></script>
+
+    <h1 class="ml13">
+        fetch150zy&#39;s blog
+    </h1>
+    <script>
+        var textWrapper = document.querySelector('.ml13');
+        // Split text into words
+        var words = textWrapper.textContent.trim().split(' ');
+
+        // Clear the existing content
+        textWrapper.innerHTML = '';
+
+        // Wrap each word and its letters in spans
+        words.forEach(function(word) {
+            var wordSpan = document.createElement('span');
+            wordSpan.classList.add('word');
+            wordSpan.innerHTML = word.replace(/\S/g, "<span class='letter'>$&</span>");
+            textWrapper.appendChild(wordSpan);
+            textWrapper.appendChild(document.createTextNode(' ')); // Add space between words
+        });
+
+
+        anime.timeline({loop: true})
+            .add({
+                targets: '.ml13 .letter',
+                translateY: [100,0],
+                translateZ: 0,
+                opacity: [0,1],
+                easing: "easeOutExpo",
+                duration: 1400,
+                delay: (el, i) => 300 + 30 * i
+            }).add({
+            targets: '.ml13 .letter',
+            translateY: [0,-100],
+            opacity: [1,0],
+            easing: "easeInExpo",
+            duration: 1200,
+            delay: (el, i) => 100 + 30 * i
+        });
+
+        let themeStatus = JSON.parse(localStorage.getItem('REDEFINE-THEME-STATUS'))?.isDark;
+
+        // If the theme status is not found in local storage, check the preferred color scheme
+        if (themeStatus === undefined || themeStatus === null) {
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                themeStatus = 'dark';
+            } else {
+                themeStatus = 'light';
+            }
+        }
+
+        // Now you can use the themeStatus variable in your code
+        if (themeStatus) {
+            document.documentElement.style.setProperty('--preloader-background-color', '#202124');
+            document.documentElement.style.setProperty('--preloader-text-color', '#fff');
+        } else {
+            document.documentElement.style.setProperty('--preloader-background-color', '#fff');
+            document.documentElement.style.setProperty('--preloader-text-color', '#000');
+        }
+
+        window.addEventListener('load', function () {
+            hidePreloaderAfterTimeout(1000); // Hide after 1000 milliseconds once the window has loaded
+        });
+
+        // Backup failsafe: Hide preloader after a maximum of 5000 milliseconds, regardless of the window load event
+        hidePreloaderAfterTimeout(5000);
+
+        function hidePreloaderAfterTimeout(delay) {
+            setTimeout(function () {
+                var preloader = document.querySelector('.preloader');
+                preloader.style.opacity = '0';
+                setTimeout(function () {
+                    preloader.style.display = 'none';
+                }, 200);
+            }, delay);
+        }
+    </script>
+</div>
+    
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+
+    
+        
+<link rel="stylesheet" href="/assets/build/styles.css">
+
+    
+
+    
+<link rel="stylesheet" href="/fonts/fonts.css">
+
+    
+<link rel="stylesheet" href="/fonts/Satoshi/satoshi.css">
+
+    <!--- Font Part-->
+    
+    
+    
+    
+
+
+    <script id="hexo-configurations">
+    window.config = {"hostname":"fetch150zy.github.io","root":"/","language":"zh-CN"};
+    window.theme = {"articles":{"style":{"font_size":"18px","line_height":1.4,"image_border_radius":"14px","image_alignment":"center","image_caption":false,"link_icon":true,"title_alignment":"center","headings_top_spacing":{"h1":"5rem","h2":"4rem","h3":"2.8rem","h4":"2.5rem","h5":"2.2rem","h6":"2rem"}},"word_count":{"enable":false,"count":false,"min2read":false},"author_label":{"enable":false,"auto":false,"list":[]},"code_block":{"copy":false,"style":"mac","font":{"enable":false,"family":null,"url":null}},"toc":{"enable":true,"max_depth":6,"number":false,"expand":true,"init_open":true},"copyright":{"enable":false,"default":"cc_by_nc_sa"},"lazyload":true,"recommendation":{"enable":false,"title":"推荐阅读","limit":3,"mobile_limit":2,"placeholder":null,"skip_dirs":[]}},"colors":{"primary":"#7FCDCD","secondary":null,"default_mode":"dark"},"global":{"fonts":{"chinese":{"enable":null,"family":null,"url":null},"english":{"enable":null,"family":null,"url":null}},"content_max_width":"1000px","sidebar_width":"210px","hover":{"shadow":true,"scale":true},"scroll_progress":{"bar":false,"percentage":true},"website_counter":{"url":"https://cn.vercount.one/js","enable":false,"site_pv":false,"site_uv":false,"post_pv":false},"single_page":true,"preloader":true,"open_graph":true,"google_analytics":{"enable":false,"id":null}},"home_banner":{"enable":true,"style":"fixed","image":{"light":"/img/bg15.jpg","dark":"/img/bg15.jpg"},"title":"fetch150zy's blog","subtitle":{"text":["年年岁岁花相似，岁岁年年人不同"],"hitokoto":{"enable":false,"api":"https://v1.hitokoto.cn"},"typing_speed":100,"backing_speed":80,"starting_delay":500,"backing_delay":1500,"loop":true,"smart_backspace":true},"text_color":{"light":"#fff","dark":"#d1d1b6"},"text_style":{"title_size":"2.8rem","subtitle_size":"1.5rem","line_height":1.3},"custom_font":{"enable":false,"family":null,"url":null},"social_links":{"enable":true,"style":"default","links":{"github":"https://github.com/fetch150zy","bilibili":"https://space.bilibili.com/505867894","stack-overflow":"https://stackoverflow.com/users/16738249/fetch150zy","email":"mailto:mars_zhewei@outlook.com"},"qrs":{"weixin":"https://pic.fetch150zy.cn/weixin.png"}}},"plugins":{"feed":{"enable":false},"aplayer":{"enable":false,"type":"fixed","audios":[{"name":null,"artist":null,"url":null,"cover":null,"lrc":null}]},"mermaid":{"enable":false,"version":"9.3.0"}},"version":"2.6.1","navbar":{"auto_hide":false,"color":{"left":"#f78736","right":"#367df7","transparency":35},"width":{"home":"1200px","pages":"1000px"},"links":{"Home":{"path":"/","icon":"fa-regular fa-house"},"Archives":{"path":"/archives","icon":"fa-regular fa-archive"},"About":{"icon":"fa-regular fa-user","submenus":{"Me":"/about","Blog":"https://fetch150zy.cn","Github":"https://github.com/fetch150zy"}}},"search":{"enable":false,"preload":true}},"page_templates":{"friends_column":3,"tags_style":"blur"},"home":{"sidebar":{"enable":true,"position":"right","first_item":"info","announcement":null,"show_on_mobile":true,"links":{"Archives":{"path":"/archives","icon":"fa-regular fa-archive"},"Tags":{"path":"/tags","icon":"fa-regular fa-tags"},"Categories":{"path":"/categories","icon":"fa-regular fa-folder"}}},"article_date_format":"YYYY-MM-DD","categories":{"enable":true,"limit":3},"tags":{"enable":true,"limit":3}},"footerStart":null};
+    window.lang_ago = {"second":"%s 秒前","minute":"%s 分钟前","hour":"%s 小时前","day":"%s 天前","week":"%s 周前","month":"%s 个月前","year":"%s 年前"};
+    window.data = {"masonry":false};
+  </script>
+    
+    <!--- Fontawesome Part-->
+    
+<link rel="stylesheet" href="/fontawesome/fontawesome.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/brands.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/solid.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/regular.min.css">
+
+    
+    
+    
+    
+        
+<link rel="stylesheet" href="/fontawesome/sharp-solid.min.css">
+
+    
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+
+<body>
+<div class="progress-bar-container">
+    
+
+    
+        <span class="pjax-progress-bar"></span>
+<!--        <span class="swup-progress-icon">-->
+<!--            <i class="fa-solid fa-circle-notch fa-spin"></i>-->
+<!--        </span>-->
+    
+</div>
+
+
+<main class="page-container" id="swup">
+
+    
+
+    <div class="main-content-container">
+
+
+        <div class="main-content-header">
+            <header class="navbar-container px-6 md:px-12">
+
+    <div class="navbar-content ">
+        <div class="left">
+            
+                <a class="logo-image" href="/">
+                    <img src="/img/pacman.png">
+                </a>
+            
+            <a class="logo-title" href="/">
+                
+                fetch150zy&#39;s blog
+                
+            </a>
+        </div>
+
+        <div class="right">
+            <!-- PC -->
+            <div class="desktop">
+                <ul class="navbar-list">
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/"
+                                        >
+                                    <i class="fa-regular fa-house fa-fw"></i>
+                                    首页
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/archives"
+                                        >
+                                    <i class="fa-regular fa-archive fa-fw"></i>
+                                    归档
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class="has-dropdown"
+                                   href="#"
+                                        onClick=&#34;return false;&#34;>
+                                    <i class="fa-regular fa-user fa-fw"></i>
+                                    关于
+                                    <i class="fa-solid fa-chevron-down fa-fw"></i>
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                                    <ul class="sub-menu">
+                                        
+                                            <li>
+                                                <a href="/about">
+                                                    ME
+                                                </a>
+                                            </li>
+                                        
+                                            <li>
+                                                <a target="_blank" rel="noopener" href="https://fetch150zy.cn">
+                                                    BLOG
+                                                </a>
+                                            </li>
+                                        
+                                            <li>
+                                                <a target="_blank" rel="noopener" href="https://github.com/fetch150zy">
+                                                    GITHUB
+                                                </a>
+                                            </li>
+                                        
+                                    </ul>
+                                
+                            </li>
+                    
+                    
+                </ul>
+            </div>
+            <!-- Mobile -->
+            <div class="mobile">
+                
+                <div class="icon-item navbar-bar">
+                    <div class="navbar-bar-middle"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile sheet -->
+    <div class="navbar-drawer h-screen w-full absolute top-0 left-0 bg-background-color flex flex-col justify-between">
+        <ul class="drawer-navbar-list flex flex-col px-4 justify-center items-start">
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/"
+                        >
+                            <span>
+                                首页
+                            </span>
+                            
+                                <i class="fa-regular fa-house fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/archives"
+                        >
+                            <span>
+                                归档
+                            </span>
+                            
+                                <i class="fa-regular fa-archive fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item-sub text-base my-1.5 flex flex-col w-full">
+                        
+                        <div class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary cursor-pointer text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                             navbar-data-toggle="submenu-About"
+                        >
+                            <span>
+                                关于
+                            </span>
+                            
+                                <i class="fa-solid fa-chevron-right fa-sm fa-fw transition-all"></i>
+                            
+                        </div>
+                        
+
+                        
+                            <div class="flex-col items-start px-2 py-2 hidden" data-target="submenu-About">
+                                
+                                    <div class="drawer-navbar-item text-base flex flex-col justify-center items-start hover:underline active:underline hover:underline-offset-1 rounded-3xl">
+                                        <a class=" text-third-text-color text-xl"
+                                           href="/about">ME</a>
+                                    </div>
+                                
+                                    <div class="drawer-navbar-item text-base flex flex-col justify-center items-start hover:underline active:underline hover:underline-offset-1 rounded-3xl">
+                                        <a class=" text-third-text-color text-xl"
+                                           target="_blank" rel="noopener" href="https://fetch150zy.cn">BLOG</a>
+                                    </div>
+                                
+                                    <div class="drawer-navbar-item text-base flex flex-col justify-center items-start hover:underline active:underline hover:underline-offset-1 rounded-3xl">
+                                        <a class=" text-third-text-color text-xl"
+                                           target="_blank" rel="noopener" href="https://github.com/fetch150zy">GITHUB</a>
+                                    </div>
+                                
+                            </div>
+                        
+                    </li>
+            
+
+            
+            
+                
+                    
+                    
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full active"
+                           href="/tags"
+                        >
+                            <span>Tags</span>
+                            <i class="fa-regular fa-tags fa-sm fa-fw"></i>
+                        </a>
+                    </li>
+                
+                    
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full active"
+                           href="/categories"
+                        >
+                            <span>Categories</span>
+                            <i class="fa-regular fa-folder fa-sm fa-fw"></i>
+                        </a>
+                    </li>
+                
+            
+        </ul>
+
+        <div class="statistics flex justify-around my-2.5">
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/tags">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">20</div>
+        <div class="label text-third-text-color text-sm">标签</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/categories">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">18</div>
+        <div class="label text-third-text-color text-sm">分类</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/archives">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">52</div>
+        <div class="label text-third-text-color text-sm">文章</div>
+    </a>
+</div>
+    </div>
+
+    <div class="window-mask"></div>
+
+</header>
+
+
+        </div>
+
+        <div class="main-content-body">
+
+            
+
+            <div class="main-content">
+
+                
+                    <div class="post-page-container flex relative justify-between box-border w-full h-full">
+    <div class="article-content-container">
+
+        <div class="article-title relative w-full">
+            
+                
+                
+                <img src="/../img/bg/5.png" alt="GCC" class="w-full h-60 sm:h-72 md:h-80 object-cover sm:rounded-t-large dark:brightness-75"/>
+                
+                <div class="w-full flex items-center absolute bottom-0 justify-center">
+                    <h1 class="article-title-cover text-center mx-6 my-6 text-second-text-color bg-background-color-transparent px-4 py-3 text-3xl sm:text-4xl md:text-5xl font-bold backdrop-blur-lg rounded-xl border border-border-color ">GCC</h1>
+                </div>
+            
+            </div>
+
+        
+            <div class="article-header flex flex-row gap-2 items-center px-2 sm:px-6 md:px-8">
+                <div class="avatar w-[46px] h-[46px] flex-shrink-0 rounded-medium border border-border-color p-[1px]">
+                    <img src="/img/avatar.jpg">
+                </div>
+                <div class="info flex flex-col justify-between">
+                    <div class="author flex items-center">
+                        <span class="name text-default-text-color text-lg font-semibold">fetch150zy</span>
+                        
+                    </div>
+                    <div class="meta-info">
+                        <div class="article-meta-info">
+    <span class="article-date article-meta-item">
+        <i class="fa-regular fa-pen-fancy"></i>&nbsp;
+        <span class="desktop">2021-08-10 12:00</span>
+        <span class="mobile">2021-08-10 12:00</span>
+        <span class="hover-info">创建</span>
+    </span>
+    
+        <span class="article-date article-meta-item">
+            <i class="fa-regular fa-wrench"></i>&nbsp;
+            <span class="desktop">2024-03-23 13:43:20</span>
+            <span class="mobile">2024-03-23 13:43:20</span>
+            <span class="hover-info">更新</span>
+        </span>
+    
+
+    
+        <span class="article-categories article-meta-item">
+            <i class="fa-regular fa-folders"></i>&nbsp;
+            <ul>
+                
+                
+                    
+                        
+                        <li>
+                            <a href="/categories/Tools/">Tools</a>&nbsp;
+                        </li>
+                    
+                    
+                
+            </ul>
+        </span>
+    
+    
+        <span class="article-tags article-meta-item">
+            <i class="fa-regular fa-tags"></i>&nbsp;
+            <ul>
+                
+                    <li>
+                        <a href="/tags/CLI-Tools/">CLI Tools</a>&nbsp;
+                    </li>
+                
+            </ul>
+        </span>
+    
+
+    
+    
+    
+    
+</div>
+
+                    </div>
+                </div>
+            </div>
+        
+
+        
+
+
+        <div class="article-content markdown-body px-2 sm:px-6 md:px-8 pb-8">
+            <p>gcc&amp;gdb常规操作 静态库、动态库的创建和链接</p>
+<h1 id="GCC"><a href="#GCC" class="headerlink" title="GCC"></a>GCC</h1><blockquote>
+<p>  <code>GCC</code>是Linux下的编译工具集，是<code>GNU Compiler Collection</code>的缩写，包含<code>gcc g++</code>等编译器</p>
+</blockquote>
+<h2 id="gcc工作流程"><a href="#gcc工作流程" class="headerlink" title="gcc工作流程"></a>gcc工作流程</h2><blockquote>
+<p>  <code>gcc</code>编译器对程序的编译分为四个阶段：预处理（预编译）、编译、汇编、链接</p>
+</blockquote>
+<ul>
+<li><p>预处理：展开头文件、宏替换、去注释</p>
+<blockquote>
+<p>  <code>gcc</code>调用预处理器来完成，得到的还是文本格式的源文件</p>
+</blockquote>
+</li>
+<li><p>编译：<code>gcc</code>调用编译器进行编译，得到汇编文件</p>
+</li>
+<li><p>汇编：<code>gcc</code>调用汇编器进行汇编，得到二进制文件</p>
+</li>
+<li><p>链接：<code>gcc</code>调用链接器对程序所需要的库进行链接，得到可执行文件</p>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="center">文件名后缀</th>
+<th align="center">说明</th>
+<th align="center">gcc参数</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><code>.c</code></td>
+<td align="center">源文件</td>
+<td align="center">-</td>
+</tr>
+<tr>
+<td align="center"><code>.i</code></td>
+<td align="center">预处理后的源文件</td>
+<td align="center"><code>-E</code></td>
+</tr>
+<tr>
+<td align="center"><code>.s</code></td>
+<td align="center">汇编文件</td>
+<td align="center"><code>-S</code></td>
+</tr>
+<tr>
+<td align="center"><code>.o</code></td>
+<td align="center">二进制文件</td>
+<td align="center"><code>-c</code></td>
+</tr>
+</tbody></table>
+<ul>
+<li><p>演示</p>
+<div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 预处理</span></span><br><span class="line">g++ -E filename.c -o filename.i</span><br><span class="line"><span class="comment"># 编译</span></span><br><span class="line">g++ -S filename.i -o filename.s</span><br><span class="line"><span class="comment"># 汇编</span></span><br><span class="line">g++ -c filename.s -o filename.o</span><br><span class="line"><span class="comment"># 链接</span></span><br><span class="line">g++ filename.o -o filename</span><br><span class="line"><span class="comment"># 运行  </span></span><br><span class="line">./filename</span><br></pre></td></tr></table></figure></div></li>
+</ul>
+<h2 id="gcc常用参数"><a href="#gcc常用参数" class="headerlink" title="gcc常用参数"></a>gcc常用参数</h2><table>
+<thead>
+<tr>
+<th align="center">gcc编译选项</th>
+<th align="center">选项的意义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><code>-E</code></td>
+<td align="center">预处理</td>
+</tr>
+<tr>
+<td align="center"><code>-S</code></td>
+<td align="center">编译</td>
+</tr>
+<tr>
+<td align="center"><code>-c</code></td>
+<td align="center">汇编</td>
+</tr>
+<tr>
+<td align="center"><code>-o</code></td>
+<td align="center">指定输出文件名</td>
+</tr>
+<tr>
+<td align="center"><code>-I</code></td>
+<td align="center">指定include包含文件的搜索目录</td>
+</tr>
+<tr>
+<td align="center"><code>-g</code></td>
+<td align="center">生成调试信息，该程序可被调试器调试</td>
+</tr>
+<tr>
+<td align="center"><code>-D</code></td>
+<td align="center">在编译时指定一个宏</td>
+</tr>
+<tr>
+<td align="center"><code>-w</code></td>
+<td align="center">不生成任何警告信息</td>
+</tr>
+<tr>
+<td align="center"><code>-Wall</code></td>
+<td align="center">生成所有警告信息</td>
+</tr>
+<tr>
+<td align="center"><code>On</code></td>
+<td align="center">0~3，四个优化选项-O3优化级别最高</td>
+</tr>
+<tr>
+<td align="center"><code>-l</code></td>
+<td align="center">编译时指定使用的库</td>
+</tr>
+<tr>
+<td align="center"><code>-L</code></td>
+<td align="center">指定编译时搜索库的路径</td>
+</tr>
+<tr>
+<td align="center"><code>-fPic</code></td>
+<td align="center">生成与位置无关的代码</td>
+</tr>
+<tr>
+<td align="center"><code>-shared</code></td>
+<td align="center">生成共享库</td>
+</tr>
+<tr>
+<td align="center"><code>-std</code></td>
+<td align="center">指定C标准</td>
+</tr>
+</tbody></table>
+<h2 id="多文件编译"><a href="#多文件编译" class="headerlink" title="多文件编译"></a>多文件编译</h2><blockquote>
+<p>  <code>gcc</code>可以自动编译链接多个文件，不管是目标文件还是源文件，都可以使用一个命令编译到一个可执行文件中</p>
+</blockquote>
+<p><strong>假设有<code>string.c</code> <code>string.h</code> <code>main.c</code>三个文件</strong></p>
+<blockquote>
+<p>  因为有文件是包含在源文件中的，因此在使用gcc编译程序的时候不需要指定头文件的名字</p>
+<p>  （在头文件无法被找到的时候需要使用参数 <code>-I</code> 指定其具体路径而不是名字）</p>
+</blockquote>
+<ul>
+<li><p>直接链接生成可执行程序</p>
+<div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">gcc -o res string.c main.c</span><br><span class="line">./res</span><br></pre></td></tr></table></figure></div>
+</li>
+<li><p>先将源文件编成目标文件，然后进行链接得到可执行程序</p>
+<div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">gcc -c string.c main.c</span><br><span class="line">gcc -o res string.o main.o</span><br><span class="line">./res</span><br></pre></td></tr></table></figure></div></li>
+</ul>
+<h2 id="gcc与g"><a href="#gcc与g" class="headerlink" title="gcc与g++"></a>gcc与g++</h2><blockquote>
+<p>  <code>gcc</code> <code>g++</code>的一些区别</p>
+</blockquote>
+<h3 id="在代码编译阶段"><a href="#在代码编译阶段" class="headerlink" title="在代码编译阶段"></a>在代码编译阶段</h3><ul>
+<li>后缀为<code>.c</code>的，gcc 把它当作是 C 程序，而 g++ 当作是 C++ 程序</li>
+<li>后缀为<code>.cpp</code>的，两者都会认为是 C++ 程序，C++ 的语法规则更加严谨一些</li>
+<li>g++ 会调用 gcc，对于 C++ 代码，两者是等价的，也就是说 gcc 和 g++ 都可以编译 C&#x2F;C++ 代码</li>
+</ul>
+<h3 id="在链接阶段"><a href="#在链接阶段" class="headerlink" title="在链接阶段"></a>在链接阶段</h3><ul>
+<li>gcc 和 g++ 都可以自动链接到标准 C 库</li>
+<li>g++ 可以自动链接到标准 C++ 库，gcc 如果要链接到标准 C++ 库需要加参数 -lstdc++</li>
+</ul>
+<h3 id="关于-cplusplus宏的定义"><a href="#关于-cplusplus宏的定义" class="headerlink" title="关于__cplusplus宏的定义"></a>关于<code>__cplusplus</code>宏的定义</h3><ul>
+<li>g++ 会自动定义<code>__cplusplus</code>宏，但是这个不影响它去编译 C 程序</li>
+<li>gcc 需要根据文件后缀判断是否需要定义<code>__cplusplus</code>宏</li>
+</ul>
+<blockquote>
+<ul>
+<li>不管是<code>gcc</code>还是<code>g++</code>都可以编译C程序，编译程序的规则和参数都相同</li>
+<li><code>g++</code>可以直接编译C++程序，<code>gcc</code>编译C++程序需要添加额外参数<code>-lstdc++</code></li>
+<li>不管是<code>gcc</code>还是<code>g++</code>都可以定义<code>__cplusplus</code>宏</li>
+</ul>
+</blockquote>
+<h1 id="静态库和动态库"><a href="#静态库和动态库" class="headerlink" title="静态库和动态库"></a>静态库和动态库</h1><blockquote>
+<p>  不管是在Linux还是Windows中的库文件其本质和工作模式都是相同的</p>
+<p>  程序中调用的库包括<code>静态库</code> <code>动态库</code>两种</p>
+<blockquote>
+<p>  在项目中使用库一般有两个目的，一个是为了使程序更加简洁不需要在项目中维护太多的源文件，另一方面是为了源代码保密。当我们拿到了库文件，还需要库中API的声明，也就是头文件。</p>
+</blockquote>
+</blockquote>
+<h2 id="静态库"><a href="#静态库" class="headerlink" title="静态库"></a>静态库</h2><blockquote>
+<p>  在Linux下静态库由程序<code>ar</code>生成</p>
+</blockquote>
+<ul>
+<li>Linux中静态库以<code>lib</code>作为前缀，以<code>.a</code>作为后缀，中间是库的名字，即<code>libxxx.a</code></li>
+<li>Windows中静态库一般以<code>lib</code>作为前缀，<code>lib</code>作为后缀，中间是库的名字，即<code>libxxx.lib</code></li>
+</ul>
+<h3 id="生成静态链接库"><a href="#生成静态链接库" class="headerlink" title="生成静态链接库"></a>生成静态链接库</h3><blockquote>
+<p>  生成静态库，需要先对源文件进行汇编操作（使用参数<code>-c</code>）得到二进制格式的目标文件（.o格式）</p>
+<p>  然后通过<code>ar</code>工具将目标文件打包就可以得到静态库文件</p>
+<ul>
+<li><code>c</code>：创建一个库，不管库是否存在都创建</li>
+<li><code>s</code>：创建目标文件索引，这在创建较大的库时能加快时间</li>
+<li><code>r</code>：在库中插入模块，默认新的成员添加在库的结尾处，如果模块名已经存在库中，则替换同名的模块</li>
+</ul>
+</blockquote>
+<p><strong>生成静态链接库的具体步骤如下</strong></p>
+<ul>
+<li><p>对源文件进行汇编，得到二进制文件</p>
+<div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gcc &lt;src(*.c)&gt; -c</span><br></pre></td></tr></table></figure></div>
+</li>
+<li><p>对二进制文件打包，得到静态库</p>
+<div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ar rcs &lt;libname.a&gt; &lt;bin(*.o)&gt;</span><br></pre></td></tr></table></figure></div>
+</li>
+<li><p>发布静态库</p>
+<div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 提供头文件和libxxx.a</span></span><br></pre></td></tr></table></figure></div></li>
+</ul>
+<h3 id="静态库的使用"><a href="#静态库的使用" class="headerlink" title="静态库的使用"></a>静态库的使用</h3><blockquote>
+<p>  拿到发布的静态库 <code>head.h</code> <code>libcalc.a</code></p>
+<p>  将静态库、头文件、测试程序放在同一目录下进行测试</p>
+</blockquote>
+<div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gcc main.c -o app -L &lt;path&gt; -l&lt;lib&gt;		<span class="comment"># 编译测试程序</span></span><br></pre></td></tr></table></figure></div>
+
+
+
+<h2 id="动态库"><a href="#动态库" class="headerlink" title="动态库"></a>动态库</h2><blockquote>
+<p>  动态库是程序运行时加载的库，当动态库正确部署之后，运行的多个程序可以使用同一个加载到内存中的动态库</p>
+<p>  动态链接库是目标文件的集合，目标文件在动态链接库中的组织方式是按照特殊方式形成的。库中函数和变量的</p>
+<p>  地址使用的是相对地址（静态库中使用的是绝对地址），其真实地址是在程序加载动态库时形成的</p>
+<ul>
+<li>在Linux中动态库以<code>lib</code>作为前缀，以<code>so</code>作为后缀，中间为库名，即<code>libxxx.so</code></li>
+<li>在Windows中动态库一般以<code>lib</code>作为前缀，以<code>dll</code>作为后缀，中间为库名，即<code>libxxx.dll</code></li>
+</ul>
+</blockquote>
+<h3 id="生成动态链接库"><a href="#生成动态链接库" class="headerlink" title="生成动态链接库"></a>生成动态链接库</h3><blockquote>
+<p>  生成动态链接库是直接使用<code>gcc</code>命令并且需要添加<code>-fPic</code>和<code>-shared</code>参数</p>
+<ul>
+<li><code>-fPic</code>参数是使得<code>gcc</code>生成的代码是与位置无关的，也就是相对位置</li>
+<li><code>-shared</code>是告诉编译器生成一个动态链接库</li>
+</ul>
+</blockquote>
+<p><strong>生成动态链接库的具体步骤如下</strong></p>
+<ul>
+<li><p>对源文件进行汇编，需要<code>-c</code>和<code>-fPic</code>参数</p>
+<div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gcc &lt;src(*.c)&gt; -c -fpic</span><br></pre></td></tr></table></figure></div>
+</li>
+<li><p>将得到的<code>.o</code>打包成动态库，使用<code>gcc</code>加<code>-shared</code>参数</p>
+<div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gcc -shared &lt;bin(*.o)&gt; -o &lt;libname.so&gt;</span><br></pre></td></tr></table></figure></div>
+</li>
+<li><p>发布动态库和头文件</p>
+<div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 提供头文件和libxxx.so</span></span><br></pre></td></tr></table></figure></div></li>
+</ul>
+<h3 id="动态链接库使用"><a href="#动态链接库使用" class="headerlink" title="动态链接库使用"></a>动态链接库使用</h3><blockquote>
+<p>  拿到发布的动态库和头文件</p>
+</blockquote>
+<div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gcc main.c -o app -L &lt;path&gt; -l&lt;lib&gt;</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="解决动态链接库无法加载问题"><a href="#解决动态链接库无法加载问题" class="headerlink" title="解决动态链接库无法加载问题"></a>解决动态链接库无法加载问题</h3><h4 id="库的工作原理"><a href="#库的工作原理" class="headerlink" title="库的工作原理"></a>库的工作原理</h4><ul>
+<li><p>静态库如何被加载</p>
+<blockquote>
+<p>  在程序编译的最后一个阶段也就是链接阶段，提供的静态库会被打包到可执行程序中。当可执行程序被执行</p>
+<p>  静态库中的代码也会一并被加载到内存中，因此不会出现静态库找不到无法被加载的问题</p>
+</blockquote>
+</li>
+<li><p>动态库如何被加载</p>
+<ul>
+<li><p>在程序链接阶段</p>
+<blockquote>
+<p>在<code>gcc</code>命令虽然指定了库路径（<code>-L</code>），但是这个路径并没有记录到可执行程序，只是检查了这个路</p>
+<p>径下的库文件是否存在</p>
+</blockquote>
+<blockquote>
+<p>  同样对应的动态库文件也没有被打包到可执行程序中，只是在可执行程序中记录了库的名字</p>
+</blockquote>
+</li>
+<li><p>在程序执行后</p>
+<blockquote>
+<p>  程序执行的时候会先检测需要的动态库是否可以被加载，加载不到就会提示上边的错误信息</p>
+</blockquote>
+<blockquote>
+<p>  当动态库中的函数在程序中被调用了，这个时候动态库才被加载到内存，如果不被调用就不加载</p>
+</blockquote>
+<blockquote>
+<p>  动态库的检测和内存加载操作都是由动态连接器来完成的</p>
+</blockquote>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="动态链接器"><a href="#动态链接器" class="headerlink" title="动态链接器"></a>动态链接器</h4><blockquote>
+<p>  动态链接器是一个独立于应用程序的进程，属于操作系统，当用户的程序需要加载动态库的时候动态链接器就开始</p>
+<p>  工作，显然动态链接器根本就不知道用户通过<code>gcc</code>编译程序的时候通过<code>-L</code>参数指定的路径</p>
+<p>  那么动态链接器是如何搜索某一个动态库的呢，在它内部有一个默认的搜索顺序，按照优先级从高到低的顺序</p>
+<ol>
+<li>可执行文件内部的<code>DT_RPATH</code>段</li>
+<li>系统的环境变量<code>LD_LIBRARY_PATH</code></li>
+<li>系统动态库的缓存文件<code>/etc/ld.so.cache</code></li>
+<li>存储动态库、静态库的系统目录<code>/lib/</code> <code>/usr/lib</code>等</li>
+</ol>
+<blockquote>
+<p>  如果按照上面的顺序一次搜索后仍没找到，动态链接器就会提示动态库找不到的错误信息</p>
+</blockquote>
+</blockquote>
+<h4 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h4><ul>
+<li><p>方案一、将库路径添加到环境变量<code>LD_LIBRARY_PATH</code>中</p>
+<ol>
+<li><p>找到相关配置文件</p>
+<blockquote>
+<p>  用户级别：<code>~/.bashrc</code>对当前用户有效</p>
+<p>  系统级别：<code>/etc/profile</code>对所有用户有效</p>
+</blockquote>
+</li>
+<li><p>修改配置文件</p>
+<div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> LIBRARY_PATH=<span class="variable">$LIBRARY_PATH</span>:&lt;path&gt;</span><br></pre></td></tr></table></figure></div>
+</li>
+<li><p>使配置文件生效</p>
+<div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">source</span> ~/.bashrc</span><br><span class="line"><span class="built_in">source</span> /etc/profile</span><br></pre></td></tr></table></figure></div></li>
+</ol>
+</li>
+<li><p>方案二、更新<code>/etc/ld.so.cache</code>文件</p>
+<ol>
+<li><p>找到动态库的绝对路径</p>
+</li>
+<li><p>修改<code>/etc/ls.so.conf</code>文件，将上面路径加到文件中</p>
+</li>
+<li><p>更新<code>/etc/ld.so.conf</code>中的数据到<code>/etc/ls.so.cache</code>中</p>
+<div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo ldconfig</span><br></pre></td></tr></table></figure></div></li>
+</ol>
+</li>
+<li><p>方案三、拷贝动态库到系统库目录<code>/lib</code>或者<code>/usr/lib</code>中（或将库的软链接文件放进去）</p>
+<div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 库拷贝</span></span><br><span class="line">sudo <span class="built_in">cp</span> &lt;path&gt;/libxxx.so /usr/lib</span><br><span class="line"><span class="comment"># 创建软链接</span></span><br><span class="line">sudo <span class="built_in">ln</span> -s &lt;path&gt;/libxxx.so /usr/lib/libxxx.so</span><br><span class="line"><span class="comment"># 注意必须使用绝对路经</span></span><br></pre></td></tr></table></figure></div></li>
+</ul>
+<h4 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h4><div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ldd &lt;<span class="built_in">exec</span>&gt;</span><br></pre></td></tr></table></figure></div>
+
+
+
+<h2 id="优缺点"><a href="#优缺点" class="headerlink" title="优缺点"></a>优缺点</h2><h3 id="静态库-1"><a href="#静态库-1" class="headerlink" title="静态库"></a>静态库</h3><ul>
+<li>优点<ul>
+<li>静态库被打包到应用程序中加载速度很快</li>
+<li>发布程序无需提供静态库，移植方便</li>
+</ul>
+</li>
+<li>缺点<ul>
+<li>相同的库文件数据可能在内存中被加载多份，消耗系统资源，浪费内存</li>
+<li>库文件更新需要重新编译项目，生成新的可执行程序，浪费时间</li>
+</ul>
+</li>
+</ul>
+<h3 id="动态库-1"><a href="#动态库-1" class="headerlink" title="动态库"></a>动态库</h3><ul>
+<li>优点<ul>
+<li>可实现不同进程间的资源共享</li>
+<li>动态库升级简单，只需要替换库文件，无需重新编译应用程序</li>
+<li>可以控制何时加载动态库，不调用库函数动态库不会被加载</li>
+</ul>
+</li>
+<li>缺点<ul>
+<li>加载速度比静态库慢，现在计算机性能可以忽略</li>
+<li>发布程序需要提供依赖的动态库</li>
+</ul>
+</li>
+</ul>
+<h1 id="GDB"><a href="#GDB" class="headerlink" title="GDB"></a>GDB</h1><blockquote>
+<p>  <code>gdb</code>是由GNU软件系统社区提供的调试器，同<code>gcc</code>配套组成完整的开发环境</p>
+<p>  <code>gdb</code>是一套字符界面的程序集，可以使用命令<code>gdb</code>加载要调试的程序</p>
+</blockquote>
+<p><strong>调试准备</strong></p>
+<blockquote>
+<p>  项目程序如果为了进行调试而编译时，必须打开调试选项（<code>-g</code>）</p>
+<p>  此外，尽量不要使用编译器优化选项（<code>-On</code>）</p>
+<p>  <code>-Wall</code>打开所有waring</p>
+</blockquote>
+<h2 id="启动和退出gdb"><a href="#启动和退出gdb" class="headerlink" title="启动和退出gdb"></a>启动和退出gdb</h2><h3 id="启动gdb"><a href="#启动gdb" class="headerlink" title="启动gdb"></a>启动gdb</h3><div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gdb &lt;<span class="built_in">exec</span>&gt;</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="命令行传参"><a href="#命令行传参" class="headerlink" title="命令行传参"></a>命令行传参</h3><blockquote>
+<p>  如果程序在启动时需要传递命令行参数，如果要调试这类程序，这些命令行参数必须要在应用程序启动之前通过调试</p>
+<p>  程序的<code>gdb</code>进程传递进去</p>
+</blockquote>
+<div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">gcc &lt;src&gt; -o -g &lt;<span class="built_in">exec</span>&gt;</span><br><span class="line">gdb app</span><br><span class="line">(gdb) <span class="built_in">set</span> args &lt;...&gt;</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="gdb中启动程序"><a href="#gdb中启动程序" class="headerlink" title="gdb中启动程序"></a>gdb中启动程序</h3><blockquote>
+<p>  在<code>gdb</code>中启动要调试的应用程序有两种方式，一种是使用<code>run</code>，另一种是使用<code>start</code></p>
+<ul>
+<li><code>run</code>：可以缩写为<code>r</code>，如果程序设置了断点会停在第一个断点的位置，如果没有设置断点，程序执行完</li>
+<li><code>start</code>：启动程序，最终会阻塞在main函数的第一行，等待输入后续其它<code>gdb</code>指令</li>
+</ul>
+<blockquote>
+<p>  如果想让程序start之后继续执行，或者在断点处继续执行，可以使用<code>continue</code>命令，简写为<code>c</code></p>
+</blockquote>
+</blockquote>
+<h3 id="退出gdb"><a href="#退出gdb" class="headerlink" title="退出gdb"></a>退出gdb</h3><blockquote>
+<p>  退出gdb调试，就是终止gdb进程，需要使用<code>quit</code>命令，简写为<code>q</code></p>
+</blockquote>
+<h2 id="查看代码"><a href="#查看代码" class="headerlink" title="查看代码"></a>查看代码</h2><blockquote>
+<p>  <code>gdb</code>调试没有IDE那样完善的可视化窗口，给调试的程序打断点又是调试之前必须要做的一项工作</p>
+<p>  因此，<code>gdb</code>提供了查看代码的命令，可以轻松定位要调试代码行的位置</p>
+<ul>
+<li><code>list</code>，简写为<code>l</code>，通过这个命令我们可以查看项目中任意一个文件中的内容</li>
+</ul>
+</blockquote>
+<h3 id="当前文件"><a href="#当前文件" class="headerlink" title="当前文件"></a>当前文件</h3><blockquote>
+<p>  一般项目中有多个源文件，默认情况下通过<code>list</code>查看代码信息位于程序入口函数<code>main</code>对应的那个文件</p>
+<p>  如果不进行文件切换，<code>main</code>函数所在文件就是当前文件</p>
+</blockquote>
+<div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">(gdb) list</span><br><span class="line">(gdb) list &lt;lines&gt;		<span class="comment"># 从指定行显示代码</span></span><br><span class="line">(gdb) list &lt;func&gt;		<span class="comment"># 显示该函数上下文</span></span><br></pre></td></tr></table></figure></div>
+
+<h3 id="切换文件"><a href="#切换文件" class="headerlink" title="切换文件"></a>切换文件</h3><div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(gdb) list &lt;file&gt;:&lt;lines&gt;	<span class="comment"># 切换到指定文件并显示该行上下文</span></span><br><span class="line">(gdb) list &lt;file&gt;:&lt;func&gt;	<span class="comment"># 切换到指定文件并显示该函数上下行</span></span><br></pre></td></tr></table></figure></div>
+
+<h3 id="设置显示的行数"><a href="#设置显示的行数" class="headerlink" title="设置显示的行数"></a>设置显示的行数</h3><blockquote>
+<p>  默认<code>list</code>只能一次查看10行代码，如果想显示更多，可以通过<code>set listsize</code>来设置</p>
+<p>  同样你如果想查看当前显示的行数可以使用<code>show listsize</code>来查看，这里的<code>listsize</code>可以简写为<code>list</code></p>
+</blockquote>
+<div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(gdb) <span class="built_in">set</span> listsize n</span><br><span class="line">(gdb) show listsize</span><br></pre></td></tr></table></figure></div>
+
+
+
+<h2 id="断点操作"><a href="#断点操作" class="headerlink" title="断点操作"></a>断点操作</h2><blockquote>
+<p>  想要通过<code>gdb</code>调试某一行或者得到某个变量在运行状态下的实际值，就需要在这一行设置断点</p>
+<p>  程序指定到断点的位置就会阻塞，我们可以通过<code>gdb</code>的调试命令得到我们想要的信息</p>
+<ul>
+<li><code>break</code>简写为<code>b</code>，设置断点</li>
+</ul>
+</blockquote>
+<h3 id="设置断点"><a href="#设置断点" class="headerlink" title="设置断点"></a>设置断点</h3><blockquote>
+<p>  两种断点：常规断点（程序运行到这个位置就会被阻塞），条件断点（指定条件被满足才会在断点处阻塞）</p>
+</blockquote>
+<ul>
+<li><p>设置普通断点到当前文件</p>
+<div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># break == b</span></span><br><span class="line">(gdb) b &lt;lines&gt;		<span class="comment"># 断点打在该行</span></span><br><span class="line">(gdb) b &lt;func&gt;		<span class="comment"># 断点打在该函数首行</span></span><br></pre></td></tr></table></figure></div>
+</li>
+<li><p>设置普通断点到某个非当前文件上</p>
+<div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(gdb) b &lt;file&gt;:&lt;lines&gt;</span><br><span class="line">(gdb) b &lt;file&gt;:&lt;func&gt;</span><br></pre></td></tr></table></figure></div>
+</li>
+<li><p>设置条件断点</p>
+<div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(gdb) b &lt;lines&gt; <span class="keyword">if</span> &lt;var&gt;==&lt;val&gt;</span><br><span class="line"><span class="comment"># 通常情况下，在循环中条件断点用的比较多</span></span><br></pre></td></tr></table></figure></div></li>
+</ul>
+<h3 id="查看断点"><a href="#查看断点" class="headerlink" title="查看断点"></a>查看断点</h3><blockquote>
+<p>  断点设置完毕之后，可以通过<code>info break</code>命令查看设置的断点信息，其中<code>info</code>可简写为<code>i</code></p>
+</blockquote>
+<div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># info == i</span></span><br><span class="line">(gdb) i b</span><br></pre></td></tr></table></figure></div>
+
+<blockquote>
+<p>  在显示的断点信息中有一些属性需要在其他操作中被使用</p>
+<ul>
+<li><code>Num</code>：断点的编号，删除断点或者设置断点状态的时候都需要使用</li>
+<li><code>Enb</code>：当前断点的状态，y表示断点可用，n表示断点不可用</li>
+<li><code>What</code>：描述断点被设置在了哪个文件的哪一行或者哪个函数上</li>
+</ul>
+</blockquote>
+<h3 id="删除断点"><a href="#删除断点" class="headerlink" title="删除断点"></a>删除断点</h3><blockquote>
+<p>  确定设置的某个断点不再使用了，可将其删除，删除命令是<code>delete Num</code>，<code>delete</code>可用简写为<code>del</code> <code>d</code></p>
+<p>  删除断点的方式有两种：删除一个或多个指定断点，删除一个连续的断点区间</p>
+</blockquote>
+<div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># delete == del == d</span></span><br><span class="line">(gdb) d Num1 Num2 ...		<span class="comment"># 删除一个或多个指定断点</span></span><br><span class="line">(gdb) d Num1-Num2			<span class="comment"># 删除一个连续区间</span></span><br></pre></td></tr></table></figure></div>
+
+<h3 id="设置断点状态"><a href="#设置断点状态" class="headerlink" title="设置断点状态"></a>设置断点状态</h3><blockquote>
+<p>  如果某个断点只是临时不需要了，可以将其设置为不可用状态，命令为<code>disable Num</code></p>
+<p>  使用<code>enable Num</code>可在需要时重新将其设置回可用状态，简写为<code>dis</code></p>
+</blockquote>
+<div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># disable == dis</span></span><br><span class="line">(gdb) dis Num1 Num2 ...</span><br><span class="line">(gdb) dis Num1-Num2</span><br><span class="line"></span><br><span class="line"><span class="comment"># enable == ena</span></span><br><span class="line">(gdb) ena Num1 Num2 ...</span><br><span class="line">(gdb) ena Num1-Num2</span><br></pre></td></tr></table></figure></div>
+
+
+
+<h2 id="调试命令"><a href="#调试命令" class="headerlink" title="调试命令"></a>调试命令</h2><h3 id="继续运行gdb"><a href="#继续运行gdb" class="headerlink" title="继续运行gdb"></a>继续运行gdb</h3><div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># continue == c</span></span><br><span class="line">(gdb) <span class="built_in">continue</span></span><br></pre></td></tr></table></figure></div>
+
+<h3 id="手动打印信息"><a href="#手动打印信息" class="headerlink" title="手动打印信息"></a>手动打印信息</h3><h4 id="打印变量值"><a href="#打印变量值" class="headerlink" title="打印变量值"></a>打印变量值</h4><div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># print == p</span></span><br><span class="line">(gdb) p 变量名</span><br><span class="line">(gdb) p /fmt 变量名</span><br></pre></td></tr></table></figure></div>
+
+<table>
+<thead>
+<tr>
+<th align="center">格式化字符(&#x2F;fmt)</th>
+<th align="center">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><code>/x</code></td>
+<td align="center">以十六进制形式打印整数</td>
+</tr>
+<tr>
+<td align="center"><code>/d</code></td>
+<td align="center">以有符号，十进制形式打印整数</td>
+</tr>
+<tr>
+<td align="center"><code>/u</code></td>
+<td align="center">以无符号，十进制形式打印整数</td>
+</tr>
+<tr>
+<td align="center"><code>/o</code></td>
+<td align="center">以八进制形式打印整数</td>
+</tr>
+<tr>
+<td align="center"><code>/t</code></td>
+<td align="center">以二进制形式打印整数</td>
+</tr>
+<tr>
+<td align="center"><code>/f</code></td>
+<td align="center">以浮点数形式打印变量或表达式值</td>
+</tr>
+<tr>
+<td align="center"><code>/c</code></td>
+<td align="center">以字符形式打印变量或表达式的值</td>
+</tr>
+</tbody></table>
+<h4 id="打印变量类型"><a href="#打印变量类型" class="headerlink" title="打印变量类型"></a>打印变量类型</h4><p>如果在调试1过程中需要查看某个变量的类型，可以使用<code>ptype</code></p>
+<div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(gdb) ptype 变量名</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="自动打印信息"><a href="#自动打印信息" class="headerlink" title="自动打印信息"></a>自动打印信息</h3><h4 id="设置变量名自动显示"><a href="#设置变量名自动显示" class="headerlink" title="设置变量名自动显示"></a>设置变量名自动显示</h4><blockquote>
+<p>  当我们想频繁查看某个变量或表达式的值，使用<code>display</code></p>
+</blockquote>
+<div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(gdb) display 变量名</span><br><span class="line">(gdb) display /fmt 变量名</span><br></pre></td></tr></table></figure></div>
+
+<h4 id="查看自动显示列表"><a href="#查看自动显示列表" class="headerlink" title="查看自动显示列表"></a>查看自动显示列表</h4><div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(gdb) info display</span><br></pre></td></tr></table></figure></div>
+
+<blockquote>
+<ul>
+<li><code>Num</code>：变量或表达式的编号，gdb调试器为每个变量或表达式都分配有唯一的编号</li>
+<li><code>Enb</code>：表示当前变量（表达式）是处于激活还是禁用状态，y激活，n禁用</li>
+<li><code>Expression</code>：被自动打印值的变量或表达式的名字</li>
+</ul>
+</blockquote>
+<h4 id="取消自动显示"><a href="#取消自动显示" class="headerlink" title="取消自动显示"></a>取消自动显示</h4><p>对于不需要再打印的变量或表达式，可以将其删除或禁用</p>
+<ul>
+<li><p>删除自动显示列表中的变量或表达式</p>
+<div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">(gdb) undisplay num1 num2 ...</span><br><span class="line">(gdb) undisplay num1-num2</span><br><span class="line"></span><br><span class="line">(gdb) delete display num1 num2 ...</span><br><span class="line">(gdb) delete display num1-num2</span><br></pre></td></tr></table></figure></div>
+</li>
+<li><p>禁用自动显示列表中处于未激活状态下的变量或表达式</p>
+<div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(gdb) <span class="built_in">enable</span> display num1 num2 ...</span><br><span class="line">(gdb) display num1-num2</span><br></pre></td></tr></table></figure></div></li>
+</ul>
+<h3 id="单步调试"><a href="#单步调试" class="headerlink" title="单步调试"></a>单步调试</h3><h4 id="step"><a href="#step" class="headerlink" title="step"></a>step</h4><ul>
+<li><code>step</code> <code>s</code>命令执行一次，代码向下执行一次</li>
+</ul>
+<div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># step == s</span></span><br><span class="line">(gdb) step</span><br></pre></td></tr></table></figure></div>
+
+<h4 id="finish"><a href="#finish" class="headerlink" title="finish"></a>finish</h4><ul>
+<li><code>finish</code>如果单步<code>s</code>跳入函数，通过<code>finish</code>跳出函数体</li>
+</ul>
+<div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(gdb) finish</span><br></pre></td></tr></table></figure></div>
+
+<h4 id="next"><a href="#next" class="headerlink" title="next"></a>next</h4><ul>
+<li><code>next</code> <code>n</code>单步，但是不会进入函数体</li>
+</ul>
+<div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># next == n</span></span><br><span class="line">(gdb) next</span><br></pre></td></tr></table></figure></div>
+
+<h4 id="until"><a href="#until" class="headerlink" title="until"></a>until</h4><ul>
+<li><code>until</code>可直接跳出循环体，满足跳出循环内部不能有断点，必须在循环体的开始和结束行执行该命令</li>
+</ul>
+<div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(gdb) <span class="keyword">until</span></span><br></pre></td></tr></table></figure></div>
+
+<h3 id="设置变量值"><a href="#设置变量值" class="headerlink" title="设置变量值"></a>设置变量值</h3><blockquote>
+<p>  直接更改某个特殊变量的值 <code>set var 变量名=值</code></p>
+</blockquote>
+<div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(gdb) <span class="built_in">set</span> var 变量名=值</span><br></pre></td></tr></table></figure></div>
+
+
+        </div>
+
+        
+
+        
+            <ul class="post-tags-box text-lg mt-1.5 flex-wrap justify-center flex md:hidden">
+                
+                    <li class="tag-item mx-0.5">
+                        <a href="/tags/CLI-Tools/">#CLI Tools</a>&nbsp;
+                    </li>
+                
+            </ul>
+        
+
+        
+
+        
+            <div class="article-nav my-8 flex justify-between items-center px-2 sm:px-6 md:px-8">
+                
+                    <div class="article-prev border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
+                        <a class="prev"
+                        rel="prev"
+                        href="/2021/09/27/2021-09-27-linux/"
+                        >
+                            <span class="left arrow-icon flex justify-center items-center">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </span>
+                            <span class="title flex justify-center items-center">
+                                <span class="post-nav-title-item">Linux基础</span>
+                                <span class="post-nav-item">上一篇</span>
+                            </span>
+                        </a>
+                    </div>
+                
+                
+                    <div class="article-next border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
+                        <a class="next"
+                        rel="next"
+                        href="/2021/05/24/2021-05-24-vim/"
+                        >
+                            <span class="title flex justify-center items-center">
+                                <span class="post-nav-title-item">vim</span>
+                                <span class="post-nav-item">下一篇</span>
+                            </span>
+                            <span class="right arrow-icon flex justify-center items-center">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </span>
+                        </a>
+                    </div>
+                
+            </div>
+        
+
+
+        
+    </div>
+
+    
+        <div class="toc-content-container">
+            <div class="post-toc-wrap">
+    <div class="post-toc">
+        <div class="toc-title">此页目录</div>
+        <div class="page-title">GCC</div>
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#GCC"><span class="nav-text">GCC</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#gcc%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="nav-text">gcc工作流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#gcc%E5%B8%B8%E7%94%A8%E5%8F%82%E6%95%B0"><span class="nav-text">gcc常用参数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%9A%E6%96%87%E4%BB%B6%E7%BC%96%E8%AF%91"><span class="nav-text">多文件编译</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#gcc%E4%B8%8Eg"><span class="nav-text">gcc与g++</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9C%A8%E4%BB%A3%E7%A0%81%E7%BC%96%E8%AF%91%E9%98%B6%E6%AE%B5"><span class="nav-text">在代码编译阶段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9C%A8%E9%93%BE%E6%8E%A5%E9%98%B6%E6%AE%B5"><span class="nav-text">在链接阶段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B3%E4%BA%8E-cplusplus%E5%AE%8F%E7%9A%84%E5%AE%9A%E4%B9%89"><span class="nav-text">关于__cplusplus宏的定义</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%9D%99%E6%80%81%E5%BA%93%E5%92%8C%E5%8A%A8%E6%80%81%E5%BA%93"><span class="nav-text">静态库和动态库</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9D%99%E6%80%81%E5%BA%93"><span class="nav-text">静态库</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%94%9F%E6%88%90%E9%9D%99%E6%80%81%E9%93%BE%E6%8E%A5%E5%BA%93"><span class="nav-text">生成静态链接库</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9D%99%E6%80%81%E5%BA%93%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="nav-text">静态库的使用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%A8%E6%80%81%E5%BA%93"><span class="nav-text">动态库</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%94%9F%E6%88%90%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E5%BA%93"><span class="nav-text">生成动态链接库</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E5%BA%93%E4%BD%BF%E7%94%A8"><span class="nav-text">动态链接库使用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%A3%E5%86%B3%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E5%BA%93%E6%97%A0%E6%B3%95%E5%8A%A0%E8%BD%BD%E9%97%AE%E9%A2%98"><span class="nav-text">解决动态链接库无法加载问题</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BA%93%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86"><span class="nav-text">库的工作原理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E5%99%A8"><span class="nav-text">动态链接器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="nav-text">解决方案</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%AA%8C%E8%AF%81"><span class="nav-text">验证</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="nav-text">优缺点</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9D%99%E6%80%81%E5%BA%93-1"><span class="nav-text">静态库</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%A8%E6%80%81%E5%BA%93-1"><span class="nav-text">动态库</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#GDB"><span class="nav-text">GDB</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8%E5%92%8C%E9%80%80%E5%87%BAgdb"><span class="nav-text">启动和退出gdb</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8gdb"><span class="nav-text">启动gdb</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%91%BD%E4%BB%A4%E8%A1%8C%E4%BC%A0%E5%8F%82"><span class="nav-text">命令行传参</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#gdb%E4%B8%AD%E5%90%AF%E5%8A%A8%E7%A8%8B%E5%BA%8F"><span class="nav-text">gdb中启动程序</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%80%E5%87%BAgdb"><span class="nav-text">退出gdb</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E4%BB%A3%E7%A0%81"><span class="nav-text">查看代码</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BD%93%E5%89%8D%E6%96%87%E4%BB%B6"><span class="nav-text">当前文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%87%E6%8D%A2%E6%96%87%E4%BB%B6"><span class="nav-text">切换文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%BE%E7%BD%AE%E6%98%BE%E7%A4%BA%E7%9A%84%E8%A1%8C%E6%95%B0"><span class="nav-text">设置显示的行数</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%AD%E7%82%B9%E6%93%8D%E4%BD%9C"><span class="nav-text">断点操作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%BE%E7%BD%AE%E6%96%AD%E7%82%B9"><span class="nav-text">设置断点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E6%96%AD%E7%82%B9"><span class="nav-text">查看断点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%A0%E9%99%A4%E6%96%AD%E7%82%B9"><span class="nav-text">删除断点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%BE%E7%BD%AE%E6%96%AD%E7%82%B9%E7%8A%B6%E6%80%81"><span class="nav-text">设置断点状态</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B0%83%E8%AF%95%E5%91%BD%E4%BB%A4"><span class="nav-text">调试命令</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%A7%E7%BB%AD%E8%BF%90%E8%A1%8Cgdb"><span class="nav-text">继续运行gdb</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%89%8B%E5%8A%A8%E6%89%93%E5%8D%B0%E4%BF%A1%E6%81%AF"><span class="nav-text">手动打印信息</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%89%93%E5%8D%B0%E5%8F%98%E9%87%8F%E5%80%BC"><span class="nav-text">打印变量值</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%89%93%E5%8D%B0%E5%8F%98%E9%87%8F%E7%B1%BB%E5%9E%8B"><span class="nav-text">打印变量类型</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%87%AA%E5%8A%A8%E6%89%93%E5%8D%B0%E4%BF%A1%E6%81%AF"><span class="nav-text">自动打印信息</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AE%BE%E7%BD%AE%E5%8F%98%E9%87%8F%E5%90%8D%E8%87%AA%E5%8A%A8%E6%98%BE%E7%A4%BA"><span class="nav-text">设置变量名自动显示</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E8%87%AA%E5%8A%A8%E6%98%BE%E7%A4%BA%E5%88%97%E8%A1%A8"><span class="nav-text">查看自动显示列表</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8F%96%E6%B6%88%E8%87%AA%E5%8A%A8%E6%98%BE%E7%A4%BA"><span class="nav-text">取消自动显示</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95"><span class="nav-text">单步调试</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#step"><span class="nav-text">step</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#finish"><span class="nav-text">finish</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#next"><span class="nav-text">next</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#until"><span class="nav-text">until</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%BE%E7%BD%AE%E5%8F%98%E9%87%8F%E5%80%BC"><span class="nav-text">设置变量值</span></a></li></ol></li></ol></li></ol>
+
+    </div>
+</div>
+        </div>
+    
+</div>
+
+
+
+                
+
+            </div>
+
+            
+
+        </div>
+
+        <div class="main-content-footer">
+            <footer class="footer mt-5 py-5 h-auto text-base text-third-text-color relative border-t-2 border-t-border-color">
+    <div class="info-container py-3 text-center">
+        
+        <div class="text-center">
+            &copy;
+            
+            2024&nbsp;&nbsp;<i class="fa-solid fa-heart fa-beat" style="--fa-animation-duration: 0.5s; color: #f54545"></i>&nbsp;&nbsp;<a href="/">fetch150zy</a>
+            
+                
+                <p class="post-count space-x-0.5">
+                    <span>
+                        共 52 篇文章
+                    </span>
+                    
+                </p>
+            
+        </div>
+        
+        <div class="relative text-center lg:absolute lg:left-[20px] lg:top-1/2 lg:-translate-y-1/2 lg:text-left">
+            <span class="lg:block text-sm">由 <?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg class="relative top-[2px] inline-block align-baseline" version="1.1" id="圖層_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="1rem" height="1rem" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve"><path fill="#0E83CD" d="M256.4,25.8l-200,115.5L56,371.5l199.6,114.7l200-115.5l0.4-230.2L256.4,25.8z M349,354.6l-18.4,10.7l-18.6-11V275H200v79.6l-18.4,10.7l-18.6-11v-197l18.5-10.6l18.5,10.8V237h112v-79.6l18.5-10.6l18.5,10.8V354.6z"/></svg><a target="_blank" class="text-base" href="https://hexo.io">Hexo</a> 驱动</span>
+            <span class="text-sm lg:block">主题&nbsp;<a class="text-base" target="_blank" href="https://github.com/EvanNotFound/hexo-theme-redefine">Redefine v2.6.1</a></span>
+        </div>
+        
+        
+        
+        
+        
+    </div>  
+</footer>
+        </div>
+    </div>
+
+    
+        <div class="post-tools">
+            <div class="post-tools-container">
+    <ul class="article-tools-list">
+        <!-- TOC aside toggle -->
+        
+            <li class="right-bottom-tools page-aside-toggle">
+                <i class="fa-regular fa-outdent"></i>
+            </li>
+        
+
+        <!-- go comment -->
+        
+    </ul>
+</div>
+
+        </div>
+    
+
+    <div class="right-side-tools-container">
+        <div class="side-tools-container">
+    <ul class="hidden-tools-list">
+        <li class="right-bottom-tools tool-font-adjust-plus flex justify-center items-center">
+            <i class="fa-regular fa-magnifying-glass-plus"></i>
+        </li>
+
+        <li class="right-bottom-tools tool-font-adjust-minus flex justify-center items-center">
+            <i class="fa-regular fa-magnifying-glass-minus"></i>
+        </li>
+
+        <li class="right-bottom-tools tool-dark-light-toggle flex justify-center items-center">
+            <i class="fa-regular fa-moon"></i>
+        </li>
+
+        <!-- rss -->
+        
+
+        
+
+        <li class="right-bottom-tools tool-scroll-to-bottom flex justify-center items-center">
+            <i class="fa-regular fa-arrow-down"></i>
+        </li>
+    </ul>
+
+    <ul class="visible-tools-list">
+        <li class="right-bottom-tools toggle-tools-list flex justify-center items-center">
+            <i class="fa-regular fa-cog fa-spin"></i>
+        </li>
+        
+            <li class="right-bottom-tools tool-scroll-to-top flex justify-center items-center">
+                <i class="arrow-up fas fa-arrow-up"></i>
+                <span class="percent"></span>
+            </li>
+        
+        
+    </ul>
+</div>
+
+    </div>
+
+    <div class="image-viewer-container">
+    <img src="">
+</div>
+
+
+    
+
+</main>
+
+
+    
+<script src="/js/libs/Swup.min.js"></script>
+
+<script src="/js/libs/SwupSlideTheme.min.js"></script>
+
+<script src="/js/libs/SwupScriptsPlugin.min.js"></script>
+
+<script src="/js/libs/SwupProgressPlugin.min.js"></script>
+
+<script src="/js/libs/SwupScrollPlugin.min.js"></script>
+
+<script src="/js/libs/SwupPreloadPlugin.min.js"></script>
+
+<script>
+    const swup = new Swup({
+        plugins: [
+            new SwupScriptsPlugin({
+                optin: true,
+            }),
+            new SwupProgressPlugin(),
+            new SwupScrollPlugin({
+                offset: 80,
+            }),
+            new SwupSlideTheme({
+                mainElement: ".main-content-body",
+            }),
+            new SwupPreloadPlugin(),
+        ],
+        containers: ["#swup"],
+    });
+</script>
+
+
+
+
+
+
+
+<script src="/js/tools/imageViewer.js" type="module"></script>
+
+<script src="/js/utils.js" type="module"></script>
+
+<script src="/js/main.js" type="module"></script>
+
+<script src="/js/layouts/navbarShrink.js" type="module"></script>
+
+<script src="/js/tools/scrollTopBottom.js" type="module"></script>
+
+<script src="/js/tools/lightDarkSwitch.js" type="module"></script>
+
+<script src="/js/layouts/categoryList.js" type="module"></script>
+
+
+
+
+
+
+
+    
+<script src="/js/layouts/lazyload.js" type="module"></script>
+
+
+
+
+
+
+  
+<script src="/js/libs/Typed.min.js"></script>
+
+  
+<script src="/js/plugins/typed.js" type="module"></script>
+
+
+
+
+
+
+
+
+
+<div class="post-scripts" data-swup-reload-script>
+    
+        
+<script src="/js/tools/tocToggle.js" type="module"></script>
+
+<script src="/js/layouts/toc.js" type="module"></script>
+
+<script src="/js/plugins/tabs.js" type="module"></script>
+
+    
+</div>
+
+
+</body>
+</html>

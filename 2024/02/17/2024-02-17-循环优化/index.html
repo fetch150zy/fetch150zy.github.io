@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="keywords" content="computer science">
+    
+    <meta name="author" content="fetch150zy">
+    <!-- preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    
+    <!--- Seo Part-->
+    
+    <link rel="canonical" href="https://fetch150zy.github.io/2024/02/17/2024-02-17-循环优化/"/>
+    <meta name="robots" content="index,follow">
+    <meta name="googlebot" content="index,follow">
+    <meta name="revisit-after" content="1 days">
+    
+        <meta name="description" content="循环优化   向量化和自动并行化是现代编译器用来提高程序性能的两种重要技术，特别是在处理循环密集型的代码时。它们都旨在利用现代处理器的并行执行能力，但对循环结构的要求各有侧重  向量化的条件    向量化是将循环中的操作转换为一种可以利用处理器的向量指令集执行多个操作的形式，通常涉及SIMD（单指令多数据）指令   数据独立性：循环的迭代之间不能有数据依赖，即循环的每次迭代必须能够独立执行。如果一">
+<meta property="og:type" content="article">
+<meta property="og:title" content="循环优化">
+<meta property="og:url" content="https://fetch150zy.github.io/2024/02/17/2024-02-17-%E5%BE%AA%E7%8E%AF%E4%BC%98%E5%8C%96/index.html">
+<meta property="og:site_name" content="fetch150zy&#39;blog">
+<meta property="og:description" content="循环优化   向量化和自动并行化是现代编译器用来提高程序性能的两种重要技术，特别是在处理循环密集型的代码时。它们都旨在利用现代处理器的并行执行能力，但对循环结构的要求各有侧重  向量化的条件    向量化是将循环中的操作转换为一种可以利用处理器的向量指令集执行多个操作的形式，通常涉及SIMD（单指令多数据）指令   数据独立性：循环的迭代之间不能有数据依赖，即循环的每次迭代必须能够独立执行。如果一">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-02-17T04:00:00.000Z">
+<meta property="article:modified_time" content="2024-03-23T05:48:46.173Z">
+<meta property="article:author" content="fetch150zy">
+<meta property="article:tag" content="程序优化">
+<meta name="twitter:card" content="summary">
+    
+    
+    <!--- Icon Part-->
+    <link rel="icon" type="image/png" href="/img/pacman.png" sizes="192x192">
+    <link rel="apple-touch-icon" sizes="180x180" href="/img/pacman.png">
+    <meta name="theme-color" content="#7FCDCD">
+    <link rel="shortcut icon" href="/img/pacman.png">
+    <!--- Page Info-->
+    
+    <title>
+        
+            循环优化 -
+        
+        fetch150zy&#39;s blog
+    </title>
+
+    
+<link rel="stylesheet" href="/fonts/Chillax/chillax.css">
+
+
+    <!--- Inject Part-->
+    
+
+    
+        <style>
+    :root {
+        --preloader-background-color: #fff;
+        --preloader-text-color: #000;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --preloader-background-color: #202124;
+            --preloader-text-color: #fff;
+        }
+    }
+
+    @media (prefers-color-scheme: light) {
+        :root {
+            --preloader-background-color: #fff;
+            --preloader-text-color: #000;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .ml13 {
+            font-size: 2.6rem !important; /* Adjust this value as needed */
+        }
+    }
+
+    .preloader {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem; /* Tailwind 'gap-4' is 1rem */
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        padding: 12px;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh; /* 'h-screen' is 100% of the viewport height */
+        background-color: var(--preloader-background-color);
+        z-index: 1100; /* 'z-[1100]' sets the z-index */
+        transition: opacity 0.2s ease-in-out;
+    }
+
+    .ml13 {
+        font-size: 3.2rem;
+        /* text-transform: uppercase; */
+        color: var(--preloader-text-color);
+        letter-spacing: -1px;
+        font-weight: 500;
+        font-family: 'Chillax-Variable', sans-serif;
+        text-align: center;
+    }
+
+    .ml13 .word {
+        display: inline-flex;
+        flex-wrap: wrap;
+        white-space: nowrap;
+    }
+
+    .ml13 .letter {
+        display: inline-block;
+        line-height: 1em;
+    }
+</style>
+
+<div class="preloader">
+    
+<script src="/js/libs/anime.min.js"></script>
+
+    <h1 class="ml13">
+        fetch150zy&#39;s blog
+    </h1>
+    <script>
+        var textWrapper = document.querySelector('.ml13');
+        // Split text into words
+        var words = textWrapper.textContent.trim().split(' ');
+
+        // Clear the existing content
+        textWrapper.innerHTML = '';
+
+        // Wrap each word and its letters in spans
+        words.forEach(function(word) {
+            var wordSpan = document.createElement('span');
+            wordSpan.classList.add('word');
+            wordSpan.innerHTML = word.replace(/\S/g, "<span class='letter'>$&</span>");
+            textWrapper.appendChild(wordSpan);
+            textWrapper.appendChild(document.createTextNode(' ')); // Add space between words
+        });
+
+
+        anime.timeline({loop: true})
+            .add({
+                targets: '.ml13 .letter',
+                translateY: [100,0],
+                translateZ: 0,
+                opacity: [0,1],
+                easing: "easeOutExpo",
+                duration: 1400,
+                delay: (el, i) => 300 + 30 * i
+            }).add({
+            targets: '.ml13 .letter',
+            translateY: [0,-100],
+            opacity: [1,0],
+            easing: "easeInExpo",
+            duration: 1200,
+            delay: (el, i) => 100 + 30 * i
+        });
+
+        let themeStatus = JSON.parse(localStorage.getItem('REDEFINE-THEME-STATUS'))?.isDark;
+
+        // If the theme status is not found in local storage, check the preferred color scheme
+        if (themeStatus === undefined || themeStatus === null) {
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                themeStatus = 'dark';
+            } else {
+                themeStatus = 'light';
+            }
+        }
+
+        // Now you can use the themeStatus variable in your code
+        if (themeStatus) {
+            document.documentElement.style.setProperty('--preloader-background-color', '#202124');
+            document.documentElement.style.setProperty('--preloader-text-color', '#fff');
+        } else {
+            document.documentElement.style.setProperty('--preloader-background-color', '#fff');
+            document.documentElement.style.setProperty('--preloader-text-color', '#000');
+        }
+
+        window.addEventListener('load', function () {
+            hidePreloaderAfterTimeout(1000); // Hide after 1000 milliseconds once the window has loaded
+        });
+
+        // Backup failsafe: Hide preloader after a maximum of 5000 milliseconds, regardless of the window load event
+        hidePreloaderAfterTimeout(5000);
+
+        function hidePreloaderAfterTimeout(delay) {
+            setTimeout(function () {
+                var preloader = document.querySelector('.preloader');
+                preloader.style.opacity = '0';
+                setTimeout(function () {
+                    preloader.style.display = 'none';
+                }, 200);
+            }, delay);
+        }
+    </script>
+</div>
+    
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+
+    
+        
+<link rel="stylesheet" href="/assets/build/styles.css">
+
+    
+
+    
+<link rel="stylesheet" href="/fonts/fonts.css">
+
+    
+<link rel="stylesheet" href="/fonts/Satoshi/satoshi.css">
+
+    <!--- Font Part-->
+    
+    
+    
+    
+
+
+    <script id="hexo-configurations">
+    window.config = {"hostname":"fetch150zy.github.io","root":"/","language":"zh-CN"};
+    window.theme = {"articles":{"style":{"font_size":"18px","line_height":1.4,"image_border_radius":"14px","image_alignment":"center","image_caption":false,"link_icon":true,"title_alignment":"center","headings_top_spacing":{"h1":"5rem","h2":"4rem","h3":"2.8rem","h4":"2.5rem","h5":"2.2rem","h6":"2rem"}},"word_count":{"enable":false,"count":false,"min2read":false},"author_label":{"enable":false,"auto":false,"list":[]},"code_block":{"copy":false,"style":"mac","font":{"enable":false,"family":null,"url":null}},"toc":{"enable":true,"max_depth":6,"number":false,"expand":true,"init_open":true},"copyright":{"enable":false,"default":"cc_by_nc_sa"},"lazyload":true,"recommendation":{"enable":false,"title":"推荐阅读","limit":3,"mobile_limit":2,"placeholder":null,"skip_dirs":[]}},"colors":{"primary":"#7FCDCD","secondary":null,"default_mode":"dark"},"global":{"fonts":{"chinese":{"enable":null,"family":null,"url":null},"english":{"enable":null,"family":null,"url":null}},"content_max_width":"1000px","sidebar_width":"210px","hover":{"shadow":true,"scale":true},"scroll_progress":{"bar":false,"percentage":true},"website_counter":{"url":"https://cn.vercount.one/js","enable":false,"site_pv":false,"site_uv":false,"post_pv":false},"single_page":true,"preloader":true,"open_graph":true,"google_analytics":{"enable":false,"id":null}},"home_banner":{"enable":true,"style":"fixed","image":{"light":"/img/bg15.jpg","dark":"/img/bg15.jpg"},"title":"fetch150zy's blog","subtitle":{"text":["年年岁岁花相似，岁岁年年人不同"],"hitokoto":{"enable":false,"api":"https://v1.hitokoto.cn"},"typing_speed":100,"backing_speed":80,"starting_delay":500,"backing_delay":1500,"loop":true,"smart_backspace":true},"text_color":{"light":"#fff","dark":"#d1d1b6"},"text_style":{"title_size":"2.8rem","subtitle_size":"1.5rem","line_height":1.3},"custom_font":{"enable":false,"family":null,"url":null},"social_links":{"enable":true,"style":"default","links":{"github":"https://github.com/fetch150zy","bilibili":"https://space.bilibili.com/505867894","stack-overflow":"https://stackoverflow.com/users/16738249/fetch150zy","email":"mailto:mars_zhewei@outlook.com"},"qrs":{"weixin":"https://pic.fetch150zy.cn/weixin.png"}}},"plugins":{"feed":{"enable":false},"aplayer":{"enable":false,"type":"fixed","audios":[{"name":null,"artist":null,"url":null,"cover":null,"lrc":null}]},"mermaid":{"enable":false,"version":"9.3.0"}},"version":"2.6.1","navbar":{"auto_hide":false,"color":{"left":"#f78736","right":"#367df7","transparency":35},"width":{"home":"1200px","pages":"1000px"},"links":{"Home":{"path":"/","icon":"fa-regular fa-house"},"Archives":{"path":"/archives","icon":"fa-regular fa-archive"},"About":{"icon":"fa-regular fa-user","submenus":{"Me":"/about","Blog":"https://fetch150zy.cn","Github":"https://github.com/fetch150zy"}}},"search":{"enable":false,"preload":true}},"page_templates":{"friends_column":3,"tags_style":"blur"},"home":{"sidebar":{"enable":true,"position":"right","first_item":"info","announcement":null,"show_on_mobile":true,"links":{"Archives":{"path":"/archives","icon":"fa-regular fa-archive"},"Tags":{"path":"/tags","icon":"fa-regular fa-tags"},"Categories":{"path":"/categories","icon":"fa-regular fa-folder"}}},"article_date_format":"YYYY-MM-DD","categories":{"enable":true,"limit":3},"tags":{"enable":true,"limit":3}},"footerStart":null};
+    window.lang_ago = {"second":"%s 秒前","minute":"%s 分钟前","hour":"%s 小时前","day":"%s 天前","week":"%s 周前","month":"%s 个月前","year":"%s 年前"};
+    window.data = {"masonry":false};
+  </script>
+    
+    <!--- Fontawesome Part-->
+    
+<link rel="stylesheet" href="/fontawesome/fontawesome.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/brands.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/solid.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/regular.min.css">
+
+    
+    
+    
+    
+        
+<link rel="stylesheet" href="/fontawesome/sharp-solid.min.css">
+
+    
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+
+<body>
+<div class="progress-bar-container">
+    
+
+    
+        <span class="pjax-progress-bar"></span>
+<!--        <span class="swup-progress-icon">-->
+<!--            <i class="fa-solid fa-circle-notch fa-spin"></i>-->
+<!--        </span>-->
+    
+</div>
+
+
+<main class="page-container" id="swup">
+
+    
+
+    <div class="main-content-container">
+
+
+        <div class="main-content-header">
+            <header class="navbar-container px-6 md:px-12">
+
+    <div class="navbar-content ">
+        <div class="left">
+            
+                <a class="logo-image" href="/">
+                    <img src="/img/pacman.png">
+                </a>
+            
+            <a class="logo-title" href="/">
+                
+                fetch150zy&#39;s blog
+                
+            </a>
+        </div>
+
+        <div class="right">
+            <!-- PC -->
+            <div class="desktop">
+                <ul class="navbar-list">
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/"
+                                        >
+                                    <i class="fa-regular fa-house fa-fw"></i>
+                                    首页
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/archives"
+                                        >
+                                    <i class="fa-regular fa-archive fa-fw"></i>
+                                    归档
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class="has-dropdown"
+                                   href="#"
+                                        onClick=&#34;return false;&#34;>
+                                    <i class="fa-regular fa-user fa-fw"></i>
+                                    关于
+                                    <i class="fa-solid fa-chevron-down fa-fw"></i>
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                                    <ul class="sub-menu">
+                                        
+                                            <li>
+                                                <a href="/about">
+                                                    ME
+                                                </a>
+                                            </li>
+                                        
+                                            <li>
+                                                <a target="_blank" rel="noopener" href="https://fetch150zy.cn">
+                                                    BLOG
+                                                </a>
+                                            </li>
+                                        
+                                            <li>
+                                                <a target="_blank" rel="noopener" href="https://github.com/fetch150zy">
+                                                    GITHUB
+                                                </a>
+                                            </li>
+                                        
+                                    </ul>
+                                
+                            </li>
+                    
+                    
+                </ul>
+            </div>
+            <!-- Mobile -->
+            <div class="mobile">
+                
+                <div class="icon-item navbar-bar">
+                    <div class="navbar-bar-middle"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile sheet -->
+    <div class="navbar-drawer h-screen w-full absolute top-0 left-0 bg-background-color flex flex-col justify-between">
+        <ul class="drawer-navbar-list flex flex-col px-4 justify-center items-start">
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/"
+                        >
+                            <span>
+                                首页
+                            </span>
+                            
+                                <i class="fa-regular fa-house fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/archives"
+                        >
+                            <span>
+                                归档
+                            </span>
+                            
+                                <i class="fa-regular fa-archive fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item-sub text-base my-1.5 flex flex-col w-full">
+                        
+                        <div class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary cursor-pointer text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                             navbar-data-toggle="submenu-About"
+                        >
+                            <span>
+                                关于
+                            </span>
+                            
+                                <i class="fa-solid fa-chevron-right fa-sm fa-fw transition-all"></i>
+                            
+                        </div>
+                        
+
+                        
+                            <div class="flex-col items-start px-2 py-2 hidden" data-target="submenu-About">
+                                
+                                    <div class="drawer-navbar-item text-base flex flex-col justify-center items-start hover:underline active:underline hover:underline-offset-1 rounded-3xl">
+                                        <a class=" text-third-text-color text-xl"
+                                           href="/about">ME</a>
+                                    </div>
+                                
+                                    <div class="drawer-navbar-item text-base flex flex-col justify-center items-start hover:underline active:underline hover:underline-offset-1 rounded-3xl">
+                                        <a class=" text-third-text-color text-xl"
+                                           target="_blank" rel="noopener" href="https://fetch150zy.cn">BLOG</a>
+                                    </div>
+                                
+                                    <div class="drawer-navbar-item text-base flex flex-col justify-center items-start hover:underline active:underline hover:underline-offset-1 rounded-3xl">
+                                        <a class=" text-third-text-color text-xl"
+                                           target="_blank" rel="noopener" href="https://github.com/fetch150zy">GITHUB</a>
+                                    </div>
+                                
+                            </div>
+                        
+                    </li>
+            
+
+            
+            
+                
+                    
+                    
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full active"
+                           href="/tags"
+                        >
+                            <span>Tags</span>
+                            <i class="fa-regular fa-tags fa-sm fa-fw"></i>
+                        </a>
+                    </li>
+                
+                    
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full active"
+                           href="/categories"
+                        >
+                            <span>Categories</span>
+                            <i class="fa-regular fa-folder fa-sm fa-fw"></i>
+                        </a>
+                    </li>
+                
+            
+        </ul>
+
+        <div class="statistics flex justify-around my-2.5">
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/tags">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">20</div>
+        <div class="label text-third-text-color text-sm">标签</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/categories">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">18</div>
+        <div class="label text-third-text-color text-sm">分类</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/archives">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">52</div>
+        <div class="label text-third-text-color text-sm">文章</div>
+    </a>
+</div>
+    </div>
+
+    <div class="window-mask"></div>
+
+</header>
+
+
+        </div>
+
+        <div class="main-content-body">
+
+            
+
+            <div class="main-content">
+
+                
+                    <div class="post-page-container flex relative justify-between box-border w-full h-full">
+    <div class="article-content-container">
+
+        <div class="article-title relative w-full">
+            
+                
+                
+                <img src="/../img/bg/49.png" alt="循环优化" class="w-full h-60 sm:h-72 md:h-80 object-cover sm:rounded-t-large dark:brightness-75"/>
+                
+                <div class="w-full flex items-center absolute bottom-0 justify-center">
+                    <h1 class="article-title-cover text-center mx-6 my-6 text-second-text-color bg-background-color-transparent px-4 py-3 text-3xl sm:text-4xl md:text-5xl font-bold backdrop-blur-lg rounded-xl border border-border-color ">循环优化</h1>
+                </div>
+            
+            </div>
+
+        
+            <div class="article-header flex flex-row gap-2 items-center px-2 sm:px-6 md:px-8">
+                <div class="avatar w-[46px] h-[46px] flex-shrink-0 rounded-medium border border-border-color p-[1px]">
+                    <img src="/img/avatar.jpg">
+                </div>
+                <div class="info flex flex-col justify-between">
+                    <div class="author flex items-center">
+                        <span class="name text-default-text-color text-lg font-semibold">fetch150zy</span>
+                        
+                    </div>
+                    <div class="meta-info">
+                        <div class="article-meta-info">
+    <span class="article-date article-meta-item">
+        <i class="fa-regular fa-pen-fancy"></i>&nbsp;
+        <span class="desktop">2024-02-17 12:00</span>
+        <span class="mobile">2024-02-17 12:00</span>
+        <span class="hover-info">创建</span>
+    </span>
+    
+        <span class="article-date article-meta-item">
+            <i class="fa-regular fa-wrench"></i>&nbsp;
+            <span class="desktop">2024-03-23 13:48:46</span>
+            <span class="mobile">2024-03-23 13:48:46</span>
+            <span class="hover-info">更新</span>
+        </span>
+    
+
+    
+        <span class="article-categories article-meta-item">
+            <i class="fa-regular fa-folders"></i>&nbsp;
+            <ul>
+                
+                
+                    
+                        
+                        <li>
+                            <a href="/categories/Optimization/">Optimization</a>&nbsp;
+                        </li>
+                    
+                    
+                
+            </ul>
+        </span>
+    
+    
+        <span class="article-tags article-meta-item">
+            <i class="fa-regular fa-tags"></i>&nbsp;
+            <ul>
+                
+                    <li>
+                        <a href="/tags/%E7%A8%8B%E5%BA%8F%E4%BC%98%E5%8C%96/">程序优化</a>&nbsp;
+                    </li>
+                
+            </ul>
+        </span>
+    
+
+    
+    
+    
+    
+</div>
+
+                    </div>
+                </div>
+            </div>
+        
+
+        
+
+
+        <div class="article-content markdown-body px-2 sm:px-6 md:px-8 pb-8">
+            <h1 id="循环优化"><a href="#循环优化" class="headerlink" title="循环优化"></a>循环优化</h1><blockquote>
+<p>  向量化和自动并行化是现代编译器用来提高程序性能的两种重要技术，特别是在处理循环密集型的代码时。它们都旨在利用现代处理器的并行执行能力，但对循环结构的要求各有侧重</p>
+</blockquote>
+<p><strong>向量化的条件</strong></p>
+<blockquote>
+<p>  向量化是将循环中的操作转换为一种可以利用处理器的向量指令集执行多个操作的形式，通常涉及SIMD（单指令多数据）指令</p>
+</blockquote>
+<ol>
+<li><strong>数据独立性</strong>：循环的迭代之间不能有数据依赖，即循环的每次迭代必须能够独立执行。如果一个迭代的结果依赖于另一个迭代的结果，那么这个循环通常不能向量化</li>
+<li><strong>固定迭代次数</strong>：循环的迭代次数最好是在循环开始前就确定的。虽然这不是绝对必要的，但对于某些类型的向量化是有帮助的</li>
+<li><strong>简单循环体</strong>：循环体应该是简单的，最好只包含简单的算术运算、逻辑运算和数组访问。复杂的控制流（如条件分支）可能会阻碍向量化</li>
+<li><strong>对齐的数据访问</strong>：为了最有效地使用SIMD指令，被处理的数据最好在内存中对齐，并且以向量长度为单位连续存储</li>
+</ol>
+<p><strong>自动并行化的条件</strong></p>
+<blockquote>
+<p>  自动并行化是编译器的一个特性，它可以将代码转换成可以利用多核CPU并行执行的形式</p>
+</blockquote>
+<ol>
+<li><strong>数据独立性</strong>：与向量化类似，循环的迭代之间不能有数据依赖，特别是写入依赖（WAW）和读写依赖（WAR）</li>
+<li><strong>足够的工作量</strong>：循环应该有足够的工作量来抵消并行化引入的开销，如线程创建和同步的成本。循环迭代次数较多且循环体计算密集的循环是并行化的好候选</li>
+<li><strong>可预测的性能收益</strong>：并行化应该能够预测性地带来性能提升。这通常意味着循环的执行时间远大于并行执行的开销</li>
+<li><strong>可管理的同步和通信开销</strong>：并行化循环时，需要同步和通信以确保正确性和一致性。循环结构应该使这些开销保持在可接受的范围内</li>
+</ol>
+<h2 id="循环展开、循环压紧"><a href="#循环展开、循环压紧" class="headerlink" title="循环展开、循环压紧"></a>循环展开、循环压紧</h2><h3 id="循环展开"><a href="#循环展开" class="headerlink" title="循环展开"></a>循环展开</h3><p>循环展开（loop unrolling）是一种减少循环迭代次数以减少循环控制开销的技术。通过在每次迭代中执行多个循环体的副本，可以减少循环条件的评估次数和循环变量更新的次数。<br>这样做的好处是可以减少执行循环控制逻辑的开销，并有可能增加并行度或使编译器更容易进行其他优化，如指令调度。</p>
+<blockquote>
+<p>  一个简单的循环执行10次内部操作，通过将其展开两倍，可以使循环仅执行5次迭代，但每次执行两倍的操作。</p>
+</blockquote>
+<p>循环展开的挑战在于找到最佳的展开因子（即每次迭代中包含的循环体副本数量）。过多的展开可能会增加代码大小（代码膨胀），影响缓存利用率，并且对于<br>已经很小的循环，可能不会带来性能提升。</p>
+<h4 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h4><ul>
+<li>减少循环分支指令执行的次数</li>
+<li>获得了更多的指令级并行</li>
+<li>增加了寄存器的重用</li>
+</ul>
+<h4 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h4><h5 id="对内层循环进行循环展开"><a href="#对内层循环进行循环展开" class="headerlink" title="对内层循环进行循环展开"></a>对内层循环进行循环展开</h5><div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; N; ++i) &#123;</span><br><span class="line">    <span class="keyword">for</span> (j = <span class="number">0</span>; j &lt; N; ++j) &#123;</span><br><span class="line">        A[i][j] = A[i][j] + B[i][j] * C[i][j];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; N; ++i) &#123;</span><br><span class="line">    <span class="keyword">for</span> (j = <span class="number">0</span>; j &lt; N; j += <span class="number">4</span>) &#123;</span><br><span class="line">        A[i][j] = A[i][j] + B[i][j] * C[i][j];</span><br><span class="line">        A[i][j + <span class="number">1</span>] = A[i][j + <span class="number">1</span>] + B[i][j + <span class="number">1</span>] * C[i][j + <span class="number">1</span>];</span><br><span class="line">        A[i][j + <span class="number">2</span>] = A[i][j + <span class="number">2</span>] + B[i][j + <span class="number">2</span>] * C[i][j + <span class="number">2</span>];</span><br><span class="line">        A[i][j + <span class="number">2</span>] = A[i][j + <span class="number">3</span>] + B[i][j + <span class="number">3</span>] * C[i][j + <span class="number">3</span>];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<h5 id="对外层循环进行循环展开"><a href="#对外层循环进行循环展开" class="headerlink" title="对外层循环进行循环展开"></a>对外层循环进行循环展开</h5><div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (i = <span class="number">1</span>; i &lt; N; ++i) &#123;</span><br><span class="line">    <span class="keyword">for</span> (j = <span class="number">1</span>; j &lt; N; ++j) &#123;</span><br><span class="line">        A[i + <span class="number">1</span>][j - <span class="number">1</span>] = A[i][j] + <span class="number">3</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (i = <span class="number">1</span>; i &lt; N; i += <span class="number">2</span>) &#123;</span><br><span class="line">    <span class="keyword">for</span> (j = <span class="number">1</span>; j &lt; N; ++j) &#123;</span><br><span class="line">        A[i + <span class="number">1</span>][j - <span class="number">1</span>] = A[i][j] + <span class="number">3</span>;</span><br><span class="line">        A[i + <span class="number">2</span>][j - <span class="number">1</span>] = A[i][j] + <span class="number">3</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+
+
+<blockquote>
+<p>  当迭代次数不能被循环展开次数整除的情况下，需要在进行循环展开的同时考虑尾循环的处理</p>
+</blockquote>
+<h4 id="编译器中的循环展开"><a href="#编译器中的循环展开" class="headerlink" title="编译器中的循环展开"></a>编译器中的循环展开</h4><div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clang unroll.c -O1 -funroll-loops -emit-llvm -S -Rpass=loop-unroll</span><br></pre></td></tr></table></figure></div>
+
+<p><strong>一些与循环展开的编译选项</strong></p>
+<ul>
+<li><code>-funroll-loops</code>：打开循环展开</li>
+<li><code>-fno-unroll-loops</code>：关闭循环展开</li>
+<li><code>-mllvm -unroll-max-count=n</code>：指定最大展开次数</li>
+<li><code>-mllvm -unroll-count=n</code>：指定循环展开次数</li>
+<li><code>-mllvm -unroll-runtime</code>：使用运行时循环展开优化</li>
+<li><code>-mllvm -unroll-threshold=n</code>：设置代码量展开限制</li>
+<li><code>-mllvm -unroll-remainder</code>：对循环展开后的剩余循环进行优化</li>
+<li><code>-Rpass=loop-unroll</code>：显示循环展开的优化信息</li>
+<li><code>-Rpass-missed=loop-unroll</code>：显示循环展开失败的信息</li>
+</ul>
+<h4 id="progma"><a href="#progma" class="headerlink" title="progma"></a>progma</h4><div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 打开循环展开</span></span><br><span class="line"><span class="meta">#progma clang loop unroll(enable)</span></span><br><span class="line"><span class="comment">// 进行完全循环展开</span></span><br><span class="line"><span class="meta">#progma clang loop unroll(full)</span></span><br><span class="line"><span class="comment">// 指定循环展开次数</span></span><br><span class="line"><span class="meta">#progma clang loop unroll_count(n)</span></span><br></pre></td></tr></table></figure></div>
+
+
+
+<h4 id="针对向量程序的循环展开"><a href="#针对向量程序的循环展开" class="headerlink" title="针对向量程序的循环展开"></a>针对向量程序的循环展开</h4><blockquote>
+<p>  类似</p>
+</blockquote>
+<h3 id="循环压紧"><a href="#循环压紧" class="headerlink" title="循环压紧"></a>循环压紧</h3><p>循环压紧指调整复制后的语句执行，将原来一条语句复制得到的多条语句合并到一起</p>
+<h2 id="循环合并"><a href="#循环合并" class="headerlink" title="循环合并"></a>循环合并</h2><p>循环合并（Loop Fusion）是指将具有相同迭代空间的两个循环合成一个循环的过程，属于语句层次的循环变换</p>
+<h4 id="优点-1"><a href="#优点-1" class="headerlink" title="优点"></a>优点</h4><ul>
+<li>减小循环的迭代开销</li>
+<li>增强数据重用，寄存器重用</li>
+<li>减小并行化的启动开销，消除合并前多个循环间的线程同步开销</li>
+<li>增加循环优化的范围</li>
+</ul>
+<h3 id="例子-1"><a href="#例子-1" class="headerlink" title="例子"></a>例子</h3><div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; N; ++i) &#123;</span><br><span class="line">    x[i] = a[i] + b[i];</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; N; ++i) &#123;</span><br><span class="line">    y[i] = a[i] - b[i];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; N; ++i) &#123;</span><br><span class="line">    x[i] = a[i] + b[i];</span><br><span class="line">    y[i] = a[i] - b[i];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<h4 id="循环合并的合法性"><a href="#循环合并的合法性" class="headerlink" title="循环合并的合法性"></a>循环合并的合法性</h4><ol>
+<li>不能违反原来的依赖关系图；如果两个循环之间存在一条循环无关的依赖途径，这条路径包含一个未与它们合并的循环语句，则它们不能被合并</li>
+<li>不能产生新的依赖；如果两个循环之间存在一个阻止合并的依赖，则它们不能被合并</li>
+</ol>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (i = <span class="number">1</span>; i &lt; N; ++i) &#123;</span><br><span class="line">    A[i] = B[i] + C;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">for</span> (i = <span class="number">1</span>; i &lt; N; ++i) &#123;</span><br><span class="line">    D[i] = A[i + <span class="number">1</span>] + E;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<blockquote>
+<p>  不能合并为下面这样</p>
+</blockquote>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (i = <span class="number">1</span>; i &lt; N; ++i) &#123;</span><br><span class="line">    A[i] = B[i] + C;</span><br><span class="line">    D[i] = A[i + <span class="number">1</span>] + E;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+
+
+<h4 id="循环合并的有利性"><a href="#循环合并的有利性" class="headerlink" title="循环合并的有利性"></a>循环合并的有利性</h4><p>循环合并的一个重要应用场景为并行化，但不是所有循环合并都可以给并行化带来收益</p>
+<ol>
+<li><p>分离限制：当一个并行循环和一个串行循环合并时，结果必然是串行执行的</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (i = <span class="number">1</span>; i &lt; N; ++i) &#123;</span><br><span class="line">    A[i] = B[i] + <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">for</span> (i = <span class="number">1</span>; i &lt; N; ++i) &#123;</span><br><span class="line">    C[i] = A[i] + C[i - <span class="number">1</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (i = <span class="number">1</span>; i &lt; N; ++i) &#123;</span><br><span class="line">    A[i] = B[i] + <span class="number">1</span>;</span><br><span class="line">    C[i] = A[i] + C[i - <span class="number">1</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+
+</li>
+<li><p>阻止并行性的依赖限制，当两个都可并行的循环在一个阻止并行的依赖，进行循环合并后该依赖被合并后的循环携带</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (i = <span class="number">1</span>; i &lt; N; ++i) &#123;</span><br><span class="line">    A[i + <span class="number">1</span>] = B[i] + C;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">for</span> (i = <span class="number">1</span>; i &lt; N; ++i) &#123;</span><br><span class="line">    D[i] = A[i] + E;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (i = <span class="number">1</span>; i &lt; N; ++i) &#123;</span><br><span class="line">    A[i + <span class="number">1</span>] = B[i] + C;</span><br><span class="line">    D[i] = A[i] + E;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div></li>
+</ol>
+<h3 id="编译器中的循环合并"><a href="#编译器中的循环合并" class="headerlink" title="编译器中的循环合并"></a>编译器中的循环合并</h3><p>在LLVM中进行循环合并需要满足以下条件</p>
+<ol>
+<li>两个循环必须相邻，即两个循环之间不能有语句</li>
+<li>两个循环必须有相同的迭代次数</li>
+<li>循环必须是等价的控制流，如果一个循环执行，另一个循环也保证执行</li>
+<li>循环之间不能有负距离依赖关系，比如两个循环，当第二个循环的迭代次数为m时，使用第一个循环在未来的m+n次迭代时计算的值</li>
+</ol>
+<p>LLVM提供以下选项</p>
+<ul>
+<li><code>-fproactive-loop-fusion-analysis</code>：打开循环合并分析遍</li>
+<li><code>-fproactive-loop-fusion</code>：打开循环合并优化遍</li>
+<li><code>-loop-fusion</code>：通过opt工具对中间码进行循环合并优化</li>
+</ul>
+<h2 id="循环分布"><a href="#循环分布" class="headerlink" title="循环分布"></a>循环分布</h2><p>循环分布（Loop Distribute）是指将一个循环分解为多个循环，且每个循环都有与原循环相同的迭代空间，但只包含原循环的语句子集，常用于分解出可向量化或者<br>可并行化的循环，进而将可向量化部分的代码转为向量执行。</p>
+<h3 id="优缺点"><a href="#优缺点" class="headerlink" title="优缺点"></a>优缺点</h3><h4 id="优点-2"><a href="#优点-2" class="headerlink" title="优点"></a>优点</h4><ul>
+<li>将一个串行循环转变为多个并行循环</li>
+<li>实现循环的部分并行化</li>
+<li>增加循环优化的范围</li>
+</ul>
+<h4 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h4><ul>
+<li>减小并行性粒度</li>
+<li>增加额外的通信和同步开销</li>
+</ul>
+<h3 id="应用场景"><a href="#应用场景" class="headerlink" title="应用场景"></a>应用场景</h3><ul>
+<li><strong>改善缓存利用</strong>：通过分解循环，可以减少单个循环迭代中的工作量，使得循环体中访问的数据更可能在缓存中保持，从而减少缓存未命中的次数</li>
+<li><strong>减少资源冲突</strong>：在并行计算中，不同的循环可能更容易在不同的处理单元上并行执行，减少了资源（如寄存器或内存带宽）的冲突</li>
+<li><strong>便于进一步优化</strong>：分解后的循环可能更容易被编译器进一步优化，比如循环展开、向量化或自动并行化</li>
+</ul>
+<h3 id="例子-2"><a href="#例子-2" class="headerlink" title="例子"></a>例子</h3><div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; n; ++i) &#123;</span><br><span class="line">    A[i] = i;</span><br><span class="line">    B[i] = <span class="number">2</span> + B[i];</span><br><span class="line">    C[i] = <span class="number">3</span> + C[i - <span class="number">1</span>];</span><br><span class="line">&#125; <span class="comment">// 不可并行化</span></span><br></pre></td></tr></table></figure></div>
+
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; n; ++i) &#123;</span><br><span class="line">    A[i] = i;</span><br><span class="line">    B[i] = <span class="number">2</span> + B[i];</span><br><span class="line">&#125; <span class="comment">// 可并行化</span></span><br><span class="line"><span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; n; ++i) &#123;</span><br><span class="line">    C[i] = <span class="number">3</span> + C[i - <span class="number">1</span>];</span><br><span class="line">&#125; <span class="comment">// 将不可并行化的部分分离</span></span><br></pre></td></tr></table></figure></div>
+
+
+
+<h4 id="效果"><a href="#效果" class="headerlink" title="效果"></a>效果</h4><blockquote>
+<p>  将循环携带依赖变为循环无关依赖</p>
+</blockquote>
+ <div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (i = <span class="number">1</span>; i &lt; N; ++i) &#123;</span><br><span class="line">    <span class="keyword">for</span> (j = <span class="number">1</span>; j &lt; N; ++j) &#123;</span><br><span class="line">        A[i][j] = B[i][j] + C[i][j];</span><br><span class="line">        D[i][j] = A[i][j - <span class="number">1</span>] * <span class="number">2</span>; </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (i = <span class="number">1</span>; i &lt; N; ++i) &#123;</span><br><span class="line">    <span class="keyword">for</span> (j = <span class="number">1</span>; j &lt; N; ++j) &#123;</span><br><span class="line">        A[i][j] = B[i][j] + C[i][j];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">for</span> (i = <span class="number">1</span>; i &lt; N; ++i) &#123;</span><br><span class="line">    <span class="keyword">for</span> (j = <span class="number">1</span>; j &lt; N; ++j) &#123;</span><br><span class="line">        D[i][j] = A[i][j - <span class="number">1</span>] * <span class="number">2</span>; </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+
+
+<h4 id="与循环交换优化的配合"><a href="#与循环交换优化的配合" class="headerlink" title="与循环交换优化的配合"></a>与循环交换优化的配合</h4><blockquote>
+<p>  若循环不是紧嵌套循环导致无法进行后续优化操作时，可以使用循环分布将循环体变换为紧嵌套循环</p>
+<p>  优化人员会通过循环交换的方法对j层和k层交换，以提高访存速度和向量化能力，但是由于<code>A[i][j] = D</code>的存在，该循环不是紧嵌套循环，不能直接将j层和k层进行交换</p>
+</blockquote>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (i = <span class="number">1</span>; i &lt; N; i++) &#123;</span><br><span class="line">	<span class="keyword">for</span> (j = <span class="number">1</span>; j &lt; N; j++) &#123;</span><br><span class="line">  		A[i][j] = D;</span><br><span class="line">   		<span class="keyword">for</span> (k = <span class="number">1</span>; k &lt; N; k++) &#123;</span><br><span class="line">    		A[i][j] = A[i][j] + B[i][k] * C[k][j];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>经过循环分布后变为紧嵌套循环，再使用循环交换以达到最好的性能</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (i = <span class="number">1</span>; i &lt; N; i++)</span><br><span class="line"> 	<span class="keyword">for</span> (j = <span class="number">1</span>; j &lt; N; j++)</span><br><span class="line">  		A[i][j] = D;</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> (i = <span class="number">1</span>; i &lt; N; i++)</span><br><span class="line"> 	<span class="keyword">for</span> (j = <span class="number">1</span>; j &lt; N; j++)</span><br><span class="line">  		<span class="keyword">for</span> (k = <span class="number">1</span>; k &lt; N; k++)</span><br><span class="line">   			A[i][j] = A[i][j] + B[i][k] * C[k][j];</span><br></pre></td></tr></table></figure></div>
+
+
+
+
+
+<h4 id="与循环合并优化的配合"><a href="#与循环合并优化的配合" class="headerlink" title="与循环合并优化的配合"></a>与循环合并优化的配合</h4><blockquote>
+<p>   由于S2语句存在一个自身的循环携带依赖导致该循环无法进行并行化，但S1和S3语句不携带依赖是可以并行化的，因此可先通过循环分布优化将S2和S3语句分离出去</p>
+</blockquote>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span>(i=<span class="number">1</span>;i&lt;N;i++)&#123;</span><br><span class="line">  	A[i] =  B[i] + <span class="number">1</span>;                              <span class="comment">//S1语句</span></span><br><span class="line">  	C[i] = A[i] + C[i<span class="number">-1</span>];                          <span class="comment">//S2语句</span></span><br><span class="line">  	D[i] = A[i] + x;                               <span class="comment">//S3语句</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>分离</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span>(i=<span class="number">1</span>;i&lt;N;i++)</span><br><span class="line">  	A[i] =  B[i] + <span class="number">1</span>;                              <span class="comment">//S1语句</span></span><br><span class="line"><span class="keyword">for</span>(i=<span class="number">1</span>;i&lt;N;i++)</span><br><span class="line">  	C[i] = A[i] + C[i<span class="number">-1</span>];                          <span class="comment">//S2语句</span></span><br><span class="line"><span class="keyword">for</span>(i=<span class="number">1</span>;i&lt;N;i++)</span><br><span class="line">  	D[i] = A[i] + x;                               <span class="comment">//S3语句</span></span><br></pre></td></tr></table></figure></div>
+
+<p>合并：S1和S3语句组成的循环可以进行并行化</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span>(i=<span class="number">1</span>;i&lt;N;i++)&#123;</span><br><span class="line">  	A[i] =  B[i] + <span class="number">1</span>;                               <span class="comment">//S1语句</span></span><br><span class="line">  	D[i] = A[i] + x;                                <span class="comment">//S3语句</span></span><br><span class="line">&#125; </span><br><span class="line"><span class="keyword">for</span>(i=<span class="number">1</span>;i&lt;N;i++)</span><br><span class="line">  	C[i] = A[i] + C[i<span class="number">-1</span>];                           <span class="comment">//S2语句</span></span><br></pre></td></tr></table></figure></div>
+
+
+
+<h3 id="编译器中的循环分布"><a href="#编译器中的循环分布" class="headerlink" title="编译器中的循环分布"></a>编译器中的循环分布</h3><ul>
+<li>LLVM：<code>-mllvm -enable-loop-distribute</code></li>
+<li>GCC：<code>-ftree-loop-distribute</code></li>
+</ul>
+<p>加入优化选项<code>-mllvm -enable-loop-distribute</code>打开循环分布优化，并通过选项<code>-Rpass=loop-distribute</code>提供循环分布优化成功的信息，<br>通过-<code>Rpass-missed=loop-distribute</code> <code>-Rpass-analysis=loop-distribute</code> 两个选项可以分别提供分布优化失败、以及失败的分析</p>
+<h4 id="progma-1"><a href="#progma-1" class="headerlink" title="progma"></a>progma</h4><div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#progma clang loop distribute(enable)</span></span><br></pre></td></tr></table></figure></div>
+
+
+
+
+
+<h2 id="循环交换"><a href="#循环交换" class="headerlink" title="循环交换"></a>循环交换</h2><blockquote>
+<p>  当一个循环体中包含一个以上的循环，且循环语句之间不包含其它语句，则称这个循环为<strong>紧嵌套循环</strong>，交换紧嵌套中两个循环的嵌套顺序是提高程序性能最有效的变换之一。<br>  实际上，<strong>循环交换</strong>是一个重排序变换，仅改变了参数化迭代的执行顺序，但是并没有删除任何语句或产生任何新的语句，所以循环交换的合法性需要通过循环的依赖关系进行判定</p>
+</blockquote>
+<h4 id="优点-3"><a href="#优点-3" class="headerlink" title="优点"></a>优点</h4><ul>
+<li>增强数据局部性</li>
+<li>增强向量化和并行化的识别</li>
+</ul>
+<h3 id="例子-3"><a href="#例子-3" class="headerlink" title="例子"></a>例子</h3><h4 id="效果-1"><a href="#效果-1" class="headerlink" title="效果"></a>效果</h4><div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//循环交换前</span></span><br><span class="line"><span class="keyword">for</span> (j = <span class="number">0</span>; j &lt; N; j++)</span><br><span class="line">    <span class="keyword">for</span> (k = <span class="number">0</span>; k &lt; N; k++)</span><br><span class="line">        <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; N; i++)</span><br><span class="line">            A[i][j] = A[i][j] + B[i][k] * C[k][j];	</span><br><span class="line"><span class="comment">//循环交换后</span></span><br><span class="line"><span class="keyword">for</span> (j = <span class="number">0</span>; j &lt; N; j++)</span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; N; i++)</span><br><span class="line">        <span class="keyword">for</span> (k = <span class="number">0</span>; k &lt; N; k++)</span><br><span class="line">            A[i][j] = A[i][j] + B[i][k] * C[k][j];</span><br></pre></td></tr></table></figure></div>
+
+
+
+<h4 id="循环交换的有利性"><a href="#循环交换的有利性" class="headerlink" title="循环交换的有利性"></a>循环交换的有利性</h4><div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//循环交换前</span></span><br><span class="line"><span class="keyword">for</span>(i=<span class="number">1</span>;i&lt;N;i++)</span><br><span class="line">    <span class="keyword">for</span>(j=<span class="number">1</span>;j&lt;N;j++)</span><br><span class="line">        A[i][j+<span class="number">1</span>] = A[i][j] + <span class="number">2</span>;	</span><br><span class="line"><span class="comment">//循环交换后</span></span><br><span class="line"><span class="keyword">for</span>(j=<span class="number">1</span>;j&lt;N;j++)</span><br><span class="line">    <span class="keyword">for</span>(i=<span class="number">1</span>;i&lt;N;i++)</span><br><span class="line">        A[i][j+<span class="number">1</span>] = A[i][j] + <span class="number">2</span>;</span><br></pre></td></tr></table></figure></div>
+
+<p>最内层的循环存在循环携带依赖，而导致循环无法进行并行化，向量化的效果变差。如果交换这两个循环，依赖关系就变为由外层循环携带，而内层循环不携带依赖，<br>就可以进行并行化，或者把可向量化的循环移动到最内层而提高向量化效果</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//循环交换前</span></span><br><span class="line"><span class="keyword">for</span> (j = <span class="number">1</span>; j &lt; N; j++)</span><br><span class="line">   <span class="keyword">for</span> (i = <span class="number">1</span>; i &lt; M; i++)</span><br><span class="line">        A[i][j] = A[i - <span class="number">1</span>][j];	</span><br><span class="line"><span class="comment">//循环交换后</span></span><br><span class="line"><span class="keyword">for</span> (i = <span class="number">1</span>; j &lt; M; j++)</span><br><span class="line">    <span class="keyword">for</span> (j = <span class="number">1</span>; i &lt; N; i++)</span><br><span class="line">        A[i][j] = A[i - <span class="number">1</span>][j];</span><br></pre></td></tr></table></figure></div>
+
+<p>内层循环每一次迭代都需要进行存储和读取操作，共需M<em>N次，寄存器重用较少。进行循环交换后，仍然需要M</em>N次的存储操作，但读取操作的次数减少到了N次，<br>即第一行的每个值都放在寄存器里被重用了M次。循环交换还可以提高寄存器的重用能力，把携带依赖的循环放在最内层的位置，使可以被重用的值保留在寄存器中</p>
+<h4 id="循环依赖的合法性"><a href="#循环依赖的合法性" class="headerlink" title="循环依赖的合法性"></a>循环依赖的合法性</h4><blockquote>
+<p>  重排序某个依赖端点的循环交换是不合法的，即不要引起依赖关系的反转</p>
+</blockquote>
+<h3 id="编译器中的循环交换"><a href="#编译器中的循环交换" class="headerlink" title="编译器中的循环交换"></a>编译器中的循环交换</h3><div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clang test.c -O1  -mllvm -enable-loopinterchange -Rpass=loop-interchange -Rpass-missed=loop-interchange -Rpass-analysis=loop-interchange</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>LLVM：<code>-mllvm -enable-loopinterchange</code></li>
+<li>GCC：<code>-floop-interchange</code></li>
+</ul>
+<h2 id="循环不变量外提"><a href="#循环不变量外提" class="headerlink" title="循环不变量外提"></a>循环不变量外提</h2><p>循环不变量是指在循环迭代空间内值不发生变化的变量；由于循环不变量的值在循环的迭代空间内不发生变化，因此可将其外提到循环外仅计算一次，避免其在循环体内重复计算</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (i = <span class="number">1</span>; i &lt; N; ++i) &#123;</span><br><span class="line">    <span class="keyword">for</span> (j = <span class="number">1</span>; j &lt; M; ++j) &#123;</span><br><span class="line">        U[i] = U[i] + W[i] * W[i] * D[j] / (dt * dt);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">T1 = <span class="number">1</span> / (dt * dt);</span><br><span class="line"><span class="keyword">for</span> (i = <span class="number">1</span>; i &lt; N; ++i) &#123;</span><br><span class="line">    T2 = W[i] * W[i];</span><br><span class="line">    <span class="keyword">for</span> (j = <span class="number">1</span>; j &lt; M; ++j) &#123;</span><br><span class="line">        U[i] = U[i] + T2 * D[j] * T1;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+
+
+<h3 id="编译器中的循环不变量外提"><a href="#编译器中的循环不变量外提" class="headerlink" title="编译器中的循环不变量外提"></a>编译器中的循环不变量外提</h3><div class="highlight-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clang test.c -O1 -Rpass=licm</span><br></pre></td></tr></table></figure></div>
+
+<blockquote>
+<p>  使用-O1选项即可打开循环不变量优化</p>
+</blockquote>
+<h4 id="确定循环"><a href="#确定循环" class="headerlink" title="确定循环"></a>确定循环</h4><ul>
+<li>计算该循环的标头（header）结点和支配（dominate）结点和定义（define）结点</li>
+<li>寻找循环不变语句</li>
+<li>找到循环的出口（exit）块：在循环外有后继结点（successor）的块</li>
+</ul>
+<h4 id="找出符合以下条件的代码并进行外提"><a href="#找出符合以下条件的代码并进行外提" class="headerlink" title="找出符合以下条件的代码并进行外提"></a>找出符合以下条件的代码并进行外提</h4><ul>
+<li>是循环不变量</li>
+<li>位于支配出口的块中</li>
+<li>位于支配循环中所有使用其计算值块的基本块中</li>
+<li>这个变量在循环内只有一次赋值</li>
+</ul>
+<h4 id="对循环采用深度优先算法，进行搜索，从候选项中选出不变量"><a href="#对循环采用深度优先算法，进行搜索，从候选项中选出不变量" class="headerlink" title="对循环采用深度优先算法，进行搜索，从候选项中选出不变量"></a>对循环采用深度优先算法，进行搜索，从候选项中选出不变量</h4><ul>
+<li>如果不变量所依赖的所有不变操作都已移动，则把它移动到preheader块里面，完成优化算法</li>
+</ul>
+<h2 id="循环分段"><a href="#循环分段" class="headerlink" title="循环分段"></a>循环分段</h2><p>循环分段是将单层循环变换为两层嵌套循环，内层循环遍历的是迭代次数为strip的连续区域(或叫条带循环)，外层循环的步进单位为strip，这个strip就是分段因子，分段因子需要根据硬件情况选取</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; N; i++) &#123;</span><br><span class="line">    A[i] = B[i] + C[i];</span><br><span class="line">  &#125;</span><br><span class="line"><span class="comment">//循环分段后</span></span><br><span class="line"><span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; N; i += k) &#123;    <span class="comment">//并行执行</span></span><br><span class="line">    <span class="keyword">for</span>(j = i; j &lt;= i + k - <span class="number">1</span>; j++) &#123;</span><br><span class="line">        A[j] = B[j] + C[j];    <span class="comment">//向量执行</span></span><br><span class="line">      &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>充分利用多个处理器资源</li>
+<li>将可用的并行性转换成更适合硬件的形式</li>
+</ul>
+<h4 id="不适用的情况"><a href="#不适用的情况" class="headerlink" title="不适用的情况"></a>不适用的情况</h4><div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span>(i = <span class="number">1</span>; i &lt; SIZE; i++)&#123;</span><br><span class="line">    <span class="keyword">for</span>(j = <span class="number">1</span>; j &lt; i; j++) &#123;</span><br><span class="line">        A[i][j] = A[i][j - <span class="number">1</span>] + B[i];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>内层循环中每次迭代调用的数组A[i][j]的数量都不同，找到一个有效的平衡点很难，通常宁愿选择一个较小的分段大小，而不是把并行循环平均分到处理其中，<br>这样当负担较重的处理器还在执行时，执行结束较早的处理器可以承担一些过剩的工作</p>
+<h2 id="循环分块"><a href="#循环分块" class="headerlink" title="循环分块"></a>循环分块</h2><p><strong>循环分块是指通过增加循环嵌套的维度来提升数据局部性的循环变换技术，是对多重循环的迭代空间进行重新划分的过程。</strong>在计算机存取数据，<br>需要从主存将数据取到寄存器中，这一过程为了是数据存取更有效率，在主存和寄存器中会存在一个高速缓存Cache，缓存常用的数据，但存储<br>量很少，通常当某个数据现在被用过以后，后面还会被用，但是按循环默认的执行方式，可能到下次再被用到的时候就已经从高速缓存行Cache<br>中被消除了，于是重排循环，减少内层循环的迭代量，使得一个cache line在被消除之前会被再次使用</p>
+<h3 id="过程"><a href="#过程" class="headerlink" title="过程"></a>过程</h3><p>首先将一个循环经过循环分段得到两个循环，其中一个循环在循环内进行连续地迭代，而另一个循环进行逐段地迭代且迭代跨度为S，之后经过循环<br>交换将内外层循环交换，这一过程需要保证与分块前的迭代空间相同</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; N; ++i) &#123;</span><br><span class="line">    <span class="keyword">for</span> (j = <span class="number">0</span>; j &lt; N; ++j) &#123;</span><br><span class="line">        B[i] = B[i] + A[i][j];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>循环分段</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">S = <span class="number">4</span>;</span><br><span class="line"><span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; N; ++i) &#123;</span><br><span class="line">    <span class="keyword">for</span> (j = <span class="number">0</span>; j &lt; N; j += S) &#123;</span><br><span class="line">        <span class="keyword">for</span> (k = j; k &lt;= <span class="built_in">MIN</span>(j + S - <span class="number">1</span>, N); ++k) &#123;</span><br><span class="line">            B[i] = B[i] + A[i][k];</span><br><span class="line">        &#125; </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>循环交换</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">S = <span class="number">4</span>;</span><br><span class="line"><span class="keyword">for</span> (j = <span class="number">0</span>; j &lt; N; j += S) &#123;</span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; N; ++i) &#123;</span><br><span class="line">        <span class="keyword">for</span> (k = j; k &lt;= <span class="built_in">MIN</span>(j + S - <span class="number">1</span>, N); ++k) &#123;</span><br><span class="line">            B[i] = B[i] + A[i][k];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<blockquote>
+<p>  循环分块是循环分段和循环交换的结合，其合法性也同这两个优化方法一致，不能破坏原程序语义</p>
+</blockquote>
+<p>e.g.</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//示例1：循环分块前</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/time.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="type">const</span> <span class="type">int</span> N = <span class="number">512</span>;</span><br><span class="line">  <span class="type">const</span> <span class="type">int</span> M = <span class="number">1024</span>;</span><br><span class="line">  <span class="type">double</span> A[N][M], B[N];</span><br><span class="line">  <span class="type">int</span> i, j, k;</span><br><span class="line">  <span class="keyword">struct</span> <span class="title class_">timeval</span>  time_start, time_end;</span><br><span class="line">  <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; N; i++) &#123;</span><br><span class="line">    B[i] = <span class="built_in">rand</span>()%<span class="number">10</span>;</span><br><span class="line">    <span class="keyword">for</span> (j = <span class="number">0</span>; j &lt; N; j++) &#123;</span><br><span class="line">      A[i][j] = <span class="built_in">rand</span>()%<span class="number">10</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">gettimeofday</span>(&amp;time_start, <span class="literal">NULL</span>);</span><br><span class="line">  <span class="keyword">for</span> (j = <span class="number">0</span>; j &lt; M; j++)&#123;</span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; N; i++)&#123;</span><br><span class="line">      B[i] = B[i] + A[i][j];<span class="comment">//语句S</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">gettimeofday</span>(&amp;time_end, <span class="literal">NULL</span>);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;used time %ld us\n&quot;</span>, time_end.tv_usec - time_start.tv_usec);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//示例1：循环分块后</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/time.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> MIN(i,j) (((i)&lt;(j))?(i):(j))</span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="type">const</span> <span class="type">int</span> N = <span class="number">512</span>;</span><br><span class="line">  <span class="type">const</span> <span class="type">int</span> M = <span class="number">1024</span>;</span><br><span class="line">  <span class="type">double</span> A[N][M], B[N];</span><br><span class="line">  <span class="type">int</span> i, j, k,I,J,S;</span><br><span class="line">  <span class="keyword">struct</span> <span class="title class_">timeval</span>  time_start, time_end;</span><br><span class="line">  <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; N; i++) &#123;</span><br><span class="line">    B[i] = <span class="built_in">rand</span>()%<span class="number">10</span>;</span><br><span class="line">    <span class="keyword">for</span> (j = <span class="number">0</span>; j &lt; M; j++) &#123;</span><br><span class="line">      A[i][j] = <span class="built_in">rand</span>()%<span class="number">10</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">gettimeofday</span>(&amp;time_start, <span class="literal">NULL</span>);</span><br><span class="line">  S = <span class="number">8</span>;</span><br><span class="line">  <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; N; i+=S)&#123;</span><br><span class="line">    <span class="keyword">for</span> (j = <span class="number">0</span>; j &lt; M; j++)&#123;</span><br><span class="line">      <span class="keyword">for</span> (I = i;I &lt; <span class="built_in">MIN</span>(i+S,N);I++)&#123;</span><br><span class="line">        B[I] = B[I] + A[I][j];</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">gettimeofday</span>(&amp;time_end, <span class="literal">NULL</span>);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;used time %ld us\n&quot;</span>, time_end.tv_usec - time_start.tv_usec);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+
+
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//示例2：循环分块前</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/time.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="type">const</span> <span class="type">int</span> N = <span class="number">256</span>;</span><br><span class="line">  <span class="type">double</span> A[N][N], B[N][N], C[N][N];</span><br><span class="line">  <span class="type">int</span> i, j, k;</span><br><span class="line">  <span class="keyword">struct</span> <span class="title class_">timeval</span>  time_start, time_end;</span><br><span class="line">  <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; N; i++) &#123;</span><br><span class="line">    <span class="keyword">for</span> (j = <span class="number">0</span>; j &lt; N; j++) &#123;</span><br><span class="line">      A[i][j] = <span class="built_in">rand</span>()%<span class="number">10</span>;</span><br><span class="line">      B[i][j] = <span class="built_in">rand</span>()%<span class="number">10</span>;</span><br><span class="line">      C[i][j] = <span class="built_in">rand</span>()%<span class="number">10</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">gettimeofday</span>(&amp;time_start, <span class="literal">NULL</span>);</span><br><span class="line">  <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; N; i++)</span><br><span class="line">    <span class="keyword">for</span> (j = <span class="number">0</span>; j &lt; N; j++)</span><br><span class="line">      <span class="keyword">for</span> (k = <span class="number">0</span>; k &lt; N; k++)</span><br><span class="line">        C[i][j] = C[i][j] + A[i][k] * B[k][j];<span class="comment">//语句S</span></span><br><span class="line">  <span class="built_in">gettimeofday</span>(&amp;time_end, <span class="literal">NULL</span>);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;used time %ld us\n&quot;</span>, time_end.tv_usec - time_start.tv_usec);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//示例2：循环分块后</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/time.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> MIN(i,j) (((i)&lt;(j))?(i):(j))</span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="type">const</span> <span class="type">int</span> N = <span class="number">256</span>;</span><br><span class="line">  <span class="type">double</span> A[N][N], B[N][N], C[N][N];</span><br><span class="line">  <span class="type">int</span> i, j, k,I,J,K;</span><br><span class="line">  <span class="keyword">struct</span> <span class="title class_">timeval</span>  time_start, time_end;</span><br><span class="line">  <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; N; i++) &#123;</span><br><span class="line">    <span class="keyword">for</span> (j = <span class="number">0</span>; j &lt; N; j++) &#123;</span><br><span class="line">      A[i][j] = <span class="built_in">rand</span>()%<span class="number">10</span>;</span><br><span class="line">      B[i][j] = <span class="built_in">rand</span>()%<span class="number">10</span>;</span><br><span class="line">      C[i][j] = <span class="built_in">rand</span>()%<span class="number">10</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="type">int</span> S = <span class="number">4</span>;</span><br><span class="line">  <span class="built_in">gettimeofday</span>(&amp;time_start, <span class="literal">NULL</span>);</span><br><span class="line">  <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; N; i += S)</span><br><span class="line">    <span class="keyword">for</span> (j = <span class="number">0</span>; j &lt; N; j+=S)</span><br><span class="line">      <span class="keyword">for</span> (k = <span class="number">0</span>; k &lt; N; k+=S)</span><br><span class="line">        <span class="keyword">for</span> (I = i; I &lt; <span class="built_in">MIN</span>(i + S, N); I++)</span><br><span class="line">          <span class="keyword">for</span> (J = j; J &lt; <span class="built_in">MIN</span>(j + S , N); J++)</span><br><span class="line">            <span class="keyword">for</span> (K = k; K &lt; <span class="built_in">MIN</span>(k + S, N); K++)</span><br><span class="line">              C[I][J] = C[I][J] + A[I][K] * B[K][J];</span><br><span class="line"></span><br><span class="line">  <span class="built_in">gettimeofday</span>(&amp;time_end, <span class="literal">NULL</span>);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;used time %ld us\n&quot;</span>, time_end.tv_usec - time_start.tv_usec);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+
+
+
+
+
+
+<h2 id="循环分裂"><a href="#循环分裂" class="headerlink" title="循环分裂"></a>循环分裂</h2><p><strong>循环分裂</strong>是将循环的迭代次数拆成两段或者多段，拆分后的循环不存在主体循环之说，也就是拆分成迭代次数都比较多的两个或者多个循环</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (i = <span class="number">1</span>; i &lt; N; ++i) &#123;</span><br><span class="line">    Vec[i] = Vec[i] + Vec[M];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>循环分裂</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (i = <span class="number">1</span>; i &lt; M; ++i) &#123;</span><br><span class="line">    Vec[i] = Vec[i] + Vec[M];</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">for</span> (i = M; i &lt; N; ++i) &#123;</span><br><span class="line">    vec[i] = Vec[i] + Vec[M];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+
+
+<h3 id="循环分裂有利性"><a href="#循环分裂有利性" class="headerlink" title="循环分裂有利性"></a>循环分裂有利性</h3><div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">for (i = 0; i &lt; N; ++i) &#123;</span><br><span class="line">    tmp = a[i] - b[i];</span><br><span class="line">    coff[i] = (a[i] + b[i]) * tmp;</span><br><span class="line">    diff[i + M] = (c[i + M] + d[i + M]) / phi;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>循环分裂</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; N; ++i) &#123;</span><br><span class="line">    tmp = a[i] - b[i];</span><br><span class="line">    coff[i] = (a[i] + b[i]) * tmp;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">for</span> (i = M; i &lt; M; ++i) &#123;</span><br><span class="line">    diff[i] = (c[i] + d[i]) / phi;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+
+
+<p>在循环分裂之前，我们使用 -O3 选项对原始循环进行优化并不能进行向量化，而经过手工循环分裂优化后再使用-O3选项则可以进行向量化优化</p>
+<p>e.g.</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/time.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> N 8192 </span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="type">int</span> i, temp, phi;</span><br><span class="line">  <span class="type">int</span> M = <span class="number">4096</span>;</span><br><span class="line">  <span class="type">int</span> a[N], b[N], c[N], d[N], coff[N], diff[N];</span><br><span class="line">  <span class="keyword">struct</span> <span class="title class_">timeval</span>  time_start, time_end;</span><br><span class="line">  temp = <span class="number">2</span>;</span><br><span class="line">  phi = <span class="number">2</span>;</span><br><span class="line">  <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; N; i++) &#123;</span><br><span class="line">    a[i] = i;</span><br><span class="line">    b[i] = i + <span class="number">1</span>;</span><br><span class="line">    c[i] = i + <span class="number">2</span>;</span><br><span class="line">    d[i] = i + <span class="number">3</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">gettimeofday</span>(&amp;time_start, <span class="literal">NULL</span>);</span><br><span class="line">  <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; N; i++) &#123;</span><br><span class="line">    temp = a[i] - b[i];</span><br><span class="line">    coff[i] = (a[i] + b[i]) * temp;</span><br><span class="line">    diff[i+M] = (c[i+M] + d[i+M]) / phi;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">gettimeofday</span>(&amp;time_end, <span class="literal">NULL</span>);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;used time %ld us\n&quot;</span>, time_end.tv_usec - time_start.tv_usec);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//循环分裂优化后</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/time.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> N 8192</span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line"><span class="type">int</span> i, temp, phi;</span><br><span class="line"><span class="type">int</span> M = <span class="number">4096</span>;</span><br><span class="line">    <span class="type">int</span> a[N], b[N], c[N], d[N], coff[N], diff[N];</span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">timeval</span>  time_start, time_end;</span><br><span class="line">    temp = <span class="number">2</span>;</span><br><span class="line">    phi = <span class="number">2</span>;</span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; N; i++) &#123;</span><br><span class="line">        a[i] = i;</span><br><span class="line">        b[i] = i + <span class="number">1</span>;</span><br><span class="line">        c[i] = i + <span class="number">2</span>;</span><br><span class="line">        d[i] = i + <span class="number">3</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">gettimeofday</span>(&amp;time_start, <span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; N; i++) &#123;</span><br><span class="line">        temp = a[i] - b[i];</span><br><span class="line">        coff[i] = (a[i] + b[i]) * temp;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (i = M; i &lt; N; i++) &#123;</span><br><span class="line">        diff[i] = (c[i] + d[i]) / phi;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">gettimeofday</span>(&amp;time_end, <span class="literal">NULL</span>);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;used time %ld us\n&quot;</span>, time_end.tv_usec - time_start.tv_usec);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+
+
+
+
+<h2 id="循环倾斜"><a href="#循环倾斜" class="headerlink" title="循环倾斜"></a>循环倾斜</h2><p>循环倾斜是一种改变迭代空间形式的变换，用于挖掘循环中的并行潜能的优化方式，可以把存在的并行性用传统的并行循环的形式表示出来</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (i = <span class="number">1</span>; i &lt; <span class="number">4</span>; ++i) &#123;</span><br><span class="line">    <span class="keyword">for</span> (j = <span class="number">1</span>; j &lt; <span class="number">4</span>; ++j) &#123;</span><br><span class="line">        A[i][j] = A[i][j - <span class="number">1</span>] + A[i - <span class="number">1</span>][j];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>循环倾斜</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (i = <span class="number">1</span>;i &lt; <span class="number">4</span>; ++i) &#123;</span><br><span class="line">    <span class="keyword">for</span> (j = i + <span class="number">1</span>; j &lt; i + <span class="number">4</span>; ++j) &#123;</span><br><span class="line">        A[i][j - i] = A[i][j - i - <span class="number">1</span>] + A[i - <span class="number">1</span>][j - i];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>循环交换</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (j = <span class="number">2</span>; j &lt; <span class="number">8</span>; ++j) &#123;</span><br><span class="line">    <span class="keyword">for</span> (i = <span class="built_in">max</span>(<span class="number">1</span>, j - <span class="number">4</span> + <span class="number">1</span>); i &lt; <span class="built_in">min</span>(j - <span class="number">1</span>, <span class="number">4</span>); ++i) &#123;</span><br><span class="line">        A[i][j - i] = A[i][j - i - <span class="number">1</span>] + A[i - <span class="number">1</span>][j - i];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+
+
+<blockquote>
+<p>  推广到 n</p>
+</blockquote>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (i = <span class="number">1</span>; i &lt; N; ++i) &#123;</span><br><span class="line">    <span class="keyword">for</span> (j = <span class="number">1</span>; j &lt; N; ++j) &#123;</span><br><span class="line">        A[i][j] = A[i - <span class="number">1</span>][j] + A[i][j - <span class="number">1</span>];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>循环倾斜</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (j = <span class="number">2</span>; j &lt; <span class="number">2</span> * N; ++j) &#123;</span><br><span class="line">    <span class="keyword">for</span> (i = <span class="built_in">max</span>(<span class="number">1</span>, j - M + <span class="number">1</span>); i &lt; <span class="built_in">min</span>(N, j); ++i) &#123;</span><br><span class="line">        A[i][j - i] = A[i - <span class="number">1</span>][j - i] + A[i][j - i - <span class="number">1</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+
+
+
+        </div>
+
+        
+
+        
+            <ul class="post-tags-box text-lg mt-1.5 flex-wrap justify-center flex md:hidden">
+                
+                    <li class="tag-item mx-0.5">
+                        <a href="/tags/%E7%A8%8B%E5%BA%8F%E4%BC%98%E5%8C%96/">#程序优化</a>&nbsp;
+                    </li>
+                
+            </ul>
+        
+
+        
+
+        
+            <div class="article-nav my-8 flex justify-between items-center px-2 sm:px-6 md:px-8">
+                
+                    <div class="article-prev border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
+                        <a class="prev"
+                        rel="prev"
+                        href="/2024/02/27/2024-02-27-%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7/"
+                        >
+                            <span class="left arrow-icon flex justify-center items-center">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </span>
+                            <span class="title flex justify-center items-center">
+                                <span class="post-nav-title-item">缓存一致性</span>
+                                <span class="post-nav-item">上一篇</span>
+                            </span>
+                        </a>
+                    </div>
+                
+                
+                    <div class="article-next border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
+                        <a class="next"
+                        rel="next"
+                        href="/2024/02/02/2024-02-02-%E6%AF%8F%E4%B8%AA%E7%A8%8B%E5%BA%8F%E5%91%98%E9%83%BD%E5%BA%94%E8%AF%A5%E7%9F%A5%E9%81%93%E7%9A%84%E5%86%85%E5%AD%98%E7%9F%A5%E8%AF%86/"
+                        >
+                            <span class="title flex justify-center items-center">
+                                <span class="post-nav-title-item">每个程序员都应该知道的内存知识</span>
+                                <span class="post-nav-item">下一篇</span>
+                            </span>
+                            <span class="right arrow-icon flex justify-center items-center">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </span>
+                        </a>
+                    </div>
+                
+            </div>
+        
+
+
+        
+    </div>
+
+    
+        <div class="toc-content-container">
+            <div class="post-toc-wrap">
+    <div class="post-toc">
+        <div class="toc-title">此页目录</div>
+        <div class="page-title">循环优化</div>
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%BE%AA%E7%8E%AF%E4%BC%98%E5%8C%96"><span class="nav-text">循环优化</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BE%AA%E7%8E%AF%E5%B1%95%E5%BC%80%E3%80%81%E5%BE%AA%E7%8E%AF%E5%8E%8B%E7%B4%A7"><span class="nav-text">循环展开、循环压紧</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BE%AA%E7%8E%AF%E5%B1%95%E5%BC%80"><span class="nav-text">循环展开</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BC%98%E7%82%B9"><span class="nav-text">优点</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BE%8B%E5%AD%90"><span class="nav-text">例子</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%AF%B9%E5%86%85%E5%B1%82%E5%BE%AA%E7%8E%AF%E8%BF%9B%E8%A1%8C%E5%BE%AA%E7%8E%AF%E5%B1%95%E5%BC%80"><span class="nav-text">对内层循环进行循环展开</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%AF%B9%E5%A4%96%E5%B1%82%E5%BE%AA%E7%8E%AF%E8%BF%9B%E8%A1%8C%E5%BE%AA%E7%8E%AF%E5%B1%95%E5%BC%80"><span class="nav-text">对外层循环进行循环展开</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BC%96%E8%AF%91%E5%99%A8%E4%B8%AD%E7%9A%84%E5%BE%AA%E7%8E%AF%E5%B1%95%E5%BC%80"><span class="nav-text">编译器中的循环展开</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#progma"><span class="nav-text">progma</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%92%88%E5%AF%B9%E5%90%91%E9%87%8F%E7%A8%8B%E5%BA%8F%E7%9A%84%E5%BE%AA%E7%8E%AF%E5%B1%95%E5%BC%80"><span class="nav-text">针对向量程序的循环展开</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BE%AA%E7%8E%AF%E5%8E%8B%E7%B4%A7"><span class="nav-text">循环压紧</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BE%AA%E7%8E%AF%E5%90%88%E5%B9%B6"><span class="nav-text">循环合并</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BC%98%E7%82%B9-1"><span class="nav-text">优点</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BE%8B%E5%AD%90-1"><span class="nav-text">例子</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BE%AA%E7%8E%AF%E5%90%88%E5%B9%B6%E7%9A%84%E5%90%88%E6%B3%95%E6%80%A7"><span class="nav-text">循环合并的合法性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BE%AA%E7%8E%AF%E5%90%88%E5%B9%B6%E7%9A%84%E6%9C%89%E5%88%A9%E6%80%A7"><span class="nav-text">循环合并的有利性</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%96%E8%AF%91%E5%99%A8%E4%B8%AD%E7%9A%84%E5%BE%AA%E7%8E%AF%E5%90%88%E5%B9%B6"><span class="nav-text">编译器中的循环合并</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BE%AA%E7%8E%AF%E5%88%86%E5%B8%83"><span class="nav-text">循环分布</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="nav-text">优缺点</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BC%98%E7%82%B9-2"><span class="nav-text">优点</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BC%BA%E7%82%B9"><span class="nav-text">缺点</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-text">应用场景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BE%8B%E5%AD%90-2"><span class="nav-text">例子</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%95%88%E6%9E%9C"><span class="nav-text">效果</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%8E%E5%BE%AA%E7%8E%AF%E4%BA%A4%E6%8D%A2%E4%BC%98%E5%8C%96%E7%9A%84%E9%85%8D%E5%90%88"><span class="nav-text">与循环交换优化的配合</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%8E%E5%BE%AA%E7%8E%AF%E5%90%88%E5%B9%B6%E4%BC%98%E5%8C%96%E7%9A%84%E9%85%8D%E5%90%88"><span class="nav-text">与循环合并优化的配合</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%96%E8%AF%91%E5%99%A8%E4%B8%AD%E7%9A%84%E5%BE%AA%E7%8E%AF%E5%88%86%E5%B8%83"><span class="nav-text">编译器中的循环分布</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#progma-1"><span class="nav-text">progma</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BE%AA%E7%8E%AF%E4%BA%A4%E6%8D%A2"><span class="nav-text">循环交换</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BC%98%E7%82%B9-3"><span class="nav-text">优点</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BE%8B%E5%AD%90-3"><span class="nav-text">例子</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%95%88%E6%9E%9C-1"><span class="nav-text">效果</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BE%AA%E7%8E%AF%E4%BA%A4%E6%8D%A2%E7%9A%84%E6%9C%89%E5%88%A9%E6%80%A7"><span class="nav-text">循环交换的有利性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%96%E7%9A%84%E5%90%88%E6%B3%95%E6%80%A7"><span class="nav-text">循环依赖的合法性</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%96%E8%AF%91%E5%99%A8%E4%B8%AD%E7%9A%84%E5%BE%AA%E7%8E%AF%E4%BA%A4%E6%8D%A2"><span class="nav-text">编译器中的循环交换</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BE%AA%E7%8E%AF%E4%B8%8D%E5%8F%98%E9%87%8F%E5%A4%96%E6%8F%90"><span class="nav-text">循环不变量外提</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%96%E8%AF%91%E5%99%A8%E4%B8%AD%E7%9A%84%E5%BE%AA%E7%8E%AF%E4%B8%8D%E5%8F%98%E9%87%8F%E5%A4%96%E6%8F%90"><span class="nav-text">编译器中的循环不变量外提</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%A1%AE%E5%AE%9A%E5%BE%AA%E7%8E%AF"><span class="nav-text">确定循环</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%89%BE%E5%87%BA%E7%AC%A6%E5%90%88%E4%BB%A5%E4%B8%8B%E6%9D%A1%E4%BB%B6%E7%9A%84%E4%BB%A3%E7%A0%81%E5%B9%B6%E8%BF%9B%E8%A1%8C%E5%A4%96%E6%8F%90"><span class="nav-text">找出符合以下条件的代码并进行外提</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AF%B9%E5%BE%AA%E7%8E%AF%E9%87%87%E7%94%A8%E6%B7%B1%E5%BA%A6%E4%BC%98%E5%85%88%E7%AE%97%E6%B3%95%EF%BC%8C%E8%BF%9B%E8%A1%8C%E6%90%9C%E7%B4%A2%EF%BC%8C%E4%BB%8E%E5%80%99%E9%80%89%E9%A1%B9%E4%B8%AD%E9%80%89%E5%87%BA%E4%B8%8D%E5%8F%98%E9%87%8F"><span class="nav-text">对循环采用深度优先算法，进行搜索，从候选项中选出不变量</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BE%AA%E7%8E%AF%E5%88%86%E6%AE%B5"><span class="nav-text">循环分段</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%8D%E9%80%82%E7%94%A8%E7%9A%84%E6%83%85%E5%86%B5"><span class="nav-text">不适用的情况</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BE%AA%E7%8E%AF%E5%88%86%E5%9D%97"><span class="nav-text">循环分块</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%87%E7%A8%8B"><span class="nav-text">过程</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BE%AA%E7%8E%AF%E5%88%86%E8%A3%82"><span class="nav-text">循环分裂</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BE%AA%E7%8E%AF%E5%88%86%E8%A3%82%E6%9C%89%E5%88%A9%E6%80%A7"><span class="nav-text">循环分裂有利性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BE%AA%E7%8E%AF%E5%80%BE%E6%96%9C"><span class="nav-text">循环倾斜</span></a></li></ol></li></ol>
+
+    </div>
+</div>
+        </div>
+    
+</div>
+
+
+
+                
+
+            </div>
+
+            
+
+        </div>
+
+        <div class="main-content-footer">
+            <footer class="footer mt-5 py-5 h-auto text-base text-third-text-color relative border-t-2 border-t-border-color">
+    <div class="info-container py-3 text-center">
+        
+        <div class="text-center">
+            &copy;
+            
+            2024&nbsp;&nbsp;<i class="fa-solid fa-heart fa-beat" style="--fa-animation-duration: 0.5s; color: #f54545"></i>&nbsp;&nbsp;<a href="/">fetch150zy</a>
+            
+                
+                <p class="post-count space-x-0.5">
+                    <span>
+                        共 52 篇文章
+                    </span>
+                    
+                </p>
+            
+        </div>
+        
+        <div class="relative text-center lg:absolute lg:left-[20px] lg:top-1/2 lg:-translate-y-1/2 lg:text-left">
+            <span class="lg:block text-sm">由 <?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg class="relative top-[2px] inline-block align-baseline" version="1.1" id="圖層_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="1rem" height="1rem" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve"><path fill="#0E83CD" d="M256.4,25.8l-200,115.5L56,371.5l199.6,114.7l200-115.5l0.4-230.2L256.4,25.8z M349,354.6l-18.4,10.7l-18.6-11V275H200v79.6l-18.4,10.7l-18.6-11v-197l18.5-10.6l18.5,10.8V237h112v-79.6l18.5-10.6l18.5,10.8V354.6z"/></svg><a target="_blank" class="text-base" href="https://hexo.io">Hexo</a> 驱动</span>
+            <span class="text-sm lg:block">主题&nbsp;<a class="text-base" target="_blank" href="https://github.com/EvanNotFound/hexo-theme-redefine">Redefine v2.6.1</a></span>
+        </div>
+        
+        
+        
+        
+        
+    </div>  
+</footer>
+        </div>
+    </div>
+
+    
+        <div class="post-tools">
+            <div class="post-tools-container">
+    <ul class="article-tools-list">
+        <!-- TOC aside toggle -->
+        
+            <li class="right-bottom-tools page-aside-toggle">
+                <i class="fa-regular fa-outdent"></i>
+            </li>
+        
+
+        <!-- go comment -->
+        
+    </ul>
+</div>
+
+        </div>
+    
+
+    <div class="right-side-tools-container">
+        <div class="side-tools-container">
+    <ul class="hidden-tools-list">
+        <li class="right-bottom-tools tool-font-adjust-plus flex justify-center items-center">
+            <i class="fa-regular fa-magnifying-glass-plus"></i>
+        </li>
+
+        <li class="right-bottom-tools tool-font-adjust-minus flex justify-center items-center">
+            <i class="fa-regular fa-magnifying-glass-minus"></i>
+        </li>
+
+        <li class="right-bottom-tools tool-dark-light-toggle flex justify-center items-center">
+            <i class="fa-regular fa-moon"></i>
+        </li>
+
+        <!-- rss -->
+        
+
+        
+
+        <li class="right-bottom-tools tool-scroll-to-bottom flex justify-center items-center">
+            <i class="fa-regular fa-arrow-down"></i>
+        </li>
+    </ul>
+
+    <ul class="visible-tools-list">
+        <li class="right-bottom-tools toggle-tools-list flex justify-center items-center">
+            <i class="fa-regular fa-cog fa-spin"></i>
+        </li>
+        
+            <li class="right-bottom-tools tool-scroll-to-top flex justify-center items-center">
+                <i class="arrow-up fas fa-arrow-up"></i>
+                <span class="percent"></span>
+            </li>
+        
+        
+    </ul>
+</div>
+
+    </div>
+
+    <div class="image-viewer-container">
+    <img src="">
+</div>
+
+
+    
+
+</main>
+
+
+    
+<script src="/js/libs/Swup.min.js"></script>
+
+<script src="/js/libs/SwupSlideTheme.min.js"></script>
+
+<script src="/js/libs/SwupScriptsPlugin.min.js"></script>
+
+<script src="/js/libs/SwupProgressPlugin.min.js"></script>
+
+<script src="/js/libs/SwupScrollPlugin.min.js"></script>
+
+<script src="/js/libs/SwupPreloadPlugin.min.js"></script>
+
+<script>
+    const swup = new Swup({
+        plugins: [
+            new SwupScriptsPlugin({
+                optin: true,
+            }),
+            new SwupProgressPlugin(),
+            new SwupScrollPlugin({
+                offset: 80,
+            }),
+            new SwupSlideTheme({
+                mainElement: ".main-content-body",
+            }),
+            new SwupPreloadPlugin(),
+        ],
+        containers: ["#swup"],
+    });
+</script>
+
+
+
+
+
+
+
+<script src="/js/tools/imageViewer.js" type="module"></script>
+
+<script src="/js/utils.js" type="module"></script>
+
+<script src="/js/main.js" type="module"></script>
+
+<script src="/js/layouts/navbarShrink.js" type="module"></script>
+
+<script src="/js/tools/scrollTopBottom.js" type="module"></script>
+
+<script src="/js/tools/lightDarkSwitch.js" type="module"></script>
+
+<script src="/js/layouts/categoryList.js" type="module"></script>
+
+
+
+
+
+
+
+    
+<script src="/js/layouts/lazyload.js" type="module"></script>
+
+
+
+
+
+
+  
+<script src="/js/libs/Typed.min.js"></script>
+
+  
+<script src="/js/plugins/typed.js" type="module"></script>
+
+
+
+
+
+
+
+
+
+<div class="post-scripts" data-swup-reload-script>
+    
+        
+<script src="/js/tools/tocToggle.js" type="module"></script>
+
+<script src="/js/layouts/toc.js" type="module"></script>
+
+<script src="/js/plugins/tabs.js" type="module"></script>
+
+    
+</div>
+
+
+</body>
+</html>

@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="keywords" content="computer science">
+    
+    <meta name="author" content="fetch150zy">
+    <!-- preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    
+    <!--- Seo Part-->
+    
+    <link rel="canonical" href="https://fetch150zy.github.io/2022/02/06/2022-02-06-cpp/"/>
+    <meta name="robots" content="index,follow">
+    <meta name="googlebot" content="index,follow">
+    <meta name="revisit-after" content="1 days">
+    
+        <meta name="description" content="关于C++中的一些细节之处  baseoverloading在函数重载中，不能根据函数返回值来区分重载。 对于普通函数，不能单纯使用const修饰来区分重载（const并不会影响函数签名，普通函数的重载完全依赖于参数类型、数量、顺序）；而对于类成员函数，可以通过const来区分重载，成员函数可以作用于 const 对象或非 const 对象，因此可以被视为不同的重载。  关于函数重载的原理">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Cpp基础">
+<meta property="og:url" content="https://fetch150zy.github.io/2022/02/06/2022-02-06-cpp/index.html">
+<meta property="og:site_name" content="fetch150zy&#39;blog">
+<meta property="og:description" content="关于C++中的一些细节之处  baseoverloading在函数重载中，不能根据函数返回值来区分重载。 对于普通函数，不能单纯使用const修饰来区分重载（const并不会影响函数签名，普通函数的重载完全依赖于参数类型、数量、顺序）；而对于类成员函数，可以通过const来区分重载，成员函数可以作用于 const 对象或非 const 对象，因此可以被视为不同的重载。  关于函数重载的原理">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-02-06T04:00:00.000Z">
+<meta property="article:modified_time" content="2024-03-23T05:44:03.708Z">
+<meta property="article:author" content="fetch150zy">
+<meta property="article:tag" content="Cpp">
+<meta name="twitter:card" content="summary">
+    
+    
+    <!--- Icon Part-->
+    <link rel="icon" type="image/png" href="/img/pacman.png" sizes="192x192">
+    <link rel="apple-touch-icon" sizes="180x180" href="/img/pacman.png">
+    <meta name="theme-color" content="#7FCDCD">
+    <link rel="shortcut icon" href="/img/pacman.png">
+    <!--- Page Info-->
+    
+    <title>
+        
+            Cpp基础 -
+        
+        fetch150zy&#39;s blog
+    </title>
+
+    
+<link rel="stylesheet" href="/fonts/Chillax/chillax.css">
+
+
+    <!--- Inject Part-->
+    
+
+    
+        <style>
+    :root {
+        --preloader-background-color: #fff;
+        --preloader-text-color: #000;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --preloader-background-color: #202124;
+            --preloader-text-color: #fff;
+        }
+    }
+
+    @media (prefers-color-scheme: light) {
+        :root {
+            --preloader-background-color: #fff;
+            --preloader-text-color: #000;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .ml13 {
+            font-size: 2.6rem !important; /* Adjust this value as needed */
+        }
+    }
+
+    .preloader {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem; /* Tailwind 'gap-4' is 1rem */
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        padding: 12px;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh; /* 'h-screen' is 100% of the viewport height */
+        background-color: var(--preloader-background-color);
+        z-index: 1100; /* 'z-[1100]' sets the z-index */
+        transition: opacity 0.2s ease-in-out;
+    }
+
+    .ml13 {
+        font-size: 3.2rem;
+        /* text-transform: uppercase; */
+        color: var(--preloader-text-color);
+        letter-spacing: -1px;
+        font-weight: 500;
+        font-family: 'Chillax-Variable', sans-serif;
+        text-align: center;
+    }
+
+    .ml13 .word {
+        display: inline-flex;
+        flex-wrap: wrap;
+        white-space: nowrap;
+    }
+
+    .ml13 .letter {
+        display: inline-block;
+        line-height: 1em;
+    }
+</style>
+
+<div class="preloader">
+    
+<script src="/js/libs/anime.min.js"></script>
+
+    <h1 class="ml13">
+        fetch150zy&#39;s blog
+    </h1>
+    <script>
+        var textWrapper = document.querySelector('.ml13');
+        // Split text into words
+        var words = textWrapper.textContent.trim().split(' ');
+
+        // Clear the existing content
+        textWrapper.innerHTML = '';
+
+        // Wrap each word and its letters in spans
+        words.forEach(function(word) {
+            var wordSpan = document.createElement('span');
+            wordSpan.classList.add('word');
+            wordSpan.innerHTML = word.replace(/\S/g, "<span class='letter'>$&</span>");
+            textWrapper.appendChild(wordSpan);
+            textWrapper.appendChild(document.createTextNode(' ')); // Add space between words
+        });
+
+
+        anime.timeline({loop: true})
+            .add({
+                targets: '.ml13 .letter',
+                translateY: [100,0],
+                translateZ: 0,
+                opacity: [0,1],
+                easing: "easeOutExpo",
+                duration: 1400,
+                delay: (el, i) => 300 + 30 * i
+            }).add({
+            targets: '.ml13 .letter',
+            translateY: [0,-100],
+            opacity: [1,0],
+            easing: "easeInExpo",
+            duration: 1200,
+            delay: (el, i) => 100 + 30 * i
+        });
+
+        let themeStatus = JSON.parse(localStorage.getItem('REDEFINE-THEME-STATUS'))?.isDark;
+
+        // If the theme status is not found in local storage, check the preferred color scheme
+        if (themeStatus === undefined || themeStatus === null) {
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                themeStatus = 'dark';
+            } else {
+                themeStatus = 'light';
+            }
+        }
+
+        // Now you can use the themeStatus variable in your code
+        if (themeStatus) {
+            document.documentElement.style.setProperty('--preloader-background-color', '#202124');
+            document.documentElement.style.setProperty('--preloader-text-color', '#fff');
+        } else {
+            document.documentElement.style.setProperty('--preloader-background-color', '#fff');
+            document.documentElement.style.setProperty('--preloader-text-color', '#000');
+        }
+
+        window.addEventListener('load', function () {
+            hidePreloaderAfterTimeout(1000); // Hide after 1000 milliseconds once the window has loaded
+        });
+
+        // Backup failsafe: Hide preloader after a maximum of 5000 milliseconds, regardless of the window load event
+        hidePreloaderAfterTimeout(5000);
+
+        function hidePreloaderAfterTimeout(delay) {
+            setTimeout(function () {
+                var preloader = document.querySelector('.preloader');
+                preloader.style.opacity = '0';
+                setTimeout(function () {
+                    preloader.style.display = 'none';
+                }, 200);
+            }, delay);
+        }
+    </script>
+</div>
+    
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+
+    
+        
+<link rel="stylesheet" href="/assets/build/styles.css">
+
+    
+
+    
+<link rel="stylesheet" href="/fonts/fonts.css">
+
+    
+<link rel="stylesheet" href="/fonts/Satoshi/satoshi.css">
+
+    <!--- Font Part-->
+    
+    
+    
+    
+
+
+    <script id="hexo-configurations">
+    window.config = {"hostname":"fetch150zy.github.io","root":"/","language":"zh-CN"};
+    window.theme = {"articles":{"style":{"font_size":"18px","line_height":1.4,"image_border_radius":"14px","image_alignment":"center","image_caption":false,"link_icon":true,"title_alignment":"center","headings_top_spacing":{"h1":"5rem","h2":"4rem","h3":"2.8rem","h4":"2.5rem","h5":"2.2rem","h6":"2rem"}},"word_count":{"enable":false,"count":false,"min2read":false},"author_label":{"enable":false,"auto":false,"list":[]},"code_block":{"copy":false,"style":"mac","font":{"enable":false,"family":null,"url":null}},"toc":{"enable":true,"max_depth":6,"number":false,"expand":true,"init_open":true},"copyright":{"enable":false,"default":"cc_by_nc_sa"},"lazyload":true,"recommendation":{"enable":false,"title":"推荐阅读","limit":3,"mobile_limit":2,"placeholder":null,"skip_dirs":[]}},"colors":{"primary":"#7FCDCD","secondary":null,"default_mode":"dark"},"global":{"fonts":{"chinese":{"enable":null,"family":null,"url":null},"english":{"enable":null,"family":null,"url":null}},"content_max_width":"1000px","sidebar_width":"210px","hover":{"shadow":true,"scale":true},"scroll_progress":{"bar":false,"percentage":true},"website_counter":{"url":"https://cn.vercount.one/js","enable":false,"site_pv":false,"site_uv":false,"post_pv":false},"single_page":true,"preloader":true,"open_graph":true,"google_analytics":{"enable":false,"id":null}},"home_banner":{"enable":true,"style":"fixed","image":{"light":"/img/bg15.jpg","dark":"/img/bg15.jpg"},"title":"fetch150zy's blog","subtitle":{"text":["年年岁岁花相似，岁岁年年人不同"],"hitokoto":{"enable":false,"api":"https://v1.hitokoto.cn"},"typing_speed":100,"backing_speed":80,"starting_delay":500,"backing_delay":1500,"loop":true,"smart_backspace":true},"text_color":{"light":"#fff","dark":"#d1d1b6"},"text_style":{"title_size":"2.8rem","subtitle_size":"1.5rem","line_height":1.3},"custom_font":{"enable":false,"family":null,"url":null},"social_links":{"enable":true,"style":"default","links":{"github":"https://github.com/fetch150zy","bilibili":"https://space.bilibili.com/505867894","stack-overflow":"https://stackoverflow.com/users/16738249/fetch150zy","email":"mailto:mars_zhewei@outlook.com"},"qrs":{"weixin":"https://pic.fetch150zy.cn/weixin.png"}}},"plugins":{"feed":{"enable":false},"aplayer":{"enable":false,"type":"fixed","audios":[{"name":null,"artist":null,"url":null,"cover":null,"lrc":null}]},"mermaid":{"enable":false,"version":"9.3.0"}},"version":"2.6.1","navbar":{"auto_hide":false,"color":{"left":"#f78736","right":"#367df7","transparency":35},"width":{"home":"1200px","pages":"1000px"},"links":{"Home":{"path":"/","icon":"fa-regular fa-house"},"Archives":{"path":"/archives","icon":"fa-regular fa-archive"},"About":{"icon":"fa-regular fa-user","submenus":{"Me":"/about","Blog":"https://fetch150zy.cn","Github":"https://github.com/fetch150zy"}}},"search":{"enable":false,"preload":true}},"page_templates":{"friends_column":3,"tags_style":"blur"},"home":{"sidebar":{"enable":true,"position":"right","first_item":"info","announcement":null,"show_on_mobile":true,"links":{"Archives":{"path":"/archives","icon":"fa-regular fa-archive"},"Tags":{"path":"/tags","icon":"fa-regular fa-tags"},"Categories":{"path":"/categories","icon":"fa-regular fa-folder"}}},"article_date_format":"YYYY-MM-DD","categories":{"enable":true,"limit":3},"tags":{"enable":true,"limit":3}},"footerStart":null};
+    window.lang_ago = {"second":"%s 秒前","minute":"%s 分钟前","hour":"%s 小时前","day":"%s 天前","week":"%s 周前","month":"%s 个月前","year":"%s 年前"};
+    window.data = {"masonry":false};
+  </script>
+    
+    <!--- Fontawesome Part-->
+    
+<link rel="stylesheet" href="/fontawesome/fontawesome.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/brands.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/solid.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/regular.min.css">
+
+    
+    
+    
+    
+        
+<link rel="stylesheet" href="/fontawesome/sharp-solid.min.css">
+
+    
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+
+<body>
+<div class="progress-bar-container">
+    
+
+    
+        <span class="pjax-progress-bar"></span>
+<!--        <span class="swup-progress-icon">-->
+<!--            <i class="fa-solid fa-circle-notch fa-spin"></i>-->
+<!--        </span>-->
+    
+</div>
+
+
+<main class="page-container" id="swup">
+
+    
+
+    <div class="main-content-container">
+
+
+        <div class="main-content-header">
+            <header class="navbar-container px-6 md:px-12">
+
+    <div class="navbar-content ">
+        <div class="left">
+            
+                <a class="logo-image" href="/">
+                    <img src="/img/pacman.png">
+                </a>
+            
+            <a class="logo-title" href="/">
+                
+                fetch150zy&#39;s blog
+                
+            </a>
+        </div>
+
+        <div class="right">
+            <!-- PC -->
+            <div class="desktop">
+                <ul class="navbar-list">
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/"
+                                        >
+                                    <i class="fa-regular fa-house fa-fw"></i>
+                                    首页
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/archives"
+                                        >
+                                    <i class="fa-regular fa-archive fa-fw"></i>
+                                    归档
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class="has-dropdown"
+                                   href="#"
+                                        onClick=&#34;return false;&#34;>
+                                    <i class="fa-regular fa-user fa-fw"></i>
+                                    关于
+                                    <i class="fa-solid fa-chevron-down fa-fw"></i>
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                                    <ul class="sub-menu">
+                                        
+                                            <li>
+                                                <a href="/about">
+                                                    ME
+                                                </a>
+                                            </li>
+                                        
+                                            <li>
+                                                <a target="_blank" rel="noopener" href="https://fetch150zy.cn">
+                                                    BLOG
+                                                </a>
+                                            </li>
+                                        
+                                            <li>
+                                                <a target="_blank" rel="noopener" href="https://github.com/fetch150zy">
+                                                    GITHUB
+                                                </a>
+                                            </li>
+                                        
+                                    </ul>
+                                
+                            </li>
+                    
+                    
+                </ul>
+            </div>
+            <!-- Mobile -->
+            <div class="mobile">
+                
+                <div class="icon-item navbar-bar">
+                    <div class="navbar-bar-middle"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile sheet -->
+    <div class="navbar-drawer h-screen w-full absolute top-0 left-0 bg-background-color flex flex-col justify-between">
+        <ul class="drawer-navbar-list flex flex-col px-4 justify-center items-start">
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/"
+                        >
+                            <span>
+                                首页
+                            </span>
+                            
+                                <i class="fa-regular fa-house fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/archives"
+                        >
+                            <span>
+                                归档
+                            </span>
+                            
+                                <i class="fa-regular fa-archive fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item-sub text-base my-1.5 flex flex-col w-full">
+                        
+                        <div class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary cursor-pointer text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                             navbar-data-toggle="submenu-About"
+                        >
+                            <span>
+                                关于
+                            </span>
+                            
+                                <i class="fa-solid fa-chevron-right fa-sm fa-fw transition-all"></i>
+                            
+                        </div>
+                        
+
+                        
+                            <div class="flex-col items-start px-2 py-2 hidden" data-target="submenu-About">
+                                
+                                    <div class="drawer-navbar-item text-base flex flex-col justify-center items-start hover:underline active:underline hover:underline-offset-1 rounded-3xl">
+                                        <a class=" text-third-text-color text-xl"
+                                           href="/about">ME</a>
+                                    </div>
+                                
+                                    <div class="drawer-navbar-item text-base flex flex-col justify-center items-start hover:underline active:underline hover:underline-offset-1 rounded-3xl">
+                                        <a class=" text-third-text-color text-xl"
+                                           target="_blank" rel="noopener" href="https://fetch150zy.cn">BLOG</a>
+                                    </div>
+                                
+                                    <div class="drawer-navbar-item text-base flex flex-col justify-center items-start hover:underline active:underline hover:underline-offset-1 rounded-3xl">
+                                        <a class=" text-third-text-color text-xl"
+                                           target="_blank" rel="noopener" href="https://github.com/fetch150zy">GITHUB</a>
+                                    </div>
+                                
+                            </div>
+                        
+                    </li>
+            
+
+            
+            
+                
+                    
+                    
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full active"
+                           href="/tags"
+                        >
+                            <span>Tags</span>
+                            <i class="fa-regular fa-tags fa-sm fa-fw"></i>
+                        </a>
+                    </li>
+                
+                    
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full active"
+                           href="/categories"
+                        >
+                            <span>Categories</span>
+                            <i class="fa-regular fa-folder fa-sm fa-fw"></i>
+                        </a>
+                    </li>
+                
+            
+        </ul>
+
+        <div class="statistics flex justify-around my-2.5">
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/tags">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">20</div>
+        <div class="label text-third-text-color text-sm">标签</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/categories">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">18</div>
+        <div class="label text-third-text-color text-sm">分类</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/archives">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">52</div>
+        <div class="label text-third-text-color text-sm">文章</div>
+    </a>
+</div>
+    </div>
+
+    <div class="window-mask"></div>
+
+</header>
+
+
+        </div>
+
+        <div class="main-content-body">
+
+            
+
+            <div class="main-content">
+
+                
+                    <div class="post-page-container flex relative justify-between box-border w-full h-full">
+    <div class="article-content-container">
+
+        <div class="article-title relative w-full">
+            
+                
+                
+                <img src="/../img/bg/12.png" alt="Cpp基础" class="w-full h-60 sm:h-72 md:h-80 object-cover sm:rounded-t-large dark:brightness-75"/>
+                
+                <div class="w-full flex items-center absolute bottom-0 justify-center">
+                    <h1 class="article-title-cover text-center mx-6 my-6 text-second-text-color bg-background-color-transparent px-4 py-3 text-3xl sm:text-4xl md:text-5xl font-bold backdrop-blur-lg rounded-xl border border-border-color ">Cpp基础</h1>
+                </div>
+            
+            </div>
+
+        
+            <div class="article-header flex flex-row gap-2 items-center px-2 sm:px-6 md:px-8">
+                <div class="avatar w-[46px] h-[46px] flex-shrink-0 rounded-medium border border-border-color p-[1px]">
+                    <img src="/img/avatar.jpg">
+                </div>
+                <div class="info flex flex-col justify-between">
+                    <div class="author flex items-center">
+                        <span class="name text-default-text-color text-lg font-semibold">fetch150zy</span>
+                        
+                    </div>
+                    <div class="meta-info">
+                        <div class="article-meta-info">
+    <span class="article-date article-meta-item">
+        <i class="fa-regular fa-pen-fancy"></i>&nbsp;
+        <span class="desktop">2022-02-06 12:00</span>
+        <span class="mobile">2022-02-06 12:00</span>
+        <span class="hover-info">创建</span>
+    </span>
+    
+        <span class="article-date article-meta-item">
+            <i class="fa-regular fa-wrench"></i>&nbsp;
+            <span class="desktop">2024-03-23 13:44:03</span>
+            <span class="mobile">2024-03-23 13:44:03</span>
+            <span class="hover-info">更新</span>
+        </span>
+    
+
+    
+        <span class="article-categories article-meta-item">
+            <i class="fa-regular fa-folders"></i>&nbsp;
+            <ul>
+                
+                
+                    
+                        
+                        <li>
+                            <a href="/categories/Cpp/">Cpp</a>&nbsp;
+                        </li>
+                    
+                    
+                
+            </ul>
+        </span>
+    
+    
+        <span class="article-tags article-meta-item">
+            <i class="fa-regular fa-tags"></i>&nbsp;
+            <ul>
+                
+                    <li>
+                        <a href="/tags/Cpp/">Cpp</a>&nbsp;
+                    </li>
+                
+            </ul>
+        </span>
+    
+
+    
+    
+    
+    
+</div>
+
+                    </div>
+                </div>
+            </div>
+        
+
+        
+
+
+        <div class="article-content markdown-body px-2 sm:px-6 md:px-8 pb-8">
+            <blockquote>
+<p>  关于C++中的一些细节之处</p>
+</blockquote>
+<h1 id="base"><a href="#base" class="headerlink" title="base"></a>base</h1><h2 id="overloading"><a href="#overloading" class="headerlink" title="overloading"></a>overloading</h2><p>在函数重载中，不能根据函数返回值来区分重载。</p>
+<p>对于普通函数，不能单纯使用<code>const</code>修饰来区分重载（<code>const</code>并不会影响函数签名，普通函数的重载完全依赖于参数类型、数量、顺序）；而对于类成员函数，可以通过<code>const</code>来区分重载，成员函数可以作用于 <code>const</code> 对象或非 <code>const</code> 对象，因此可以被视为不同的重载。</p>
+<ul>
+<li><p>关于函数重载的原理</p>
+<p>函数重载在C++中的实现主要依靠编译器的名称修饰（Name Mangling）和函数匹配机制</p>
+<p>名称修饰是一个将函数的名称和参数列表编码为唯一表示的过程。这样，即使多个函数有相同的基本名称，它们在编译后的二进制代码中也有不同的标识符。</p>
+<p>当调用一个重载的函数时，编译器会根据调用中提供的参数类型、数量和顺序来确定应该使用哪个函数版本。这个过程称为函数匹配。编译器会查看所有重载函数的候选，并选择与提供的参数最匹配的那个。</p>
+<p><strong>最佳匹配</strong>：如果有多个重载函数候选，编译器会根据一系列规则来选择“最佳匹配”。这些规则包括参数类型的精确匹配、需要最少隐式转换的匹配等。如果编译器不能确定最佳匹配，或者找到两个或更多同样匹配的候选，它会报错，表示有歧义。</p>
+<blockquote>
+<p>  整个重载解析是在编译期完成的，不会影响性能	</p>
+</blockquote>
+</li>
+<li><p>关于函数的最佳实践</p>
+<ol>
+<li>Keep function short</li>
+<li>Do one logical thing(single-responsibility principle)</li>
+<li>Use expressive names</li>
+<li>Document non-trivial functions</li>
+</ol>
+</li>
+</ul>
+<h2 id="fallthrough-attribute"><a href="#fallthrough-attribute" class="headerlink" title="[[fallthrough]] attribute"></a>[[fallthrough]] attribute</h2><p>Since C++ 17, compilers are encouraged to warn on fall-through</p>
+<ul>
+<li><p>example</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">switch</span> (c) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;a&#x27;</span>:</span><br><span class="line">        <span class="built_in">f</span>();				<span class="comment">// Warning emitted</span></span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;b&#x27;</span>:				<span class="comment">// Warning probably suppressed</span></span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;c&#x27;</span>:</span><br><span class="line">        <span class="built_in">g</span>();</span><br><span class="line">    	[[fallthrough]];	<span class="comment">// Warning suppressed</span></span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;d&#x27;</span>:</span><br><span class="line">        <span class="built_in">h</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div></li>
+</ul>
+<h2 id="range-based-loops"><a href="#range-based-loops" class="headerlink" title="range-based loops"></a>range-based loops</h2><p>Allows to limit variable scope in range-based loops</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// in c++ 17</span></span><br><span class="line">std::array data = &#123;<span class="string">&quot;hello&quot;</span>, <span class="string">&quot;,&quot;</span>, <span class="string">&quot;world&quot;</span>&#125;;</span><br><span class="line">std::<span class="type">size_t</span> i = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">auto</span> &amp; d: data) &#123;</span><br><span class="line">    std::cout &lt;&lt; i++ &lt;&lt; <span class="string">&#x27; &#x27;</span> &lt;&lt; d &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// in c++ 20</span></span><br><span class="line"><span class="keyword">for</span> (std::<span class="type">size_t</span> i = <span class="number">0</span>; <span class="keyword">auto</span> <span class="type">const</span> &amp; d: data) &#123;</span><br><span class="line">    std::cout &lt;&lt; i++ &lt;&lt; <span class="string">&#x27; &#x27;</span> &lt;&lt; d &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<h2 id="Inline-keyword"><a href="#Inline-keyword" class="headerlink" title="Inline keyword"></a>Inline keyword</h2><blockquote>
+<p>  Inline function originally</p>
+<ul>
+<li><p>Applies to a function to tell the compiler to inline it</p>
+<p>That is, replace function calls by the function’s content(similar to how a macro works)</p>
+</li>
+<li><p>Only a hint, compiler can still choose to not inline</p>
+</li>
+<li><p>Avoids call overhead at the cost of increasing binary size</p>
+</li>
+</ul>
+<p>  Major side effect</p>
+<ul>
+<li>The linker reduces the duplicated functions into one</li>
+<li>An inline function definition can thus live in header files</li>
+</ul>
+</blockquote>
+<p>Inline functions nowadays</p>
+<ul>
+<li>Compilers can judge far better when to inline or not</li>
+<li>Putting functions into headers became main purpose</li>
+<li>Many types of functions are marked <code>inline</code> by default:<ul>
+<li>function templates</li>
+<li><code>constexpr</code> functions</li>
+<li>class member functions</li>
+</ul>
+</li>
+</ul>
+<h2 id="Assertions"><a href="#Assertions" class="headerlink" title="Assertions"></a>Assertions</h2><p>Checking invariants in a program</p>
+<ul>
+<li>An invariant is a property that is guaranteed to be true during certain phases of a program, and the program might crash or yield worong results if it is violated</li>
+<li>This can be checked using assert</li>
+<li>The program will be aborted if the assertion fails</li>
+</ul>
+<blockquote>
+<p>  Good practice: Assert</p>
+<ul>
+<li>Assertions are mostly for developers and debugging</li>
+<li>Use them to check import invariants of your program</li>
+<li>Prefer handling user-facing errors with help error messages&#x2F;exceptions</li>
+<li>Assertions can impact the speed of a program<ul>
+<li>Assertions are disabled when the macro <code>NDEBUG</code> is defined</li>
+<li>Decide if you want to disable them when you release code</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<p><strong>Better: Static Assert</strong></p>
+<p>Checking invariants at compile time</p>
+<ul>
+<li>To check invariants at compile time, use <code>static_assert</code></li>
+<li>The assertion can be any constant expression</li>
+<li>The message argument is optional in C++ 17 and later</li>
+</ul>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">double</span> <span class="title">f</span><span class="params">(UserType a)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">static_assert</span>(</span><br><span class="line">    	std::is_floating_point_v&lt;UserType&gt;,</span><br><span class="line">    	<span class="string">&quot;This fucntion expects floating-point types.&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> std::<span class="built_in">sqrt</span>(a);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>:astonished: Good practice</p>
+<p>使用 <code>assert</code> 来验证运行时条件，如函数参数的有效性或算法的中间状态。</p>
+<p>使用 <code>static_assert</code> 来验证编译时的条件，如模板类型的属性、数组大小或类型支持的操作。</p>
+<h1 id="Object-orientation"><a href="#Object-orientation" class="headerlink" title="Object orientation"></a>Object orientation</h1><h2 id="Objects-and-Classes"><a href="#Objects-and-Classes" class="headerlink" title="Objects and Classes"></a>Objects and Classes</h2><h3 id="Implementing-methods"><a href="#Implementing-methods" class="headerlink" title="Implementing methods"></a>Implementing methods</h3><p>:kissing_heart: Good practice: Implementing methods</p>
+<ul>
+<li>usually in .cpp, outside of class declaration</li>
+<li>using the class name as “namespace”</li>
+<li>short member functions can be in the header</li>
+<li>some functions (templates, <code>constexpr</code>) must be in the header</li>
+</ul>
+<h3 id="final-keyword"><a href="#final-keyword" class="headerlink" title="final keyword"></a>final keyword</h3><p>C++11引入：限制类的继承以及阻止成员函数的覆盖</p>
+<ul>
+<li><p>阻止类被继承</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Base</span> <span class="keyword">final</span> &#123; &#125;;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Derived</span> : <span class="keyword">public</span> Base &#123; <span class="comment">/* 编译错误：Base 是一个 final 类，不能被继承 */</span> &#125;;</span><br></pre></td></tr></table></figure></div>
+</li>
+<li><p>阻止派生类中覆盖方法</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Base</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="type">void</span> <span class="title">foo</span><span class="params">()</span> <span class="keyword">final</span> </span>&#123;  <span class="comment">/* foo 函数不能在派生类中被覆盖 */</span> &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Derived</span> : <span class="keyword">public</span> Base &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">foo</span><span class="params">()</span> <span class="keyword">override</span> </span>&#123;  <span class="comment">/* 编译错误：foo 被声明为 final，不能被覆盖 */</span> &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></div></li>
+</ul>
+<h3 id="static-members"><a href="#static-members" class="headerlink" title="static members"></a>static members</h3><p>类的静态成员是与类本身相关联的成员，而不是与类的各个实例相关联的</p>
+<p><strong>静态成员变量</strong></p>
+<ol>
+<li>共享：静态成员变量为类的所有对象所共享。无论创建了多少个类的实例，都只有一个静态成员变量的拷贝</li>
+<li>独立于任何对象：即使没有创建类的实例，静态成员变量也存在，它们与类类型自身关联，而不是与特定的实例关联</li>
+<li>初始化：静态成员变量需要在类定义外进行初始化（通常在源文件中），对于整型或枚举类型的常量静态成员，可以在类内直接初始化</li>
+<li>访问：静态成员变量可以通过类名和作用域解析运算符 <code>::</code> 访问，也可以通过类的对象或引用访问</li>
+</ol>
+<p><strong>静态成员函数</strong></p>
+<ol>
+<li>独立于对象：静态成员函数不依赖于类的任何特定实例。它们不能访问类的非静态成员变量，也不能调用非静态成员函数</li>
+<li>全局访问：静态成员函数可以在不创建类的实例的情况下调用</li>
+<li>访问限制：静态成员函数遵循正常的访问控制规则（<code>public</code>、<code>protected</code>、<code>private</code>）</li>
+</ol>
+<p>:confused: example</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">MyClass</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="type">static</span> <span class="type">int</span> staticVar; <span class="comment">// 静态成员变量声明</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">static</span> <span class="type">void</span> <span class="title">staticFunc</span><span class="params">()</span> </span>&#123; <span class="comment">// 静态成员函数</span></span><br><span class="line">        <span class="comment">// 可以访问静态成员变量，但不能访问非静态成员变量</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> MyClass::staticVar = <span class="number">0</span>; <span class="comment">// 静态成员变量定义和初始化</span></span><br></pre></td></tr></table></figure></div>
+
+<blockquote>
+<p>  静态成员变量通常用于存储与类相关的信息，如对象计数器或类特定的常量值</p>
+<p>  静态成员函数常用于实现与类的具体实例无关的功能，如工厂方法或辅助函数</p>
+</blockquote>
+<h2 id="构造函数"><a href="#构造函数" class="headerlink" title="构造函数"></a>构造函数</h2><h3 id="Rule-of-3-5"><a href="#Rule-of-3-5" class="headerlink" title="Rule of 3&#x2F;5"></a>Rule of 3&#x2F;5</h3><p>:astonished: <strong>Good practice: The rule of 3&#x2F;5(C++98&#x2F;C++11)</strong></p>
+<ul>
+<li><p>Rule of three</p>
+<p>如果你的类需要自定义析构函数、拷贝构造函数或拷贝赋值操作符中的任何一个，那么你很可能需要自定义所有这三个</p>
+<p>这是因为自定义析构函数通常意味着你的类在管理（如分配和释放）资源，这通常需要自定义的拷贝控制来正确地复制或赋值这些资源</p>
+</li>
+<li><p>Rule of five</p>
+<p>规则五包括规则三中的三个函数（析构函数、拷贝构造函数、拷贝赋值操作符）以及两个新的函数：移动构造函数和移动赋值操作符</p>
+<p>如果你需要自定义析构函数，你很可能也需要自定义所有五个函数，以正确处理移动语义，从而提高效率</p>
+</li>
+</ul>
+<h3 id="构造函数中的初始化列表"><a href="#构造函数中的初始化列表" class="headerlink" title="构造函数中的初始化列表"></a>构造函数中的初始化列表</h3><p>:+1: <strong>成员初始化列表提供的值优先于类定义处的默认值</strong> </p>
+<blockquote>
+<p>  成员初始化列表直接初始化成员变量，而不是先默认初始化然后赋值；对于某些类型（如引用和常量成员），这是必需的，因为它们不能被赋值</p>
+</blockquote>
+<p>其次就是在效率方面：对于非内置类型的成员，使用初始化列表通常比在构造函数中赋值更高效，避免了额外的构造和赋值</p>
+<h3 id="默认构造函数"><a href="#默认构造函数" class="headerlink" title="默认构造函数"></a>默认构造函数</h3><ul>
+<li><p>定义：如果一个构造函数可以不带任何参数被调用（或者所有参数都有默认值），则称为默认构造函数</p>
+</li>
+<li><p>作用：在不提供任何初始化值的情况下创建对象</p>
+</li>
+<li><p>示例：</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Example</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">Example</span>() = <span class="keyword">default</span>;	<span class="comment">// 保持了特殊成员函数的自动生成：比如拷贝构造函数，析构函数等</span></span><br><span class="line">	<span class="built_in">Example</span>() &#123; &#125; 			<span class="comment">// 破坏了类的聚合类型属性，可能会阻止编译器生成其他特殊成员函数</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></div></li>
+</ul>
+<p><strong>行为：</strong></p>
+<ol>
+<li>对于内置类型的成员：默认构造函数不会初始化这些成员，它们的初始值是未定义的，除非它们被显示初始化</li>
+<li>对于类类型的成员：这些成员的默认构造函数将被调用来初始化它们</li>
+<li>对于继承的情况：如果类是从其他类继承的，基类的默认构造函数将被调用</li>
+<li>对于带有默认成员初始化的成员：在C++11及更高版本中，可以在类定义中直接给成员变量赋初值，如果这样做了，即使是默认的构造函数，这些成员也会被初始化为指定的值</li>
+</ol>
+<h3 id="参数化构造函数"><a href="#参数化构造函数" class="headerlink" title="参数化构造函数"></a>参数化构造函数</h3><ul>
+<li><p>定义：带有一个或多个参数的构造函数，用于根据提供的参数初始化对象</p>
+</li>
+<li><p>作用：提供更灵活的初始化方式，允许在创建对象时指定初始值</p>
+</li>
+<li><p>示例：</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Example</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">Example</span>(...args) &#123; <span class="comment">/* 构造函数体 */</span> &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></div></li>
+</ul>
+<p><strong>行为：</strong></p>
+<ol>
+<li>实现类型转换：如果参数化构造函数没有被声明为<code>explicit</code>，它还可能用于隐式类型转换</li>
+</ol>
+<h3 id="拷贝构造函数"><a href="#拷贝构造函数" class="headerlink" title="拷贝构造函数"></a>拷贝构造函数</h3><ul>
+<li><p>定义：参数为对同类型对象的引用（通常为常量引用）的构造函数</p>
+</li>
+<li><p>作用：用于通过复制另一个同类型对象来初始化新对象</p>
+</li>
+<li><p>示例：</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Example</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">Example</span>(<span class="type">const</span> Example &amp; other) &#123; <span class="comment">/* 拷贝构造函数体 */</span> &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></div></li>
+</ul>
+<p><strong>行为：</strong></p>
+<ol>
+<li>创建对象副本：拷贝构造函数通过接收一个同类型对象的引用作为参数来创建新对象的副本。这个过程包括复制现有对象所有的成员变量的值</li>
+<li>被隐式调用：当函数通过值传递或者函数返回对象时，拷贝构造函数会被隐式调用</li>
+</ol>
+<h3 id="移动构造函数（C-11引入）"><a href="#移动构造函数（C-11引入）" class="headerlink" title="移动构造函数（C++11引入）"></a>移动构造函数（C++11引入）</h3><ul>
+<li><p>定义：参数为同类型对象的右值引用的构造函数</p>
+</li>
+<li><p>作用：允许资源的转移，提高效率，尤其用于临时对象</p>
+</li>
+<li><p>示例：</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Example</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">Example</span>(Example &amp;&amp; other) &#123; <span class="comment">/* 移动构造函数体 */</span> &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></div></li>
+</ul>
+<p><strong>行为：</strong></p>
+<ol>
+<li>参数类型：移动构造函数接受一个同类型对象的右值引用作为参考</li>
+<li>资源转移：与拷贝构造函数（进行深拷贝）不同，移动构造函数设计用来窃取源对象的资源。这意味着它通过将资源从源对象转移到新创建的对象，来实现快速构造，而不是复制资源</li>
+<li>优化临时对象：移动构造函数特别适用于临时对象或将要销毁的对象，因为这些情况下资源转移是安全的。比如在函数返回临时对象或进行对象赋值时，移动构造函数可以显著提高效率</li>
+<li>自动生成规则：如果一个类没有自定义拷贝构造函数、拷贝赋值操作符、移动赋值操作符以及析构函数，编译器可能会自动生成移动构造函数</li>
+</ol>
+<h3 id="委托构造函数（C-11引入）"><a href="#委托构造函数（C-11引入）" class="headerlink" title="委托构造函数（C++11引入）"></a>委托构造函数（C++11引入）</h3><p>定义：一个构造函数在其初始化列表中调用同一类的另一个构造函数</p>
+<ul>
+<li><p>作用：简化多个构造函数的代码，避免重复</p>
+</li>
+<li><p>示例：</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Example</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">Example</span>(<span class="type">int</span> x): <span class="built_in">m_x</span>(x) &#123;&#125;</span><br><span class="line">    <span class="built_in">Example</span>(<span class="type">int</span> x, <span class="type">int</span> y): <span class="built_in">Example</span>(x), <span class="built_in">m_y</span>(y) &#123;&#125; <span class="comment">// 委托构造函数和成员初始化列表不能同时存在 </span></span><br><span class="line">    <span class="built_in">Example</span>(<span class="type">int</span> x, <span class="type">int</span> y): <span class="built_in">Example</span>(x) &#123; <span class="keyword">this</span>-&gt;m_y = y; &#125; <span class="comment">// ok</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="type">int</span> m_x, m_y;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></div></li>
+</ul>
+<p><strong>行为：</strong></p>
+<ol>
+<li>减少重复代码：委托构造函数可以减少在多个构造函数中重复相同的初始化代码。这有助于提高代码的可维护性和一致性</li>
+<li>初始化顺序：在委托构造函数中，首先执行被调用的构造函数，然后才执行调用构造函数的主体部分</li>
+<li>限制：不能在同一个构造函数中同时使用委托构造函数和成员初始化列表</li>
+<li>使用场景：适合于那些有多个构造函数，且这些构造函数之间有共同初始化逻辑</li>
+</ol>
+<h3 id="显式构造函数"><a href="#显式构造函数" class="headerlink" title="显式构造函数"></a>显式构造函数</h3><ul>
+<li><p>定义：使用 <code>explicit</code> 关键字标记的构造函数</p>
+</li>
+<li><p>作用：防止隐式类型转换和意外的构造函数调用</p>
+</li>
+<li><p>示例：</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Example</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">explicit</span> <span class="title">Example</span><span class="params">(...)</span> </span>&#123; <span class="comment">/* 构造函数体 */</span> &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></div></li>
+</ul>
+<h3 id="隐式构造函数"><a href="#隐式构造函数" class="headerlink" title="隐式构造函数"></a>隐式构造函数</h3><ul>
+<li>定义：未用 <code>explicit</code> 关键字标记的构造函数</li>
+<li>作用：允许编译器在需要时自动调用该构造函数进行类型转换</li>
+</ul>
+<h3 id="删除的构造函数（C-11引入）"><a href="#删除的构造函数（C-11引入）" class="headerlink" title="删除的构造函数（C++11引入）"></a>删除的构造函数（C++11引入）</h3><ul>
+<li><p>定义：使用 <code>delete</code> 关键字明确禁止的构造函数</p>
+</li>
+<li><p>作用：防止生成默认的构造函数或禁止某些类型的对象构造</p>
+</li>
+<li><p>示例：</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Example</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">Example</span>() = <span class="keyword">delete</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></div></li>
+</ul>
+<h3 id="继承的构造函数（C-11引入）"><a href="#继承的构造函数（C-11引入）" class="headerlink" title="继承的构造函数（C++11引入）"></a>继承的构造函数（C++11引入）</h3><ul>
+<li><p>定义：子类可以使用 <code>using</code> 语句继承基类的构造函数</p>
+</li>
+<li><p>作用：允许子类继承基类的构造函数，简化代码</p>
+</li>
+<li><p>示例：</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Base</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">Base</span>(...) &#123;&#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Derived</span>: <span class="keyword">public</span> Base &#123;</span><br><span class="line">	<span class="keyword">using</span> Base::Base;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div></li>
+</ul>
+<p><strong>行为：</strong></p>
+<ol>
+<li>自动转发参数：当使用基类的构造函数创建派生类对象时，构造函数的参数会被自动转发给基类的对应构造函数</li>
+</ol>
+<blockquote>
+<p>  不支持函数重载</p>
+</blockquote>
+<p><strong>关于委托构造函数和直接初始化的一些细节：</strong></p>
+<blockquote>
+<p>  在需要代码重用和保持初始化逻辑一致时有限考虑委托构造函数</p>
+<p>  构造函数初始化逻辑和独立且简单时优先考虑直接初始化</p>
+</blockquote>
+<h2 id="Polymorphism"><a href="#Polymorphism" class="headerlink" title="Polymorphism"></a>Polymorphism</h2><h1 id="Memory-organization"><a href="#Memory-organization" class="headerlink" title="Memory organization"></a>Memory organization</h1><h2 id="聚合类型"><a href="#聚合类型" class="headerlink" title="聚合类型"></a>聚合类型</h2><blockquote>
+<p>  在C++中，聚合类型是一种简单的数据结构，它允许用花括号初始化列表来初始化成员：聚合类型包括数组和具有以下特性的类或结构体</p>
+</blockquote>
+<ul>
+<li><p>无用户提供的构造函数：聚合类型不能有任何用户提供的构造函数，这意味着不能有任何形式的自定义构造函数，包括那些体为空的构造函数</p>
+</li>
+<li><p>无私有或保护的非静态数据成员：聚合类型的所有非静态的数据成员都必须是公有的，私有或保护的成员会阻止类型被视为聚合</p>
+</li>
+<li><p>无虚函数和虚基类：聚合类型不能有虚函数，也不能从虚基类派生</p>
+</li>
+<li><p>C++17开始，如果特殊成员函数被显式默认或删除（<code>= default</code>或<code>= delete</code>），不影响类型的聚合性</p>
+</li>
+<li><p>C++14开始，聚合类型可以包含带有初始值设定项的非静态成员</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">Aggregate</span> &#123;</span><br><span class="line">    <span class="type">int</span> x = <span class="number">1</span>;  		<span class="comment">// 带有初始值设定项的非静态成员</span></span><br><span class="line">    <span class="type">double</span> y = <span class="number">2.0</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">Aggregate a1; 			<span class="comment">// a1.x = 1, a1.y = 2.0</span></span><br><span class="line">Aggregate a2 = &#123;&#125;; 		<span class="comment">// a2.x = 1, a2.y = 2.0</span></span><br><span class="line">Aggregate a3 = &#123;<span class="number">3</span>&#125;; 	<span class="comment">// a3.x = 3, a3.y = 2.0</span></span><br><span class="line">Aggregate a4 = &#123;<span class="number">4</span>, <span class="number">4.0</span>&#125;;<span class="comment">// a4.x = 4, a4.y = 4.0</span></span><br></pre></td></tr></table></figure></div>
+</li>
+<li><p>关于聚合类型的静态成员</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">Aggregate</span> &#123;</span><br><span class="line">    <span class="type">static</span> <span class="type">int</span> staticValue;  	<span class="comment">// 静态成员变量</span></span><br><span class="line">    <span class="type">int</span> x;</span><br><span class="line">    <span class="type">double</span> y;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> Aggregate::staticValue = <span class="number">10</span>;<span class="comment">// 静态成员变量的定义</span></span><br><span class="line"></span><br><span class="line">Aggregate agg = &#123;<span class="number">1</span>, <span class="number">2.0</span>&#125;; 		<span class="comment">// 聚合初始化</span></span><br></pre></td></tr></table></figure></div></li>
+</ul>
+<p><strong>实际开发中的用途：</strong></p>
+<ol>
+<li>简单数据结构：配置选项、坐标点、数据记录等通常只包含数据而无复杂的行为的简单数据结构</li>
+<li>兼容C结构体：聚合类型在C++中与C语言的结构体兼容性良好，在涉及C和C++的混合编程时非常有用，可以简化数据结构的传递和共享</li>
+<li>序列化和反序列化：聚合类型由于其结构简单，容易被映射到文件，网络数据或其他序列化形式，使得系列化和反序列化过称更加直接和高效</li>
+<li>POD类型：聚合类型通常也是平凡的(Trivial)和标准布局(Standard Layout)，这使得它们成为处理低级数据操作的理想选择，如直接内存操作、与硬件接口交互等</li>
+</ol>
+<h2 id="POD类型"><a href="#POD类型" class="headerlink" title="POD类型"></a>POD类型</h2><blockquote>
+<p>  POD类型是一种具有简单内存布局的类型，类似于C中的数据结构。POD类型在内存布局、初始化和拷贝行为上都非常简单，这使得他们非常适合于低级的编程任务，如与C交互、直接操作内存、进行二进制IO等</p>
+</blockquote>
+<h3 id="简单内存布局"><a href="#简单内存布局" class="headerlink" title="简单内存布局"></a>简单内存布局</h3><p>POD类型具有与C兼容的内存布局，这意味着没有复杂的类特性，像虚函数或虚基类。它们的内存布局是连续且预测的</p>
+<h3 id="两大类别"><a href="#两大类别" class="headerlink" title="两大类别"></a>两大类别</h3><p>POD类型分为两大类别：标准布局类型(Standard-layout type)和平凡类型(Trivial type)</p>
+<ul>
+<li><p>标准布局类型：与C结构体有兼容的内存布局，而不关心构造、析构和拷贝的复杂性</p>
+<p>所有非静态成员有着相同的内存布局，继承结构简单（不能有虚基类），无虚函数，类的非静态成员都应该在同一访问控制区，简单的基类（被继承的基类也要是标准布局类型）</p>
+<p>C++11及更高版本提供了类型特征类，用于检测一个类型是否是标准布局类型。<code>std::is_standard_layout&lt;T&gt;::value</code> 可用来检查类型 <code>T</code> 是否是标准布局类型</p>
+</li>
+<li><p>平凡类型：构造函数、析构函数、拷贝构造函数、拷贝赋值运算符、移动构造函数和移动赋值运算符都是平凡的</p>
+<p>无自定义构造函数，无自定义析构函数，拷贝构造函数和拷贝赋值运算符仅执行简单的位复制</p>
+<p>C++11及更高版本提供了类型特征类，用于检测一个类型是否是平凡类型。<br><code>std::is_trivial&lt;T&gt;::value</code> 可用来检查类型 <code>T</code> 是否是平凡类型</p>
+</li>
+</ul>
+<h3 id="特性"><a href="#特性" class="headerlink" title="特性"></a>特性</h3><ul>
+<li><strong>无自定义构造、析构和赋值函数</strong>：POD类型不能有自定义的构造函数、析构函数或赋值运算符</li>
+<li><strong>无虚函数或虚基类</strong>：POD类型不能包含虚函数或继承自虚基类</li>
+<li><strong>非静态成员都是POD</strong>：POD类型的非静态数据成员也必须是POD类型</li>
+<li><strong>无非静态引用成员</strong>：POD类型不能包含非静态引用成员</li>
+</ul>
+<h3 id="用途"><a href="#用途" class="headerlink" title="用途"></a>用途</h3><ul>
+<li><strong>与C语言的互操作</strong>：POD类型可以安全地在C和C++代码之间传递，因为它们的内存布局和行为与C结构体兼容</li>
+<li><strong>性能敏感的应用</strong>：在性能敏感的应用中，比如嵌入式系统、系统编程或游戏开发，POD类型由于其简单性和高效性而受到青睐</li>
+<li><strong>序列化和网络通信</strong>：由于POD类型可以通过简单的内存拷贝进行复制，它们非常适合于序列化和网络通信</li>
+</ul>
+<h3 id="检测POD类型"><a href="#检测POD类型" class="headerlink" title="检测POD类型"></a>检测POD类型</h3><p>在C++11及更高版本中，可以使用 <code>std::is_pod&lt;T&gt;::value</code> 来检查一个类型 <code>T</code> 是否是POD类型</p>
+<blockquote>
+<p>  关于POD类型和聚合类型的的联系与区别</p>
+</blockquote>
+<ul>
+<li>联系：所有POD类型都是聚合类型，但并非所有的聚合类型都是POD类型，这意味着聚合类型是一个更广泛的概念</li>
+<li>区别：<ul>
+<li>聚合类型主要关注于如何初始化对象（通过花括号初始化列表），而不关心对象的内部结构或构造&#x2F;析构的复杂性</li>
+<li>POD类型对类的内部结构和行为有更严格的要求，比如不允许有虚函数、必须是平凡的和标准布局的。这使得POD类型在内存布局和行为上更接近于C语言的结构体</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+
+        
+
+        
+            <ul class="post-tags-box text-lg mt-1.5 flex-wrap justify-center flex md:hidden">
+                
+                    <li class="tag-item mx-0.5">
+                        <a href="/tags/Cpp/">#Cpp</a>&nbsp;
+                    </li>
+                
+            </ul>
+        
+
+        
+
+        
+            <div class="article-nav my-8 flex justify-between items-center px-2 sm:px-6 md:px-8">
+                
+                    <div class="article-prev border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
+                        <a class="prev"
+                        rel="prev"
+                        href="/2022/02/13/2023-02-13-cs110/"
+                        >
+                            <span class="left arrow-icon flex justify-center items-center">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </span>
+                            <span class="title flex justify-center items-center">
+                                <span class="post-nav-title-item">CS110</span>
+                                <span class="post-nav-item">上一篇</span>
+                            </span>
+                        </a>
+                    </div>
+                
+                
+                    <div class="article-next border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
+                        <a class="next"
+                        rel="next"
+                        href="/2022/01/20/2022-01-20-C%E8%AF%AD%E8%A8%80/"
+                        >
+                            <span class="title flex justify-center items-center">
+                                <span class="post-nav-title-item">C语言</span>
+                                <span class="post-nav-item">下一篇</span>
+                            </span>
+                            <span class="right arrow-icon flex justify-center items-center">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </span>
+                        </a>
+                    </div>
+                
+            </div>
+        
+
+
+        
+    </div>
+
+    
+        <div class="toc-content-container">
+            <div class="post-toc-wrap">
+    <div class="post-toc">
+        <div class="toc-title">此页目录</div>
+        <div class="page-title">Cpp基础</div>
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#base"><span class="nav-text">base</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#overloading"><span class="nav-text">overloading</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fallthrough-attribute"><span class="nav-text">[[fallthrough]] attribute</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#range-based-loops"><span class="nav-text">range-based loops</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Inline-keyword"><span class="nav-text">Inline keyword</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Assertions"><span class="nav-text">Assertions</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Object-orientation"><span class="nav-text">Object orientation</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Objects-and-Classes"><span class="nav-text">Objects and Classes</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Implementing-methods"><span class="nav-text">Implementing methods</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#final-keyword"><span class="nav-text">final keyword</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#static-members"><span class="nav-text">static members</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0"><span class="nav-text">构造函数</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Rule-of-3-5"><span class="nav-text">Rule of 3&#x2F;5</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E4%B8%AD%E7%9A%84%E5%88%9D%E5%A7%8B%E5%8C%96%E5%88%97%E8%A1%A8"><span class="nav-text">构造函数中的初始化列表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%BB%98%E8%AE%A4%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0"><span class="nav-text">默认构造函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E6%95%B0%E5%8C%96%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0"><span class="nav-text">参数化构造函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8B%B7%E8%B4%9D%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0"><span class="nav-text">拷贝构造函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A7%BB%E5%8A%A8%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%EF%BC%88C-11%E5%BC%95%E5%85%A5%EF%BC%89"><span class="nav-text">移动构造函数（C++11引入）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A7%94%E6%89%98%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%EF%BC%88C-11%E5%BC%95%E5%85%A5%EF%BC%89"><span class="nav-text">委托构造函数（C++11引入）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%98%BE%E5%BC%8F%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0"><span class="nav-text">显式构造函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9A%90%E5%BC%8F%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0"><span class="nav-text">隐式构造函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%A0%E9%99%A4%E7%9A%84%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%EF%BC%88C-11%E5%BC%95%E5%85%A5%EF%BC%89"><span class="nav-text">删除的构造函数（C++11引入）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%A7%E6%89%BF%E7%9A%84%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%EF%BC%88C-11%E5%BC%95%E5%85%A5%EF%BC%89"><span class="nav-text">继承的构造函数（C++11引入）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Polymorphism"><span class="nav-text">Polymorphism</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Memory-organization"><span class="nav-text">Memory organization</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%81%9A%E5%90%88%E7%B1%BB%E5%9E%8B"><span class="nav-text">聚合类型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#POD%E7%B1%BB%E5%9E%8B"><span class="nav-text">POD类型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AE%80%E5%8D%95%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80"><span class="nav-text">简单内存布局</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%A4%E5%A4%A7%E7%B1%BB%E5%88%AB"><span class="nav-text">两大类别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%89%B9%E6%80%A7"><span class="nav-text">特性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%94%A8%E9%80%94"><span class="nav-text">用途</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A3%80%E6%B5%8BPOD%E7%B1%BB%E5%9E%8B"><span class="nav-text">检测POD类型</span></a></li></ol></li></ol></li></ol>
+
+    </div>
+</div>
+        </div>
+    
+</div>
+
+
+
+                
+
+            </div>
+
+            
+
+        </div>
+
+        <div class="main-content-footer">
+            <footer class="footer mt-5 py-5 h-auto text-base text-third-text-color relative border-t-2 border-t-border-color">
+    <div class="info-container py-3 text-center">
+        
+        <div class="text-center">
+            &copy;
+            
+            2024&nbsp;&nbsp;<i class="fa-solid fa-heart fa-beat" style="--fa-animation-duration: 0.5s; color: #f54545"></i>&nbsp;&nbsp;<a href="/">fetch150zy</a>
+            
+                
+                <p class="post-count space-x-0.5">
+                    <span>
+                        共 52 篇文章
+                    </span>
+                    
+                </p>
+            
+        </div>
+        
+        <div class="relative text-center lg:absolute lg:left-[20px] lg:top-1/2 lg:-translate-y-1/2 lg:text-left">
+            <span class="lg:block text-sm">由 <?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg class="relative top-[2px] inline-block align-baseline" version="1.1" id="圖層_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="1rem" height="1rem" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve"><path fill="#0E83CD" d="M256.4,25.8l-200,115.5L56,371.5l199.6,114.7l200-115.5l0.4-230.2L256.4,25.8z M349,354.6l-18.4,10.7l-18.6-11V275H200v79.6l-18.4,10.7l-18.6-11v-197l18.5-10.6l18.5,10.8V237h112v-79.6l18.5-10.6l18.5,10.8V354.6z"/></svg><a target="_blank" class="text-base" href="https://hexo.io">Hexo</a> 驱动</span>
+            <span class="text-sm lg:block">主题&nbsp;<a class="text-base" target="_blank" href="https://github.com/EvanNotFound/hexo-theme-redefine">Redefine v2.6.1</a></span>
+        </div>
+        
+        
+        
+        
+        
+    </div>  
+</footer>
+        </div>
+    </div>
+
+    
+        <div class="post-tools">
+            <div class="post-tools-container">
+    <ul class="article-tools-list">
+        <!-- TOC aside toggle -->
+        
+            <li class="right-bottom-tools page-aside-toggle">
+                <i class="fa-regular fa-outdent"></i>
+            </li>
+        
+
+        <!-- go comment -->
+        
+    </ul>
+</div>
+
+        </div>
+    
+
+    <div class="right-side-tools-container">
+        <div class="side-tools-container">
+    <ul class="hidden-tools-list">
+        <li class="right-bottom-tools tool-font-adjust-plus flex justify-center items-center">
+            <i class="fa-regular fa-magnifying-glass-plus"></i>
+        </li>
+
+        <li class="right-bottom-tools tool-font-adjust-minus flex justify-center items-center">
+            <i class="fa-regular fa-magnifying-glass-minus"></i>
+        </li>
+
+        <li class="right-bottom-tools tool-dark-light-toggle flex justify-center items-center">
+            <i class="fa-regular fa-moon"></i>
+        </li>
+
+        <!-- rss -->
+        
+
+        
+
+        <li class="right-bottom-tools tool-scroll-to-bottom flex justify-center items-center">
+            <i class="fa-regular fa-arrow-down"></i>
+        </li>
+    </ul>
+
+    <ul class="visible-tools-list">
+        <li class="right-bottom-tools toggle-tools-list flex justify-center items-center">
+            <i class="fa-regular fa-cog fa-spin"></i>
+        </li>
+        
+            <li class="right-bottom-tools tool-scroll-to-top flex justify-center items-center">
+                <i class="arrow-up fas fa-arrow-up"></i>
+                <span class="percent"></span>
+            </li>
+        
+        
+    </ul>
+</div>
+
+    </div>
+
+    <div class="image-viewer-container">
+    <img src="">
+</div>
+
+
+    
+
+</main>
+
+
+    
+<script src="/js/libs/Swup.min.js"></script>
+
+<script src="/js/libs/SwupSlideTheme.min.js"></script>
+
+<script src="/js/libs/SwupScriptsPlugin.min.js"></script>
+
+<script src="/js/libs/SwupProgressPlugin.min.js"></script>
+
+<script src="/js/libs/SwupScrollPlugin.min.js"></script>
+
+<script src="/js/libs/SwupPreloadPlugin.min.js"></script>
+
+<script>
+    const swup = new Swup({
+        plugins: [
+            new SwupScriptsPlugin({
+                optin: true,
+            }),
+            new SwupProgressPlugin(),
+            new SwupScrollPlugin({
+                offset: 80,
+            }),
+            new SwupSlideTheme({
+                mainElement: ".main-content-body",
+            }),
+            new SwupPreloadPlugin(),
+        ],
+        containers: ["#swup"],
+    });
+</script>
+
+
+
+
+
+
+
+<script src="/js/tools/imageViewer.js" type="module"></script>
+
+<script src="/js/utils.js" type="module"></script>
+
+<script src="/js/main.js" type="module"></script>
+
+<script src="/js/layouts/navbarShrink.js" type="module"></script>
+
+<script src="/js/tools/scrollTopBottom.js" type="module"></script>
+
+<script src="/js/tools/lightDarkSwitch.js" type="module"></script>
+
+<script src="/js/layouts/categoryList.js" type="module"></script>
+
+
+
+
+
+
+
+    
+<script src="/js/layouts/lazyload.js" type="module"></script>
+
+
+
+
+
+
+  
+<script src="/js/libs/Typed.min.js"></script>
+
+  
+<script src="/js/plugins/typed.js" type="module"></script>
+
+
+
+
+
+
+
+
+
+<div class="post-scripts" data-swup-reload-script>
+    
+        
+<script src="/js/tools/tocToggle.js" type="module"></script>
+
+<script src="/js/layouts/toc.js" type="module"></script>
+
+<script src="/js/plugins/tabs.js" type="module"></script>
+
+    
+</div>
+
+
+</body>
+</html>

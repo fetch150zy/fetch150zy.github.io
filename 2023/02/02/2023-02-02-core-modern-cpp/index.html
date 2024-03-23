@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="keywords" content="computer science">
+    
+    <meta name="author" content="fetch150zy">
+    <!-- preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    
+    <!--- Seo Part-->
+    
+    <link rel="canonical" href="https://fetch150zy.github.io/2023/02/02/2023-02-02-core-modern-cpp/"/>
+    <meta name="robots" content="index,follow">
+    <meta name="googlebot" content="index,follow">
+    <meta name="revisit-after" content="1 days">
+    
+        <meta name="description" content="Core Modern C++constnessconstconstant expressionsconstexpr在编译期使用函数计算常量表达式 example 1234567constexpr int f(int x) &#123;    ...&#125;constexpr int a &#x3D; f(5);	&#x2F;&#x2F; computed at compile-timeint b &#x3D; f(5);			&#x2F;&#x2F;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Cpp核心">
+<meta property="og:url" content="https://fetch150zy.github.io/2023/02/02/2023-02-02-core-modern-cpp/index.html">
+<meta property="og:site_name" content="fetch150zy&#39;blog">
+<meta property="og:description" content="Core Modern C++constnessconstconstant expressionsconstexpr在编译期使用函数计算常量表达式 example 1234567constexpr int f(int x) &#123;    ...&#125;constexpr int a &#x3D; f(5);	&#x2F;&#x2F; computed at compile-timeint b &#x3D; f(5);			&#x2F;&#x2F;">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-02-02T04:00:00.000Z">
+<meta property="article:modified_time" content="2024-03-23T05:46:08.733Z">
+<meta property="article:author" content="fetch150zy">
+<meta property="article:tag" content="Cpp">
+<meta name="twitter:card" content="summary">
+    
+    
+    <!--- Icon Part-->
+    <link rel="icon" type="image/png" href="/img/pacman.png" sizes="192x192">
+    <link rel="apple-touch-icon" sizes="180x180" href="/img/pacman.png">
+    <meta name="theme-color" content="#7FCDCD">
+    <link rel="shortcut icon" href="/img/pacman.png">
+    <!--- Page Info-->
+    
+    <title>
+        
+            Cpp核心 -
+        
+        fetch150zy&#39;s blog
+    </title>
+
+    
+<link rel="stylesheet" href="/fonts/Chillax/chillax.css">
+
+
+    <!--- Inject Part-->
+    
+
+    
+        <style>
+    :root {
+        --preloader-background-color: #fff;
+        --preloader-text-color: #000;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --preloader-background-color: #202124;
+            --preloader-text-color: #fff;
+        }
+    }
+
+    @media (prefers-color-scheme: light) {
+        :root {
+            --preloader-background-color: #fff;
+            --preloader-text-color: #000;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .ml13 {
+            font-size: 2.6rem !important; /* Adjust this value as needed */
+        }
+    }
+
+    .preloader {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem; /* Tailwind 'gap-4' is 1rem */
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        padding: 12px;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh; /* 'h-screen' is 100% of the viewport height */
+        background-color: var(--preloader-background-color);
+        z-index: 1100; /* 'z-[1100]' sets the z-index */
+        transition: opacity 0.2s ease-in-out;
+    }
+
+    .ml13 {
+        font-size: 3.2rem;
+        /* text-transform: uppercase; */
+        color: var(--preloader-text-color);
+        letter-spacing: -1px;
+        font-weight: 500;
+        font-family: 'Chillax-Variable', sans-serif;
+        text-align: center;
+    }
+
+    .ml13 .word {
+        display: inline-flex;
+        flex-wrap: wrap;
+        white-space: nowrap;
+    }
+
+    .ml13 .letter {
+        display: inline-block;
+        line-height: 1em;
+    }
+</style>
+
+<div class="preloader">
+    
+<script src="/js/libs/anime.min.js"></script>
+
+    <h1 class="ml13">
+        fetch150zy&#39;s blog
+    </h1>
+    <script>
+        var textWrapper = document.querySelector('.ml13');
+        // Split text into words
+        var words = textWrapper.textContent.trim().split(' ');
+
+        // Clear the existing content
+        textWrapper.innerHTML = '';
+
+        // Wrap each word and its letters in spans
+        words.forEach(function(word) {
+            var wordSpan = document.createElement('span');
+            wordSpan.classList.add('word');
+            wordSpan.innerHTML = word.replace(/\S/g, "<span class='letter'>$&</span>");
+            textWrapper.appendChild(wordSpan);
+            textWrapper.appendChild(document.createTextNode(' ')); // Add space between words
+        });
+
+
+        anime.timeline({loop: true})
+            .add({
+                targets: '.ml13 .letter',
+                translateY: [100,0],
+                translateZ: 0,
+                opacity: [0,1],
+                easing: "easeOutExpo",
+                duration: 1400,
+                delay: (el, i) => 300 + 30 * i
+            }).add({
+            targets: '.ml13 .letter',
+            translateY: [0,-100],
+            opacity: [1,0],
+            easing: "easeInExpo",
+            duration: 1200,
+            delay: (el, i) => 100 + 30 * i
+        });
+
+        let themeStatus = JSON.parse(localStorage.getItem('REDEFINE-THEME-STATUS'))?.isDark;
+
+        // If the theme status is not found in local storage, check the preferred color scheme
+        if (themeStatus === undefined || themeStatus === null) {
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                themeStatus = 'dark';
+            } else {
+                themeStatus = 'light';
+            }
+        }
+
+        // Now you can use the themeStatus variable in your code
+        if (themeStatus) {
+            document.documentElement.style.setProperty('--preloader-background-color', '#202124');
+            document.documentElement.style.setProperty('--preloader-text-color', '#fff');
+        } else {
+            document.documentElement.style.setProperty('--preloader-background-color', '#fff');
+            document.documentElement.style.setProperty('--preloader-text-color', '#000');
+        }
+
+        window.addEventListener('load', function () {
+            hidePreloaderAfterTimeout(1000); // Hide after 1000 milliseconds once the window has loaded
+        });
+
+        // Backup failsafe: Hide preloader after a maximum of 5000 milliseconds, regardless of the window load event
+        hidePreloaderAfterTimeout(5000);
+
+        function hidePreloaderAfterTimeout(delay) {
+            setTimeout(function () {
+                var preloader = document.querySelector('.preloader');
+                preloader.style.opacity = '0';
+                setTimeout(function () {
+                    preloader.style.display = 'none';
+                }, 200);
+            }, delay);
+        }
+    </script>
+</div>
+    
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+
+    
+        
+<link rel="stylesheet" href="/assets/build/styles.css">
+
+    
+
+    
+<link rel="stylesheet" href="/fonts/fonts.css">
+
+    
+<link rel="stylesheet" href="/fonts/Satoshi/satoshi.css">
+
+    <!--- Font Part-->
+    
+    
+    
+    
+
+
+    <script id="hexo-configurations">
+    window.config = {"hostname":"fetch150zy.github.io","root":"/","language":"zh-CN"};
+    window.theme = {"articles":{"style":{"font_size":"18px","line_height":1.4,"image_border_radius":"14px","image_alignment":"center","image_caption":false,"link_icon":true,"title_alignment":"center","headings_top_spacing":{"h1":"5rem","h2":"4rem","h3":"2.8rem","h4":"2.5rem","h5":"2.2rem","h6":"2rem"}},"word_count":{"enable":false,"count":false,"min2read":false},"author_label":{"enable":false,"auto":false,"list":[]},"code_block":{"copy":false,"style":"mac","font":{"enable":false,"family":null,"url":null}},"toc":{"enable":true,"max_depth":6,"number":false,"expand":true,"init_open":true},"copyright":{"enable":false,"default":"cc_by_nc_sa"},"lazyload":true,"recommendation":{"enable":false,"title":"推荐阅读","limit":3,"mobile_limit":2,"placeholder":null,"skip_dirs":[]}},"colors":{"primary":"#7FCDCD","secondary":null,"default_mode":"dark"},"global":{"fonts":{"chinese":{"enable":null,"family":null,"url":null},"english":{"enable":null,"family":null,"url":null}},"content_max_width":"1000px","sidebar_width":"210px","hover":{"shadow":true,"scale":true},"scroll_progress":{"bar":false,"percentage":true},"website_counter":{"url":"https://cn.vercount.one/js","enable":false,"site_pv":false,"site_uv":false,"post_pv":false},"single_page":true,"preloader":true,"open_graph":true,"google_analytics":{"enable":false,"id":null}},"home_banner":{"enable":true,"style":"fixed","image":{"light":"/img/bg15.jpg","dark":"/img/bg15.jpg"},"title":"fetch150zy's blog","subtitle":{"text":["年年岁岁花相似，岁岁年年人不同"],"hitokoto":{"enable":false,"api":"https://v1.hitokoto.cn"},"typing_speed":100,"backing_speed":80,"starting_delay":500,"backing_delay":1500,"loop":true,"smart_backspace":true},"text_color":{"light":"#fff","dark":"#d1d1b6"},"text_style":{"title_size":"2.8rem","subtitle_size":"1.5rem","line_height":1.3},"custom_font":{"enable":false,"family":null,"url":null},"social_links":{"enable":true,"style":"default","links":{"github":"https://github.com/fetch150zy","bilibili":"https://space.bilibili.com/505867894","stack-overflow":"https://stackoverflow.com/users/16738249/fetch150zy","email":"mailto:mars_zhewei@outlook.com"},"qrs":{"weixin":"https://pic.fetch150zy.cn/weixin.png"}}},"plugins":{"feed":{"enable":false},"aplayer":{"enable":false,"type":"fixed","audios":[{"name":null,"artist":null,"url":null,"cover":null,"lrc":null}]},"mermaid":{"enable":false,"version":"9.3.0"}},"version":"2.6.1","navbar":{"auto_hide":false,"color":{"left":"#f78736","right":"#367df7","transparency":35},"width":{"home":"1200px","pages":"1000px"},"links":{"Home":{"path":"/","icon":"fa-regular fa-house"},"Archives":{"path":"/archives","icon":"fa-regular fa-archive"},"About":{"icon":"fa-regular fa-user","submenus":{"Me":"/about","Blog":"https://fetch150zy.cn","Github":"https://github.com/fetch150zy"}}},"search":{"enable":false,"preload":true}},"page_templates":{"friends_column":3,"tags_style":"blur"},"home":{"sidebar":{"enable":true,"position":"right","first_item":"info","announcement":null,"show_on_mobile":true,"links":{"Archives":{"path":"/archives","icon":"fa-regular fa-archive"},"Tags":{"path":"/tags","icon":"fa-regular fa-tags"},"Categories":{"path":"/categories","icon":"fa-regular fa-folder"}}},"article_date_format":"YYYY-MM-DD","categories":{"enable":true,"limit":3},"tags":{"enable":true,"limit":3}},"footerStart":null};
+    window.lang_ago = {"second":"%s 秒前","minute":"%s 分钟前","hour":"%s 小时前","day":"%s 天前","week":"%s 周前","month":"%s 个月前","year":"%s 年前"};
+    window.data = {"masonry":false};
+  </script>
+    
+    <!--- Fontawesome Part-->
+    
+<link rel="stylesheet" href="/fontawesome/fontawesome.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/brands.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/solid.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/regular.min.css">
+
+    
+    
+    
+    
+        
+<link rel="stylesheet" href="/fontawesome/sharp-solid.min.css">
+
+    
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+
+<body>
+<div class="progress-bar-container">
+    
+
+    
+        <span class="pjax-progress-bar"></span>
+<!--        <span class="swup-progress-icon">-->
+<!--            <i class="fa-solid fa-circle-notch fa-spin"></i>-->
+<!--        </span>-->
+    
+</div>
+
+
+<main class="page-container" id="swup">
+
+    
+
+    <div class="main-content-container">
+
+
+        <div class="main-content-header">
+            <header class="navbar-container px-6 md:px-12">
+
+    <div class="navbar-content ">
+        <div class="left">
+            
+                <a class="logo-image" href="/">
+                    <img src="/img/pacman.png">
+                </a>
+            
+            <a class="logo-title" href="/">
+                
+                fetch150zy&#39;s blog
+                
+            </a>
+        </div>
+
+        <div class="right">
+            <!-- PC -->
+            <div class="desktop">
+                <ul class="navbar-list">
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/"
+                                        >
+                                    <i class="fa-regular fa-house fa-fw"></i>
+                                    首页
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/archives"
+                                        >
+                                    <i class="fa-regular fa-archive fa-fw"></i>
+                                    归档
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class="has-dropdown"
+                                   href="#"
+                                        onClick=&#34;return false;&#34;>
+                                    <i class="fa-regular fa-user fa-fw"></i>
+                                    关于
+                                    <i class="fa-solid fa-chevron-down fa-fw"></i>
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                                    <ul class="sub-menu">
+                                        
+                                            <li>
+                                                <a href="/about">
+                                                    ME
+                                                </a>
+                                            </li>
+                                        
+                                            <li>
+                                                <a target="_blank" rel="noopener" href="https://fetch150zy.cn">
+                                                    BLOG
+                                                </a>
+                                            </li>
+                                        
+                                            <li>
+                                                <a target="_blank" rel="noopener" href="https://github.com/fetch150zy">
+                                                    GITHUB
+                                                </a>
+                                            </li>
+                                        
+                                    </ul>
+                                
+                            </li>
+                    
+                    
+                </ul>
+            </div>
+            <!-- Mobile -->
+            <div class="mobile">
+                
+                <div class="icon-item navbar-bar">
+                    <div class="navbar-bar-middle"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile sheet -->
+    <div class="navbar-drawer h-screen w-full absolute top-0 left-0 bg-background-color flex flex-col justify-between">
+        <ul class="drawer-navbar-list flex flex-col px-4 justify-center items-start">
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/"
+                        >
+                            <span>
+                                首页
+                            </span>
+                            
+                                <i class="fa-regular fa-house fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/archives"
+                        >
+                            <span>
+                                归档
+                            </span>
+                            
+                                <i class="fa-regular fa-archive fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item-sub text-base my-1.5 flex flex-col w-full">
+                        
+                        <div class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary cursor-pointer text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                             navbar-data-toggle="submenu-About"
+                        >
+                            <span>
+                                关于
+                            </span>
+                            
+                                <i class="fa-solid fa-chevron-right fa-sm fa-fw transition-all"></i>
+                            
+                        </div>
+                        
+
+                        
+                            <div class="flex-col items-start px-2 py-2 hidden" data-target="submenu-About">
+                                
+                                    <div class="drawer-navbar-item text-base flex flex-col justify-center items-start hover:underline active:underline hover:underline-offset-1 rounded-3xl">
+                                        <a class=" text-third-text-color text-xl"
+                                           href="/about">ME</a>
+                                    </div>
+                                
+                                    <div class="drawer-navbar-item text-base flex flex-col justify-center items-start hover:underline active:underline hover:underline-offset-1 rounded-3xl">
+                                        <a class=" text-third-text-color text-xl"
+                                           target="_blank" rel="noopener" href="https://fetch150zy.cn">BLOG</a>
+                                    </div>
+                                
+                                    <div class="drawer-navbar-item text-base flex flex-col justify-center items-start hover:underline active:underline hover:underline-offset-1 rounded-3xl">
+                                        <a class=" text-third-text-color text-xl"
+                                           target="_blank" rel="noopener" href="https://github.com/fetch150zy">GITHUB</a>
+                                    </div>
+                                
+                            </div>
+                        
+                    </li>
+            
+
+            
+            
+                
+                    
+                    
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full active"
+                           href="/tags"
+                        >
+                            <span>Tags</span>
+                            <i class="fa-regular fa-tags fa-sm fa-fw"></i>
+                        </a>
+                    </li>
+                
+                    
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full active"
+                           href="/categories"
+                        >
+                            <span>Categories</span>
+                            <i class="fa-regular fa-folder fa-sm fa-fw"></i>
+                        </a>
+                    </li>
+                
+            
+        </ul>
+
+        <div class="statistics flex justify-around my-2.5">
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/tags">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">20</div>
+        <div class="label text-third-text-color text-sm">标签</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/categories">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">18</div>
+        <div class="label text-third-text-color text-sm">分类</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/archives">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">52</div>
+        <div class="label text-third-text-color text-sm">文章</div>
+    </a>
+</div>
+    </div>
+
+    <div class="window-mask"></div>
+
+</header>
+
+
+        </div>
+
+        <div class="main-content-body">
+
+            
+
+            <div class="main-content">
+
+                
+                    <div class="post-page-container flex relative justify-between box-border w-full h-full">
+    <div class="article-content-container">
+
+        <div class="article-title relative w-full">
+            
+                
+                
+                <img src="/../img/bg/26.png" alt="Cpp核心" class="w-full h-60 sm:h-72 md:h-80 object-cover sm:rounded-t-large dark:brightness-75"/>
+                
+                <div class="w-full flex items-center absolute bottom-0 justify-center">
+                    <h1 class="article-title-cover text-center mx-6 my-6 text-second-text-color bg-background-color-transparent px-4 py-3 text-3xl sm:text-4xl md:text-5xl font-bold backdrop-blur-lg rounded-xl border border-border-color ">Cpp核心</h1>
+                </div>
+            
+            </div>
+
+        
+            <div class="article-header flex flex-row gap-2 items-center px-2 sm:px-6 md:px-8">
+                <div class="avatar w-[46px] h-[46px] flex-shrink-0 rounded-medium border border-border-color p-[1px]">
+                    <img src="/img/avatar.jpg">
+                </div>
+                <div class="info flex flex-col justify-between">
+                    <div class="author flex items-center">
+                        <span class="name text-default-text-color text-lg font-semibold">fetch150zy</span>
+                        
+                    </div>
+                    <div class="meta-info">
+                        <div class="article-meta-info">
+    <span class="article-date article-meta-item">
+        <i class="fa-regular fa-pen-fancy"></i>&nbsp;
+        <span class="desktop">2023-02-02 12:00</span>
+        <span class="mobile">2023-02-02 12:00</span>
+        <span class="hover-info">创建</span>
+    </span>
+    
+        <span class="article-date article-meta-item">
+            <i class="fa-regular fa-wrench"></i>&nbsp;
+            <span class="desktop">2024-03-23 13:46:08</span>
+            <span class="mobile">2024-03-23 13:46:08</span>
+            <span class="hover-info">更新</span>
+        </span>
+    
+
+    
+        <span class="article-categories article-meta-item">
+            <i class="fa-regular fa-folders"></i>&nbsp;
+            <ul>
+                
+                
+                    
+                        
+                        <li>
+                            <a href="/categories/Cpp/">Cpp</a>&nbsp;
+                        </li>
+                    
+                    
+                
+            </ul>
+        </span>
+    
+    
+        <span class="article-tags article-meta-item">
+            <i class="fa-regular fa-tags"></i>&nbsp;
+            <ul>
+                
+                    <li>
+                        <a href="/tags/Cpp/">Cpp</a>&nbsp;
+                    </li>
+                
+            </ul>
+        </span>
+    
+
+    
+    
+    
+    
+</div>
+
+                    </div>
+                </div>
+            </div>
+        
+
+        
+
+
+        <div class="article-content markdown-body px-2 sm:px-6 md:px-8 pb-8">
+            <h1 id="Core-Modern-C"><a href="#Core-Modern-C" class="headerlink" title="Core Modern C++"></a>Core Modern C++</h1><h2 id="constness"><a href="#constness" class="headerlink" title="constness"></a>constness</h2><h3 id="const"><a href="#const" class="headerlink" title="const"></a>const</h3><h2 id="constant-expressions"><a href="#constant-expressions" class="headerlink" title="constant expressions"></a>constant expressions</h2><h3 id="constexpr"><a href="#constexpr" class="headerlink" title="constexpr"></a>constexpr</h3><p><strong>在编译期使用函数计算常量表达式</strong></p>
+<p>example</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">constexpr</span> <span class="type">int</span> <span class="title">f</span><span class="params">(<span class="type">int</span> x)</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">constexpr</span> <span class="type">int</span> a = <span class="built_in">f</span>(<span class="number">5</span>);	<span class="comment">// computed at compile-time</span></span><br><span class="line"><span class="type">int</span> b = <span class="built_in">f</span>(<span class="number">5</span>);			<span class="comment">// maybe computed at compile-time</span></span><br><span class="line"><span class="type">int</span> n = ...;			<span class="comment">// runtime value</span></span><br><span class="line"><span class="type">int</span> c = <span class="built_in">f</span>(n);			<span class="comment">// computed at runtime</span></span><br></pre></td></tr></table></figure></div>
+
+<p>Notes</p>
+<ul>
+<li>一个constexpr函数可能会在编译期执行<ul>
+<li>Arugments must be <code>constexpr</code> or literals in order to allow compile time evaluation</li>
+<li>Function body must be visible to compiler</li>
+</ul>
+</li>
+<li>一个constexpr函数可以用于运行时</li>
+<li>一个constexpr变量必须在编译期被初始化</li>
+<li>类可以有constexpr成员函数</li>
+<li>被用于constant expressions必须是字面量类型<ul>
+<li>inegral, floating-point, enum, reference, pointer type</li>
+<li>union(of at last one) or array of literal types</li>
+<li>class type with a <code>constexpr</code> constructor and the destructor is trivial(or <code>constexpr</code> since C++20)</li>
+</ul>
+</li>
+<li>一个constexpr函数隐含<code>inline</code>(header files)</li>
+</ul>
+<p><strong>Limitation of constexpr functions</strong></p>
+<blockquote>
+<p>  C++11</p>
+<ul>
+<li>Non-virtual function with a single return statement</li>
+</ul>
+</blockquote>
+<blockquote>
+<p>  C++14&#x2F;C++17</p>
+<ul>
+<li>no try-catch, goto or asm statements</li>
+<li>no uninitialized&#x2F;static&#x2F;thread_local&#x2F;non-literal-type variables</li>
+</ul>
+</blockquote>
+<blockquote>
+<p>  C++20</p>
+<ul>
+<li>no coroutines or static&#x2F;thread_local&#x2F;non-literal-type variables</li>
+<li>throw and asm statements allowed, but may not be executed</li>
+<li>transient memory allocation (memory allocated at compile-time must be freed again at compile-time)</li>
+<li>virtual functions and uninitialized variables allowed</li>
+</ul>
+</blockquote>
+<blockquote>
+<p>  C++23</p>
+<ul>
+<li>no coroutines, or execution of throw and asm statements</li>
+<li>transient memory allocation</li>
+<li>everything else allowed</li>
+</ul>
+</blockquote>
+<h3 id="compile-time-branches"><a href="#compile-time-branches" class="headerlink" title="compile-time branches"></a>compile-time branches</h3><p><strong>if constexpr</strong></p>
+<ul>
+<li>使用一个<code>constexpr</code>表达式作为条件</li>
+<li>在编译期计算出来</li>
+<li>key benefit: the discarded branch can contain invalid code</li>
+</ul>
+<p>example</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">remove_ptr</span><span class="params">(T t)</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">if</span> <span class="title">constexpr</span> <span class="params">(std::is_pointer_v&lt;T&gt;)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> *t;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> t;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="type">int</span> i = ...; <span class="type">int</span> *j = ...;</span><br><span class="line"><span class="type">int</span> r = <span class="built_in">remove_ptr</span>(i); 	<span class="comment">// = i</span></span><br><span class="line"><span class="type">int</span> q = <span class="built_in">remove_ptr</span>(j);	<span class="comment">// = *j</span></span><br></pre></td></tr></table></figure></div>
+
+
+
+<h3 id="Immediate-functions"><a href="#Immediate-functions" class="headerlink" title="Immediate functions"></a>Immediate functions</h3><p>Motivation</p>
+<ul>
+<li>Force a function to be executed at compile-time</li>
+<li>Runtime evaluation is forbidden</li>
+<li>Same restrictions as <code>constexpr</code> functions</li>
+<li>New keyword: <code>consteval</code></li>
+</ul>
+<p>example</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">consteval</span> <span class="type">int</span> <span class="title">f</span><span class="params">(<span class="type">int</span> x)</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">constexpr</span> <span class="type">int</span> a = <span class="built_in">f</span>(<span class="number">5</span>);	<span class="comment">// computed at compile-time</span></span><br><span class="line"><span class="type">int</span> b = <span class="built_in">f</span>(<span class="number">5</span>);			<span class="comment">// computed at compile-time</span></span><br><span class="line"><span class="type">int</span> n = ...;			<span class="comment">// runtime value</span></span><br><span class="line"><span class="type">int</span> c = <span class="built_in">f</span>(n);			<span class="comment">// compilation error</span></span><br></pre></td></tr></table></figure></div>
+
+
+
+<h3 id="constinit"><a href="#constinit" class="headerlink" title="constinit"></a>constinit</h3><p>Motivation</p>
+<ul>
+<li>Like a <code>constexpr</code> variable, a <code>constinit</code> variable guarantees compile-time initialization, but can be modifided afterwards</li>
+<li>Only allowed for <code>static</code>&#x2F;<code>global</code> and <code>thread_local</code> variables</li>
+<li>Initializer must be a constant expression, but <code>constexpr</code> destruction is not required</li>
+</ul>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">constexpr</span> <span class="type">int</span> <span class="title">f</span><span class="params">(<span class="type">int</span> x)</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">constexpr</span> <span class="type">int</span> a = <span class="built_in">f</span>(<span class="number">5</span>); <span class="comment">// compile-time init, not modifiable</span></span><br><span class="line"><span class="type">int</span> b = <span class="built_in">f</span>(<span class="number">5</span>);			<span class="comment">// maybe compile-time init, modifiable</span></span><br><span class="line"><span class="keyword">constinit</span> <span class="type">int</span> c = <span class="built_in">f</span>(<span class="number">5</span>);	<span class="comment">// compile-time init, modifiable</span></span><br></pre></td></tr></table></figure></div>
+
+
+
+<h2 id="Exceptions"><a href="#Exceptions" class="headerlink" title="Exceptions"></a>Exceptions</h2><p>当一个异常可以在内部被解决，使用<code>try ... catch</code></p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    ...</span><br><span class="line">&#125; <span class="built_in">catch</span> (error) &#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>当一个异常不能在内部解决，使用<code>throw</code>来抛出异常</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">func</span><span class="params">(...)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">throw</span> error;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="Standard-exceptions"><a href="#Standard-exceptions" class="headerlink" title="Standard exceptions"></a>Standard exceptions</h3><ul>
+<li>std::exception, defined in header <code>&lt;exception&gt;</code><ul>
+<li>所有标准异常的基类</li>
+<li>通过<code>virtual const char* what() const;</code>获取异常信息</li>
+<li>从这些标准异常类中派生自定义异常类</li>
+</ul>
+</li>
+<li>From <code>&lt;stdexcept&gt;</code><ul>
+<li>std::runtime_error, std::logic_error, std::out_of_range, std::invalid_arguments, …</li>
+<li>Store a string: <code>throw std::runtime_error&#123;&quot;msg&quot;&#125;</code></li>
+</ul>
+</li>
+<li>std::bad_alloc, defined in header <code>&lt;new&gt;</code><ul>
+<li>由分配函数抛出(e.g. new)</li>
+<li>分配失败的信号</li>
+</ul>
+</li>
+</ul>
+<h3 id="Catching-exceptions"><a href="#Catching-exceptions" class="headerlink" title="Catching exceptions"></a>Catching exceptions</h3><p>使用 const reference 来捕获异常</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    ...</span><br><span class="line">&#125; <span class="built_in">catch</span> (<span class="type">const</span> std::error&amp; e) &#123;</span><br><span class="line">    ...</span><br><span class="line">&#125; <span class="built_in">catch</span> (...) &#123;			<span class="comment">// catch everything</span></span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+
+
+<h3 id="Rethrowing-exceptions"><a href="#Rethrowing-exceptions" class="headerlink" title="Rethrowing exceptions"></a>Rethrowing exceptions</h3><ul>
+<li>a caught exception can be rethrow inside the catch handler</li>
+<li>useful when we want to act on an error, but cannot handle and want to propagate it</li>
+</ul>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    ...</span><br><span class="line">&#125; <span class="built_in">catch</span> (...) &#123;</span><br><span class="line">    <span class="keyword">throw</span>;      	<span class="comment">// rethrow</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<blockquote>
+<p>  use <code>catch(...)&#123;&#125;</code> to catch everything</p>
+</blockquote>
+<h3 id="Stack-Unwinding"><a href="#Stack-Unwinding" class="headerlink" title="Stack Unwinding"></a>Stack Unwinding</h3><p>Stack unwinding是C++中的一个异常处理机制，涉及到异常被抛出后，程序控制流程从抛出异常的点回溯到捕获异常的点的过程；在这个过程中，程序自动释放从异常抛出点到异常捕获点之间的栈帧，确保调用栈上的所有局部对象都能得到适当处理</p>
+<ol>
+<li>异常抛出：当程序执行到<code>throw</code>语句时，异常被抛出</li>
+<li>栈回溯：程序开始回溯调用栈，寻找能够处理这个异常的<code>catch</code>块</li>
+<li>局部对象销毁：在回溯过程中，程序离开了某些函数的作用域；函数中的所有局部对象都将被销毁，这包括自动调用这些对象的析构函数</li>
+<li>异常捕获：一旦找到合适的<code>catch</code>块，栈回溯停止，程序控制流转移到该<code>catch</code>块</li>
+</ol>
+<blockquote>
+<p>  确保了资源的正确管理，防止了资源泄漏，无论异常是否被捕获，通过自动销毁局部对象，它确保程序的健壮性和稳定性</p>
+</blockquote>
+<p>example</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">C</span> &#123;...&#125;;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">f</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    C c1;</span><br><span class="line">    <span class="keyword">throw</span> exception&#123;&#125;; <span class="comment">// start unwinding </span></span><br><span class="line">    C c2;	<span class="comment">// not run</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">g</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    C c3; <span class="built_in">f</span>();</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        C c4;</span><br><span class="line">        <span class="built_in">g</span>();</span><br><span class="line">        ...; <span class="comment">// not run</span></span><br><span class="line">    &#125; <span class="built_in">catch</span> (<span class="type">const</span> exception&amp;) &#123;</span><br><span class="line">        <span class="comment">// c1 c3 c4 have been destructed</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>异常最佳实践</p>
+<ul>
+<li><p>use exceptions for unlikely runtime errors outside the program’s control\</p>
+<p>bad inputs, files unexpectedly not found, DB connections</p>
+</li>
+<li><p>don’t use exceptions for logic errors in your code</p>
+<p>use assert and tests</p>
+</li>
+<li><p>don’t use exceptions to provide alternative&#x2F;skip return values</p>
+<ul>
+<li>you can use std::optional or std::variant</li>
+<li>avoid using the global C-style errno</li>
+</ul>
+</li>
+<li><p>never throw in destructors</p>
+</li>
+</ul>
+<p><em>tips: for performance, when error raising and handling are close, or errors occur often, prefer error code or a dedicated class</em></p>
+<p><strong>Avoid</strong></p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (string <span class="type">const</span> &amp;num: nums) &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="type">int</span> i = <span class="built_in">convert</span>(num);</span><br><span class="line">        <span class="built_in">process</span>(i);</span><br><span class="line">    &#125; <span class="built_in">catch</span> (not_an_int <span class="type">const</span> &amp;e) &#123;</span><br><span class="line">        ... <span class="comment">// log and continue</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p><strong>Prefer</strong></p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (string <span class="type">const</span> &amp;num: nums) &#123;</span><br><span class="line">    optional&lt;<span class="type">int</span>&gt; i = <span class="built_in">convert</span>(num);</span><br><span class="line">    <span class="keyword">if</span> (i) &#123;</span><br><span class="line">        <span class="built_in">process</span>(*i);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        ... <span class="comment">// log and continue</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+
+
+<h3 id="noexcept-specifier"><a href="#noexcept-specifier" class="headerlink" title="noexcept specifier"></a>noexcept specifier</h3><ul>
+<li><p>a fucntion with the <code>noexcept</code> specifier states that it guarantees to not throw an exception</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">f</span><span class="params">()</span> <span class="keyword">noexcept</span></span>;</span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>checked at compile time</li>
+</ul>
+</li>
+<li><p>a function with <code>noexcept</code>(expression) is only noexcept when expression evaluates to true at compile time</p>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">safe_if_8B</span><span class="params">()</span> <span class="title">noexcept</span><span class="params">(<span class="keyword">sizeof</span>(<span class="type">long</span>) == <span class="number">8</span>)</span></span>;</span><br></pre></td></tr></table></figure></div></li>
+</ul>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">constexpr</span> <span class="type">bool</span> callCannotThrow = <span class="built_in">noexcept</span>(<span class="built_in">f</span>());</span><br><span class="line"><span class="function"><span class="keyword">if</span> <span class="title">constexpr</span> <span class="params">(callCannotThrow)</span> </span>&#123;...&#125;</span><br></pre></td></tr></table></figure></div>
+
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Function&gt;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">g</span><span class="params">(Function f)</span> <span class="title">noexcept</span><span class="params">(<span class="keyword">noexcept</span>(f()))</span> </span>&#123;</span><br><span class="line">    ...;</span><br><span class="line">    <span class="built_in">f</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+
+
+<p><strong>Exception Safety Guarantees</strong></p>
+<p>一个函数可以提供下面这些保证</p>
+<ul>
+<li>NO guarantee(没有保证，异常可能会导致进入未定义程序状态)</li>
+<li>Basic exception safety guarantee<ul>
+<li>异常会是程序进入已定义状态</li>
+<li>没有资源会被泄漏</li>
+</ul>
+</li>
+<li>Strong exception safety guarantee<ul>
+<li>当异常发生时，初始状态必须要被恢复</li>
+</ul>
+</li>
+<li>No-throw guarantee<ul>
+<li>函数永远不会抛出异常(e.g. is marked <code>noexcept</code>)</li>
+<li>Errors are handled internally or lead to termination</li>
+</ul>
+</li>
+</ul>
+<p>Alternatives to exceptions</p>
+<ul>
+<li><p>The global variable errno (avoid)</p>
+</li>
+<li><p>Return an error code (e.g. an int or an enum)</p>
+</li>
+<li><p>Return a std::error_code(C++ 11)</p>
+</li>
+<li><p>if failing to produce a value is not a hard error, consider returning std::optional<T> (C++ 17)</p>
+</li>
+<li><p>return std::expected&lt;T, E&gt; (C++ 23) where T is the return type on success and E is the type on failure</p>
+</li>
+<li><p>Terminate the program</p>
+<p>e.g. by calling std::terminate() or std::abort()</p>
+</li>
+</ul>
+<h2 id="Copy-elision"><a href="#Copy-elision" class="headerlink" title="Copy elision"></a>Copy elision</h2><p>拷贝省略：是C++编译器的一个优化技术，可以消除对象的不必要拷贝，以提高程序的性能</p>
+<ol>
+<li>返回值优化(RVO): 当函数返回一个局部对象时，编译器可以直接在调用函数的返回空间构造这个对象，避免了拷贝和移动构造</li>
+<li>命名返回值优化(NRVO): 与RVO类似，但适合于具有名称的局部对象</li>
+<li>临时对象优化: 当使用临时对象初始化另一个对象时，编译器可以消除这个临时对象的创建和销毁，直接在目标位置构造对象</li>
+</ol>
+<div class="highlight-container" data-rel="Cpp"><figure class="iseeu highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">A</span> &#123;...&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function">A <span class="title">createA</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    A a;</span><br><span class="line">    <span class="keyword">return</span> a; <span class="comment">// NRVO</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    A myA = <span class="built_in">createA</span>(); <span class="comment">// 拷贝或移动构造可能被省略</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></div>
+
+
+
+<h2 id="Templates"><a href="#Templates" class="headerlink" title="Templates"></a>Templates</h2><h2 id="Lambdas"><a href="#Lambdas" class="headerlink" title="Lambdas"></a>Lambdas</h2><h2 id="Ranges"><a href="#Ranges" class="headerlink" title="Ranges"></a>Ranges</h2><h2 id="RAII-and-smart-pointers"><a href="#RAII-and-smart-pointers" class="headerlink" title="RAII and smart pointers"></a>RAII and smart pointers</h2><h2 id="Initialization"><a href="#Initialization" class="headerlink" title="Initialization"></a>Initialization</h2>
+        </div>
+
+        
+
+        
+            <ul class="post-tags-box text-lg mt-1.5 flex-wrap justify-center flex md:hidden">
+                
+                    <li class="tag-item mx-0.5">
+                        <a href="/tags/Cpp/">#Cpp</a>&nbsp;
+                    </li>
+                
+            </ul>
+        
+
+        
+
+        
+            <div class="article-nav my-8 flex justify-between items-center px-2 sm:px-6 md:px-8">
+                
+                    <div class="article-prev border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
+                        <a class="prev"
+                        rel="prev"
+                        href="/2023/02/24/2023-02-24-%E8%BF%90%E8%A1%8C%E6%97%B6%E5%A2%9E%E5%BC%BA/"
+                        >
+                            <span class="left arrow-icon flex justify-center items-center">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </span>
+                            <span class="title flex justify-center items-center">
+                                <span class="post-nav-title-item">运行时增强</span>
+                                <span class="post-nav-item">上一篇</span>
+                            </span>
+                        </a>
+                    </div>
+                
+                
+                    <div class="article-next border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
+                        <a class="next"
+                        rel="next"
+                        href="/2023/01/22/2023-01-22-%E8%AF%AD%E8%A8%80%E5%8F%AF%E7%94%A8%E6%80%A7%E5%A2%9E%E5%BC%BA/"
+                        >
+                            <span class="title flex justify-center items-center">
+                                <span class="post-nav-title-item">语言可用性增强</span>
+                                <span class="post-nav-item">下一篇</span>
+                            </span>
+                            <span class="right arrow-icon flex justify-center items-center">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </span>
+                        </a>
+                    </div>
+                
+            </div>
+        
+
+
+        
+    </div>
+
+    
+        <div class="toc-content-container">
+            <div class="post-toc-wrap">
+    <div class="post-toc">
+        <div class="toc-title">此页目录</div>
+        <div class="page-title">Cpp核心</div>
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Core-Modern-C"><span class="nav-text">Core Modern C++</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#constness"><span class="nav-text">constness</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#const"><span class="nav-text">const</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#constant-expressions"><span class="nav-text">constant expressions</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#constexpr"><span class="nav-text">constexpr</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#compile-time-branches"><span class="nav-text">compile-time branches</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Immediate-functions"><span class="nav-text">Immediate functions</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#constinit"><span class="nav-text">constinit</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Exceptions"><span class="nav-text">Exceptions</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Standard-exceptions"><span class="nav-text">Standard exceptions</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Catching-exceptions"><span class="nav-text">Catching exceptions</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Rethrowing-exceptions"><span class="nav-text">Rethrowing exceptions</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Stack-Unwinding"><span class="nav-text">Stack Unwinding</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#noexcept-specifier"><span class="nav-text">noexcept specifier</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Copy-elision"><span class="nav-text">Copy elision</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Templates"><span class="nav-text">Templates</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Lambdas"><span class="nav-text">Lambdas</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Ranges"><span class="nav-text">Ranges</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RAII-and-smart-pointers"><span class="nav-text">RAII and smart pointers</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Initialization"><span class="nav-text">Initialization</span></a></li></ol></li></ol>
+
+    </div>
+</div>
+        </div>
+    
+</div>
+
+
+
+                
+
+            </div>
+
+            
+
+        </div>
+
+        <div class="main-content-footer">
+            <footer class="footer mt-5 py-5 h-auto text-base text-third-text-color relative border-t-2 border-t-border-color">
+    <div class="info-container py-3 text-center">
+        
+        <div class="text-center">
+            &copy;
+            
+            2024&nbsp;&nbsp;<i class="fa-solid fa-heart fa-beat" style="--fa-animation-duration: 0.5s; color: #f54545"></i>&nbsp;&nbsp;<a href="/">fetch150zy</a>
+            
+                
+                <p class="post-count space-x-0.5">
+                    <span>
+                        共 52 篇文章
+                    </span>
+                    
+                </p>
+            
+        </div>
+        
+        <div class="relative text-center lg:absolute lg:left-[20px] lg:top-1/2 lg:-translate-y-1/2 lg:text-left">
+            <span class="lg:block text-sm">由 <?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg class="relative top-[2px] inline-block align-baseline" version="1.1" id="圖層_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="1rem" height="1rem" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve"><path fill="#0E83CD" d="M256.4,25.8l-200,115.5L56,371.5l199.6,114.7l200-115.5l0.4-230.2L256.4,25.8z M349,354.6l-18.4,10.7l-18.6-11V275H200v79.6l-18.4,10.7l-18.6-11v-197l18.5-10.6l18.5,10.8V237h112v-79.6l18.5-10.6l18.5,10.8V354.6z"/></svg><a target="_blank" class="text-base" href="https://hexo.io">Hexo</a> 驱动</span>
+            <span class="text-sm lg:block">主题&nbsp;<a class="text-base" target="_blank" href="https://github.com/EvanNotFound/hexo-theme-redefine">Redefine v2.6.1</a></span>
+        </div>
+        
+        
+        
+        
+        
+    </div>  
+</footer>
+        </div>
+    </div>
+
+    
+        <div class="post-tools">
+            <div class="post-tools-container">
+    <ul class="article-tools-list">
+        <!-- TOC aside toggle -->
+        
+            <li class="right-bottom-tools page-aside-toggle">
+                <i class="fa-regular fa-outdent"></i>
+            </li>
+        
+
+        <!-- go comment -->
+        
+    </ul>
+</div>
+
+        </div>
+    
+
+    <div class="right-side-tools-container">
+        <div class="side-tools-container">
+    <ul class="hidden-tools-list">
+        <li class="right-bottom-tools tool-font-adjust-plus flex justify-center items-center">
+            <i class="fa-regular fa-magnifying-glass-plus"></i>
+        </li>
+
+        <li class="right-bottom-tools tool-font-adjust-minus flex justify-center items-center">
+            <i class="fa-regular fa-magnifying-glass-minus"></i>
+        </li>
+
+        <li class="right-bottom-tools tool-dark-light-toggle flex justify-center items-center">
+            <i class="fa-regular fa-moon"></i>
+        </li>
+
+        <!-- rss -->
+        
+
+        
+
+        <li class="right-bottom-tools tool-scroll-to-bottom flex justify-center items-center">
+            <i class="fa-regular fa-arrow-down"></i>
+        </li>
+    </ul>
+
+    <ul class="visible-tools-list">
+        <li class="right-bottom-tools toggle-tools-list flex justify-center items-center">
+            <i class="fa-regular fa-cog fa-spin"></i>
+        </li>
+        
+            <li class="right-bottom-tools tool-scroll-to-top flex justify-center items-center">
+                <i class="arrow-up fas fa-arrow-up"></i>
+                <span class="percent"></span>
+            </li>
+        
+        
+    </ul>
+</div>
+
+    </div>
+
+    <div class="image-viewer-container">
+    <img src="">
+</div>
+
+
+    
+
+</main>
+
+
+    
+<script src="/js/libs/Swup.min.js"></script>
+
+<script src="/js/libs/SwupSlideTheme.min.js"></script>
+
+<script src="/js/libs/SwupScriptsPlugin.min.js"></script>
+
+<script src="/js/libs/SwupProgressPlugin.min.js"></script>
+
+<script src="/js/libs/SwupScrollPlugin.min.js"></script>
+
+<script src="/js/libs/SwupPreloadPlugin.min.js"></script>
+
+<script>
+    const swup = new Swup({
+        plugins: [
+            new SwupScriptsPlugin({
+                optin: true,
+            }),
+            new SwupProgressPlugin(),
+            new SwupScrollPlugin({
+                offset: 80,
+            }),
+            new SwupSlideTheme({
+                mainElement: ".main-content-body",
+            }),
+            new SwupPreloadPlugin(),
+        ],
+        containers: ["#swup"],
+    });
+</script>
+
+
+
+
+
+
+
+<script src="/js/tools/imageViewer.js" type="module"></script>
+
+<script src="/js/utils.js" type="module"></script>
+
+<script src="/js/main.js" type="module"></script>
+
+<script src="/js/layouts/navbarShrink.js" type="module"></script>
+
+<script src="/js/tools/scrollTopBottom.js" type="module"></script>
+
+<script src="/js/tools/lightDarkSwitch.js" type="module"></script>
+
+<script src="/js/layouts/categoryList.js" type="module"></script>
+
+
+
+
+
+
+
+    
+<script src="/js/layouts/lazyload.js" type="module"></script>
+
+
+
+
+
+
+  
+<script src="/js/libs/Typed.min.js"></script>
+
+  
+<script src="/js/plugins/typed.js" type="module"></script>
+
+
+
+
+
+
+
+
+
+<div class="post-scripts" data-swup-reload-script>
+    
+        
+<script src="/js/tools/tocToggle.js" type="module"></script>
+
+<script src="/js/layouts/toc.js" type="module"></script>
+
+<script src="/js/plugins/tabs.js" type="module"></script>
+
+    
+</div>
+
+
+</body>
+</html>

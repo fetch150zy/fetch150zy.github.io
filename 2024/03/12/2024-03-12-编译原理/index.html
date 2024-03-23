@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="keywords" content="computer science">
+    
+    <meta name="author" content="fetch150zy">
+    <!-- preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    
+    <!--- Seo Part-->
+    
+    <link rel="canonical" href="https://fetch150zy.github.io/2024/03/12/2024-03-12-编译原理/"/>
+    <meta name="robots" content="index,follow">
+    <meta name="googlebot" content="index,follow">
+    <meta name="revisit-after" content="1 days">
+    
+        <meta name="description" content="编译原理   龙书第二版读书笔记 + cs143课程记录  引论语言处理器   简单来说编译器就是一个程序，它可以阅读以某一种语言编写的程序，并把程序翻译成一个等价的、用另一种语言编写的程序   编译器的重要任务之一就是报告它在翻译过程中发现的源程序中的错误     解释器并不通过翻译的方式生成目标程序  由一个编译器产生的机器语言目标程序通常要比一个解释器快很多，但是解释器的错误诊断效果通常要比">
+<meta property="og:type" content="article">
+<meta property="og:title" content="编译原理">
+<meta property="og:url" content="https://fetch150zy.github.io/2024/03/12/2024-03-12-%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86/index.html">
+<meta property="og:site_name" content="fetch150zy&#39;blog">
+<meta property="og:description" content="编译原理   龙书第二版读书笔记 + cs143课程记录  引论语言处理器   简单来说编译器就是一个程序，它可以阅读以某一种语言编写的程序，并把程序翻译成一个等价的、用另一种语言编写的程序   编译器的重要任务之一就是报告它在翻译过程中发现的源程序中的错误     解释器并不通过翻译的方式生成目标程序  由一个编译器产生的机器语言目标程序通常要比一个解释器快很多，但是解释器的错误诊断效果通常要比">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://pic.fetch150zy.cn/assets/image-20240312111409261.png">
+<meta property="og:image" content="https://pic.fetch150zy.cn/assets/image-20240312141357116.png">
+<meta property="og:image" content="https://pic.fetch150zy.cn/assets/image-20240312160621544.png">
+<meta property="article:published_time" content="2024-03-12T02:45:46.000Z">
+<meta property="article:modified_time" content="2024-03-23T05:49:03.443Z">
+<meta property="article:author" content="fetch150zy">
+<meta property="article:tag" content="编译原理">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://pic.fetch150zy.cn/assets/image-20240312111409261.png">
+    
+    
+    <!--- Icon Part-->
+    <link rel="icon" type="image/png" href="/img/pacman.png" sizes="192x192">
+    <link rel="apple-touch-icon" sizes="180x180" href="/img/pacman.png">
+    <meta name="theme-color" content="#7FCDCD">
+    <link rel="shortcut icon" href="/img/pacman.png">
+    <!--- Page Info-->
+    
+    <title>
+        
+            编译原理 -
+        
+        fetch150zy&#39;s blog
+    </title>
+
+    
+<link rel="stylesheet" href="/fonts/Chillax/chillax.css">
+
+
+    <!--- Inject Part-->
+    
+
+    
+        <style>
+    :root {
+        --preloader-background-color: #fff;
+        --preloader-text-color: #000;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --preloader-background-color: #202124;
+            --preloader-text-color: #fff;
+        }
+    }
+
+    @media (prefers-color-scheme: light) {
+        :root {
+            --preloader-background-color: #fff;
+            --preloader-text-color: #000;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .ml13 {
+            font-size: 2.6rem !important; /* Adjust this value as needed */
+        }
+    }
+
+    .preloader {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem; /* Tailwind 'gap-4' is 1rem */
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        padding: 12px;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh; /* 'h-screen' is 100% of the viewport height */
+        background-color: var(--preloader-background-color);
+        z-index: 1100; /* 'z-[1100]' sets the z-index */
+        transition: opacity 0.2s ease-in-out;
+    }
+
+    .ml13 {
+        font-size: 3.2rem;
+        /* text-transform: uppercase; */
+        color: var(--preloader-text-color);
+        letter-spacing: -1px;
+        font-weight: 500;
+        font-family: 'Chillax-Variable', sans-serif;
+        text-align: center;
+    }
+
+    .ml13 .word {
+        display: inline-flex;
+        flex-wrap: wrap;
+        white-space: nowrap;
+    }
+
+    .ml13 .letter {
+        display: inline-block;
+        line-height: 1em;
+    }
+</style>
+
+<div class="preloader">
+    
+<script src="/js/libs/anime.min.js"></script>
+
+    <h1 class="ml13">
+        fetch150zy&#39;s blog
+    </h1>
+    <script>
+        var textWrapper = document.querySelector('.ml13');
+        // Split text into words
+        var words = textWrapper.textContent.trim().split(' ');
+
+        // Clear the existing content
+        textWrapper.innerHTML = '';
+
+        // Wrap each word and its letters in spans
+        words.forEach(function(word) {
+            var wordSpan = document.createElement('span');
+            wordSpan.classList.add('word');
+            wordSpan.innerHTML = word.replace(/\S/g, "<span class='letter'>$&</span>");
+            textWrapper.appendChild(wordSpan);
+            textWrapper.appendChild(document.createTextNode(' ')); // Add space between words
+        });
+
+
+        anime.timeline({loop: true})
+            .add({
+                targets: '.ml13 .letter',
+                translateY: [100,0],
+                translateZ: 0,
+                opacity: [0,1],
+                easing: "easeOutExpo",
+                duration: 1400,
+                delay: (el, i) => 300 + 30 * i
+            }).add({
+            targets: '.ml13 .letter',
+            translateY: [0,-100],
+            opacity: [1,0],
+            easing: "easeInExpo",
+            duration: 1200,
+            delay: (el, i) => 100 + 30 * i
+        });
+
+        let themeStatus = JSON.parse(localStorage.getItem('REDEFINE-THEME-STATUS'))?.isDark;
+
+        // If the theme status is not found in local storage, check the preferred color scheme
+        if (themeStatus === undefined || themeStatus === null) {
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                themeStatus = 'dark';
+            } else {
+                themeStatus = 'light';
+            }
+        }
+
+        // Now you can use the themeStatus variable in your code
+        if (themeStatus) {
+            document.documentElement.style.setProperty('--preloader-background-color', '#202124');
+            document.documentElement.style.setProperty('--preloader-text-color', '#fff');
+        } else {
+            document.documentElement.style.setProperty('--preloader-background-color', '#fff');
+            document.documentElement.style.setProperty('--preloader-text-color', '#000');
+        }
+
+        window.addEventListener('load', function () {
+            hidePreloaderAfterTimeout(1000); // Hide after 1000 milliseconds once the window has loaded
+        });
+
+        // Backup failsafe: Hide preloader after a maximum of 5000 milliseconds, regardless of the window load event
+        hidePreloaderAfterTimeout(5000);
+
+        function hidePreloaderAfterTimeout(delay) {
+            setTimeout(function () {
+                var preloader = document.querySelector('.preloader');
+                preloader.style.opacity = '0';
+                setTimeout(function () {
+                    preloader.style.display = 'none';
+                }, 200);
+            }, delay);
+        }
+    </script>
+</div>
+    
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+
+    
+        
+<link rel="stylesheet" href="/assets/build/styles.css">
+
+    
+
+    
+<link rel="stylesheet" href="/fonts/fonts.css">
+
+    
+<link rel="stylesheet" href="/fonts/Satoshi/satoshi.css">
+
+    <!--- Font Part-->
+    
+    
+    
+    
+
+
+    <script id="hexo-configurations">
+    window.config = {"hostname":"fetch150zy.github.io","root":"/","language":"zh-CN"};
+    window.theme = {"articles":{"style":{"font_size":"18px","line_height":1.4,"image_border_radius":"14px","image_alignment":"center","image_caption":false,"link_icon":true,"title_alignment":"center","headings_top_spacing":{"h1":"5rem","h2":"4rem","h3":"2.8rem","h4":"2.5rem","h5":"2.2rem","h6":"2rem"}},"word_count":{"enable":false,"count":false,"min2read":false},"author_label":{"enable":false,"auto":false,"list":[]},"code_block":{"copy":false,"style":"mac","font":{"enable":false,"family":null,"url":null}},"toc":{"enable":true,"max_depth":6,"number":false,"expand":true,"init_open":true},"copyright":{"enable":false,"default":"cc_by_nc_sa"},"lazyload":true,"recommendation":{"enable":false,"title":"推荐阅读","limit":3,"mobile_limit":2,"placeholder":null,"skip_dirs":[]}},"colors":{"primary":"#7FCDCD","secondary":null,"default_mode":"dark"},"global":{"fonts":{"chinese":{"enable":null,"family":null,"url":null},"english":{"enable":null,"family":null,"url":null}},"content_max_width":"1000px","sidebar_width":"210px","hover":{"shadow":true,"scale":true},"scroll_progress":{"bar":false,"percentage":true},"website_counter":{"url":"https://cn.vercount.one/js","enable":false,"site_pv":false,"site_uv":false,"post_pv":false},"single_page":true,"preloader":true,"open_graph":true,"google_analytics":{"enable":false,"id":null}},"home_banner":{"enable":true,"style":"fixed","image":{"light":"/img/bg15.jpg","dark":"/img/bg15.jpg"},"title":"fetch150zy's blog","subtitle":{"text":["年年岁岁花相似，岁岁年年人不同"],"hitokoto":{"enable":false,"api":"https://v1.hitokoto.cn"},"typing_speed":100,"backing_speed":80,"starting_delay":500,"backing_delay":1500,"loop":true,"smart_backspace":true},"text_color":{"light":"#fff","dark":"#d1d1b6"},"text_style":{"title_size":"2.8rem","subtitle_size":"1.5rem","line_height":1.3},"custom_font":{"enable":false,"family":null,"url":null},"social_links":{"enable":true,"style":"default","links":{"github":"https://github.com/fetch150zy","bilibili":"https://space.bilibili.com/505867894","stack-overflow":"https://stackoverflow.com/users/16738249/fetch150zy","email":"mailto:mars_zhewei@outlook.com"},"qrs":{"weixin":"https://pic.fetch150zy.cn/weixin.png"}}},"plugins":{"feed":{"enable":false},"aplayer":{"enable":false,"type":"fixed","audios":[{"name":null,"artist":null,"url":null,"cover":null,"lrc":null}]},"mermaid":{"enable":false,"version":"9.3.0"}},"version":"2.6.1","navbar":{"auto_hide":false,"color":{"left":"#f78736","right":"#367df7","transparency":35},"width":{"home":"1200px","pages":"1000px"},"links":{"Home":{"path":"/","icon":"fa-regular fa-house"},"Archives":{"path":"/archives","icon":"fa-regular fa-archive"},"About":{"icon":"fa-regular fa-user","submenus":{"Me":"/about","Blog":"https://fetch150zy.cn","Github":"https://github.com/fetch150zy"}}},"search":{"enable":false,"preload":true}},"page_templates":{"friends_column":3,"tags_style":"blur"},"home":{"sidebar":{"enable":true,"position":"right","first_item":"info","announcement":null,"show_on_mobile":true,"links":{"Archives":{"path":"/archives","icon":"fa-regular fa-archive"},"Tags":{"path":"/tags","icon":"fa-regular fa-tags"},"Categories":{"path":"/categories","icon":"fa-regular fa-folder"}}},"article_date_format":"YYYY-MM-DD","categories":{"enable":true,"limit":3},"tags":{"enable":true,"limit":3}},"footerStart":null};
+    window.lang_ago = {"second":"%s 秒前","minute":"%s 分钟前","hour":"%s 小时前","day":"%s 天前","week":"%s 周前","month":"%s 个月前","year":"%s 年前"};
+    window.data = {"masonry":false};
+  </script>
+    
+    <!--- Fontawesome Part-->
+    
+<link rel="stylesheet" href="/fontawesome/fontawesome.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/brands.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/solid.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/regular.min.css">
+
+    
+    
+    
+    
+        
+<link rel="stylesheet" href="/fontawesome/sharp-solid.min.css">
+
+    
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+
+<body>
+<div class="progress-bar-container">
+    
+
+    
+        <span class="pjax-progress-bar"></span>
+<!--        <span class="swup-progress-icon">-->
+<!--            <i class="fa-solid fa-circle-notch fa-spin"></i>-->
+<!--        </span>-->
+    
+</div>
+
+
+<main class="page-container" id="swup">
+
+    
+
+    <div class="main-content-container">
+
+
+        <div class="main-content-header">
+            <header class="navbar-container px-6 md:px-12">
+
+    <div class="navbar-content ">
+        <div class="left">
+            
+                <a class="logo-image" href="/">
+                    <img src="/img/pacman.png">
+                </a>
+            
+            <a class="logo-title" href="/">
+                
+                fetch150zy&#39;s blog
+                
+            </a>
+        </div>
+
+        <div class="right">
+            <!-- PC -->
+            <div class="desktop">
+                <ul class="navbar-list">
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/"
+                                        >
+                                    <i class="fa-regular fa-house fa-fw"></i>
+                                    首页
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/archives"
+                                        >
+                                    <i class="fa-regular fa-archive fa-fw"></i>
+                                    归档
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class="has-dropdown"
+                                   href="#"
+                                        onClick=&#34;return false;&#34;>
+                                    <i class="fa-regular fa-user fa-fw"></i>
+                                    关于
+                                    <i class="fa-solid fa-chevron-down fa-fw"></i>
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                                    <ul class="sub-menu">
+                                        
+                                            <li>
+                                                <a href="/about">
+                                                    ME
+                                                </a>
+                                            </li>
+                                        
+                                            <li>
+                                                <a target="_blank" rel="noopener" href="https://fetch150zy.cn">
+                                                    BLOG
+                                                </a>
+                                            </li>
+                                        
+                                            <li>
+                                                <a target="_blank" rel="noopener" href="https://github.com/fetch150zy">
+                                                    GITHUB
+                                                </a>
+                                            </li>
+                                        
+                                    </ul>
+                                
+                            </li>
+                    
+                    
+                </ul>
+            </div>
+            <!-- Mobile -->
+            <div class="mobile">
+                
+                <div class="icon-item navbar-bar">
+                    <div class="navbar-bar-middle"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile sheet -->
+    <div class="navbar-drawer h-screen w-full absolute top-0 left-0 bg-background-color flex flex-col justify-between">
+        <ul class="drawer-navbar-list flex flex-col px-4 justify-center items-start">
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/"
+                        >
+                            <span>
+                                首页
+                            </span>
+                            
+                                <i class="fa-regular fa-house fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/archives"
+                        >
+                            <span>
+                                归档
+                            </span>
+                            
+                                <i class="fa-regular fa-archive fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item-sub text-base my-1.5 flex flex-col w-full">
+                        
+                        <div class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary cursor-pointer text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                             navbar-data-toggle="submenu-About"
+                        >
+                            <span>
+                                关于
+                            </span>
+                            
+                                <i class="fa-solid fa-chevron-right fa-sm fa-fw transition-all"></i>
+                            
+                        </div>
+                        
+
+                        
+                            <div class="flex-col items-start px-2 py-2 hidden" data-target="submenu-About">
+                                
+                                    <div class="drawer-navbar-item text-base flex flex-col justify-center items-start hover:underline active:underline hover:underline-offset-1 rounded-3xl">
+                                        <a class=" text-third-text-color text-xl"
+                                           href="/about">ME</a>
+                                    </div>
+                                
+                                    <div class="drawer-navbar-item text-base flex flex-col justify-center items-start hover:underline active:underline hover:underline-offset-1 rounded-3xl">
+                                        <a class=" text-third-text-color text-xl"
+                                           target="_blank" rel="noopener" href="https://fetch150zy.cn">BLOG</a>
+                                    </div>
+                                
+                                    <div class="drawer-navbar-item text-base flex flex-col justify-center items-start hover:underline active:underline hover:underline-offset-1 rounded-3xl">
+                                        <a class=" text-third-text-color text-xl"
+                                           target="_blank" rel="noopener" href="https://github.com/fetch150zy">GITHUB</a>
+                                    </div>
+                                
+                            </div>
+                        
+                    </li>
+            
+
+            
+            
+                
+                    
+                    
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full active"
+                           href="/tags"
+                        >
+                            <span>Tags</span>
+                            <i class="fa-regular fa-tags fa-sm fa-fw"></i>
+                        </a>
+                    </li>
+                
+                    
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full active"
+                           href="/categories"
+                        >
+                            <span>Categories</span>
+                            <i class="fa-regular fa-folder fa-sm fa-fw"></i>
+                        </a>
+                    </li>
+                
+            
+        </ul>
+
+        <div class="statistics flex justify-around my-2.5">
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/tags">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">20</div>
+        <div class="label text-third-text-color text-sm">标签</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/categories">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">18</div>
+        <div class="label text-third-text-color text-sm">分类</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/archives">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">52</div>
+        <div class="label text-third-text-color text-sm">文章</div>
+    </a>
+</div>
+    </div>
+
+    <div class="window-mask"></div>
+
+</header>
+
+
+        </div>
+
+        <div class="main-content-body">
+
+            
+
+            <div class="main-content">
+
+                
+                    <div class="post-page-container flex relative justify-between box-border w-full h-full">
+    <div class="article-content-container">
+
+        <div class="article-title relative w-full">
+            
+                
+                
+                <img src="/../img/bg/52.png" alt="编译原理" class="w-full h-60 sm:h-72 md:h-80 object-cover sm:rounded-t-large dark:brightness-75"/>
+                
+                <div class="w-full flex items-center absolute bottom-0 justify-center">
+                    <h1 class="article-title-cover text-center mx-6 my-6 text-second-text-color bg-background-color-transparent px-4 py-3 text-3xl sm:text-4xl md:text-5xl font-bold backdrop-blur-lg rounded-xl border border-border-color ">编译原理</h1>
+                </div>
+            
+            </div>
+
+        
+            <div class="article-header flex flex-row gap-2 items-center px-2 sm:px-6 md:px-8">
+                <div class="avatar w-[46px] h-[46px] flex-shrink-0 rounded-medium border border-border-color p-[1px]">
+                    <img src="/img/avatar.jpg">
+                </div>
+                <div class="info flex flex-col justify-between">
+                    <div class="author flex items-center">
+                        <span class="name text-default-text-color text-lg font-semibold">fetch150zy</span>
+                        
+                    </div>
+                    <div class="meta-info">
+                        <div class="article-meta-info">
+    <span class="article-date article-meta-item">
+        <i class="fa-regular fa-pen-fancy"></i>&nbsp;
+        <span class="desktop">2024-03-12 10:45:46</span>
+        <span class="mobile">2024-03-12 10:45:46</span>
+        <span class="hover-info">创建</span>
+    </span>
+    
+        <span class="article-date article-meta-item">
+            <i class="fa-regular fa-wrench"></i>&nbsp;
+            <span class="desktop">2024-03-23 13:49:03</span>
+            <span class="mobile">2024-03-23 13:49:03</span>
+            <span class="hover-info">更新</span>
+        </span>
+    
+
+    
+        <span class="article-categories article-meta-item">
+            <i class="fa-regular fa-folders"></i>&nbsp;
+            <ul>
+                
+                
+                    
+                        
+                        <li>
+                            <a href="/categories/Compiler/">Compiler</a>&nbsp;
+                        </li>
+                    
+                    
+                
+            </ul>
+        </span>
+    
+    
+        <span class="article-tags article-meta-item">
+            <i class="fa-regular fa-tags"></i>&nbsp;
+            <ul>
+                
+                    <li>
+                        <a href="/tags/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86/">编译原理</a>&nbsp;
+                    </li>
+                
+            </ul>
+        </span>
+    
+
+    
+    
+    
+    
+</div>
+
+                    </div>
+                </div>
+            </div>
+        
+
+        
+
+
+        <div class="article-content markdown-body px-2 sm:px-6 md:px-8 pb-8">
+            <h1 id="编译原理"><a href="#编译原理" class="headerlink" title="编译原理"></a>编译原理</h1><blockquote>
+<p>  龙书第二版读书笔记 + cs143课程记录</p>
+</blockquote>
+<h2 id="引论"><a href="#引论" class="headerlink" title="引论"></a>引论</h2><h3 id="语言处理器"><a href="#语言处理器" class="headerlink" title="语言处理器"></a>语言处理器</h3><blockquote>
+<p>  简单来说<strong>编译器</strong>就是一个程序，它可以阅读以某一种语言编写的程序，并把程序翻译成一个等价的、用另一种语言编写的程序</p>
+<p>  <em>编译器的重要任务之一就是报告它在翻译过程中发现的源程序中的错误</em></p>
+</blockquote>
+<blockquote>
+<p>  <strong>解释器</strong>并不通过翻译的方式生成目标程序</p>
+</blockquote>
+<p>由一个编译器产生的机器语言目标程序通常要比一个解释器快很多，但是解释器的错误诊断效果通常要比编译器要好</p>
+<h3 id="一个编译器的结构"><a href="#一个编译器的结构" class="headerlink" title="一个编译器的结构"></a>一个编译器的结构</h3><p>源程序映射为语义上等价的目标程序</p>
+<ul>
+<li><p>分析 analysis</p>
+<p>分析部分把源程序分解成为多个组成要素，并在这些要素之上加上语法结构。然后使用这个结构来创建该源程序的一个中间表示。这里通常会有一个语法语义上的检查，来帮助用户改正</p>
+<p>分析部分会收集有关源程序的信息，并把信息存放在一个称为符号表的数据结构，符号表将和中间部分一起传送给综合部分</p>
+</li>
+<li><p>综合 synthesis</p>
+<p>根据中间表示和符号表中的信息来构造用户期待的目标程序</p>
+</li>
+</ul>
+<blockquote>
+<p>  分析部分通常被称为编译器的前端，而综合部分被称为后端</p>
+</blockquote>
+<p><em>有些编译器在前端和后端之间有一个与机器无关的优化步骤，在中间表达式之上进行转换，以便后端程序能够生成更好的目标代码</em></p>
+<p>字符流 ———-&gt; 符号流 ———-&gt; 语法树 ———-&gt; 语法树 ———-&gt; 中间表示形式 ———-&gt; 中间表示形式 ———-&gt; 目标机器语言 ———-&gt; 目标机器语言</p>
+<p>​			词法分析器			语法分析			 语义分析		 中间代码生成器			机器无关代码优化器				代码生成器			机器无关代码优化器</p>
+<h4 id="词法分析-lexical-analysis"><a href="#词法分析-lexical-analysis" class="headerlink" title="词法分析 lexical analysis"></a>词法分析 lexical analysis</h4><p>词法分析器读入组成源程序的字符流，将它们组织成为有意义的词素 (lexeme) 的序列，对于每个词素，词法分析器产生如下形式的词法单元 (token) 作为输出</p>
+<p><code>&lt; token-name, attribute-value &gt;</code></p>
+<p>e.g.</p>
+<p><code>position = initial  + rate * 60</code></p>
+<ul>
+<li><code>position</code>是一个词素，被映射为 <code>&lt;id, 1&gt;</code>，id 是表示标识符的抽象符号，1 指向符号表中 <code>position</code> 对应的条目</li>
+<li><code>=</code> 是一个词素，被映射为 <code>&lt; = &gt;</code>，这个词法单元不需要属性值</li>
+<li><code>initial</code> 是一个词素，被映射为 <code>&lt;id, 2&gt;</code></li>
+<li><code>+</code> 是一个词素，被映射为 <code>&lt; + &gt;</code></li>
+<li><code>rate</code> 是一个词素，被映射为 <code>&lt;id, 3&gt;</code></li>
+<li><code>*</code> 是一个词素，被映射为 <code>&lt; * &gt;</code></li>
+<li><code>60</code> 是一个词素，被映射为 <code>&lt; 60 &gt;</code></li>
+</ul>
+<blockquote>
+<p>  分隔词素的空格会被词法分析器忽略掉</p>
+</blockquote>
+<p><code>&lt;id, 1&gt; &lt; = &gt; &lt;id, 2&gt; &lt; + &gt; &lt;id, 3&gt; &lt; * &gt; &lt; 60 &gt;</code></p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://pic.fetch150zy.cn/assets/image-20240312111409261.png"
+                      alt="image-20240312111409261"
+                ></p>
+<h4 id="语法分析-syntax-analysis"><a href="#语法分析-syntax-analysis" class="headerlink" title="语法分析 syntax analysis"></a>语法分析 syntax analysis</h4><p>一个常用的表示方式就是语法树  (syntax tree)</p>
+<blockquote>
+<p>  例子见上图</p>
+</blockquote>
+<h4 id="语义分析-semantic-analysis"><a href="#语义分析-semantic-analysis" class="headerlink" title="语义分析 semantic analysis"></a>语义分析 semantic analysis</h4><p>语义分析器 (semantic analyzer) 使用语法树和符号表中的信息来检查源程序是否和语言定义的语义一致。它也收集类型信息，并把这些信息存放在语法树或符号表中</p>
+<p>语义分析的一个重要部分是类型检查 (type checking)，编译器检查每个运算符是否具有匹配的运算分量</p>
+<p>自动类型转换，比如整数和浮点数运算，那么编译器要将整数转换为一个浮点数</p>
+<blockquote>
+<p>  例子见上图，我们可以发现60被类型转换了，这是因为在这个例子中rate是一个浮点数</p>
+</blockquote>
+<h4 id="中间代码生成"><a href="#中间代码生成" class="headerlink" title="中间代码生成"></a>中间代码生成</h4><p>在把一个源程序翻译成目标代码的过程中，一个编译器可能构造出一个或多个中间表示，这些中间表示可以有多种形式</p>
+<p>在源程序的语法分析和语义分析完成之后，很多编译器生成一个明确的低级的或类机器语言的中间表示，我们可以把这个看作是某个抽象机器的程序</p>
+<p>( 这种中间表示必须要具有两个重要的性质：易于生成，能够轻松被翻译成目标机器上的语言 )</p>
+<blockquote>
+<p>  例子见上图，采用了一种称为三地址代码 (three-address code) 的中间表示形式</p>
+</blockquote>
+<h4 id="代码优化"><a href="#代码优化" class="headerlink" title="代码优化"></a>代码优化</h4><p>机器无关的代码优化步骤试图改进中间代码，以便生成更好的目标代码</p>
+<blockquote>
+<p>  不同的编译器所做的代码优化工作量相差很大，那些优化工作做的最多的编译器，会在优化阶段花相当多的时间</p>
+</blockquote>
+<h4 id="代码生成"><a href="#代码生成" class="headerlink" title="代码生成"></a>代码生成</h4><p>代码生成器以源程序的中间表示形式作为输入，并把它映射到目标语言 (代码生成的一个至关重要的方面是合理分配寄存器以存放变量的值)</p>
+<h4 id="符号表管理"><a href="#符号表管理" class="headerlink" title="符号表管理"></a>符号表管理</h4><p>编译器的重要功能之一就是记录源程序中的使用的变量的名字，并收集和每个名字的各种属性有关的信息</p>
+<p>符号表数据结构为每个变量名字创建了一个记录条目，记录的字段就是名字的各个属性，这个数据结构应该允许编译器迅速查找到每个名字的记录</p>
+<h4 id="将多个步骤组合成趟"><a href="#将多个步骤组合成趟" class="headerlink" title="将多个步骤组合成趟"></a>将多个步骤组合成趟</h4><p>多个步骤的活动可以被组合成一趟</p>
+<blockquote>
+<p>   可以把一个前端和不同的目标机后端结合，建立针对不同目标机的编译器</p>
+</blockquote>
+<h4 id="编译器构造工具"><a href="#编译器构造工具" class="headerlink" title="编译器构造工具"></a>编译器构造工具</h4><ol>
+<li>语法分析器的生成器：可以根据一个程序设计语言的语法描述自动生成语言分析器</li>
+<li>扫描器的生成器：可以根据一个语言的语法单元的正则表达式描述生成词法分析器</li>
+<li>语法制导的翻译引擎：可以生成一组用于遍历分析树并生成中间代码的例程</li>
+<li>代码生成器的生成器：依据一组关于如何把中间语言的每个运算翻译成为目标机上的机器语言的规则，生成一个代码生成器</li>
+<li>数据流分析引擎：帮助收集数据流信息，即程序中的值如何从程序的一部分传递到另一部分，数据流分析是代码优化的一个重要部分</li>
+<li>编译器构造工具集：可用于构造编译器的不同阶段的例程的完整集合</li>
+</ol>
+<h3 id="编译技术的应用"><a href="#编译技术的应用" class="headerlink" title="编译技术的应用"></a>编译技术的应用</h3><h4 id="针对计算机体系结构的优化"><a href="#针对计算机体系结构的优化" class="headerlink" title="针对计算机体系结构的优化"></a>针对计算机体系结构的优化</h4><p>几乎所有的高性能系统都利用了两种技术</p>
+<ul>
+<li>并行 (parallelism)</li>
+<li>内存层次结构 (memory hierarchy)</li>
+</ul>
+<h5 id="并行性"><a href="#并行性" class="headerlink" title="并行性"></a>并行性</h5><p>所有的现代微处理器都采用了指令级并行性，指令级的并行也显式地出现在指令集中，VLIW (Very Long Instruction Word 超长指令字) 机器拥有可并行执行多个运算的指令</p>
+<p>人们已经开发了并行技术以便自动地把顺序的科学计算程序翻译成为多处理器代码</p>
+<h5 id="内存层次结构"><a href="#内存层次结构" class="headerlink" title="内存层次结构"></a>内存层次结构</h5><p>高效使用寄存器可能是优化一个程序时要处理的最重要的问题；和寄存器必须由软件明确管理不同，高速缓存和物理内存必须是对指令集隐藏的，并由硬件管理</p>
+<p>硬件实现的高速缓存管理策略有时并不高效，我们可以改变数据的布局或数据的访问代码的顺序来提高内存层次结构的效率，也可以通过改变代码的布局来提高指令高速缓存的效率</p>
+<h5 id="新计算机体系结构的设计"><a href="#新计算机体系结构的设计" class="headerlink" title="新计算机体系结构的设计"></a>新计算机体系结构的设计</h5><blockquote>
+<p>  决定一个计算机系统性能的不是他的原始速度，还包括编译器能够以何种程度利用其特征</p>
+<p>  在现代计算机体系结构的开发中，编译器在处理器设计阶段就进行开发，然后编译得到代码并运行于模拟器上，这些代码被用来评价提议的体系结构特征</p>
+</blockquote>
+<h5 id="程序翻译"><a href="#程序翻译" class="headerlink" title="程序翻译"></a>程序翻译</h5><p><strong>二进制翻译</strong></p>
+<p>编译器技术可以用于把一个机器的二进制代码翻译成另一个机器的二进制代码，使得可以在一个机器上运行原本为另一个指令集编译的程序</p>
+<blockquote>
+<p>  二进制翻译也可以被用来提供向后兼容性</p>
+</blockquote>
+<p><strong>硬件合成</strong></p>
+<p>大部分硬件设计也是使用高级硬件描述语言描述的，硬件设计通常是在寄存器传输层 (Register Transder Level, RTL) 上描述的</p>
+<p>在这个层，变量代表寄存器，而表达式代表组合逻辑；硬件合成工具把RTL描述自动翻译成为门电路，而门电路再被翻译成为晶体管，最后生成一个物理布局</p>
+<p><strong>编译然后模拟</strong></p>
+<p>对设计进行编译并生成能够在机器上直接模拟特定设计的机器代码，经过编译后模拟比基于解释器的方法快了几个数量级</p>
+<h5 id="软件生产率工具"><a href="#软件生产率工具" class="headerlink" title="软件生产率工具"></a>软件生产率工具</h5><p>通过数据流分析技术静态地定位错误 (静态分析工具)</p>
+<ul>
+<li>类型检查</li>
+<li>边界检查</li>
+<li>内存管理工具</li>
+</ul>
+<h3 id="程序设计语言基础"><a href="#程序设计语言基础" class="headerlink" title="程序设计语言基础"></a>程序设计语言基础</h3><h4 id="静态和动态的区别"><a href="#静态和动态的区别" class="headerlink" title="静态和动态的区别"></a>静态和动态的区别</h4><p>如果一个语言使用的策略支持编译器静态决定某个问题，那么我们说这个语言使用了一个静态 (static) 策略，或者说这个问题可以在编译时刻 (compile time) 决定</p>
+<p>一个只允许在运行程序的时候作出决定的策略被称为动态策略 (dynamic policy)，或者被认为需要在运行时刻 (run time) 做出决定</p>
+<p>如果仅通过阅读程序就可以确定一个声明的作用域，那么这个语言使用的是静态作用域 (static scope)，或词法作用域 (lexical scope)</p>
+<p>否则，这个语言使用的是动态作用域 (dynamic scope)，</p>
+<h4 id="环境与状态"><a href="#环境与状态" class="headerlink" title="环境与状态"></a>环境与状态</h4><ol>
+<li><p>环境 (environment)</p>
+<p>一个从名字到存储位置的映射，变量就是指内存位置，我们可以把环境定义为名字到变量的映射</p>
+</li>
+<li><p>状态 (state)</p>
+<p>从内存位置到它们的值的映射，状态即把左值映射为它们的相应右值</p>
+</li>
+</ol>
+<ul>
+<li>名字到位置的静态绑定与动态绑定，大部分从名字到位置的绑定是动态的</li>
+<li>位置到值的静态绑定与动态绑定，一般来说位置到值的绑定也是动态的，因为我们无法在运行一个程序之前指出一个位置上的值</li>
+</ul>
+<h2 id="一个简单的语法制导翻译器"><a href="#一个简单的语法制导翻译器" class="headerlink" title="一个简单的语法制导翻译器"></a>一个简单的语法制导翻译器</h2><h3 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h3><p>分析阶段的工作是围绕着待编译语言的语法展开的，一个程序设计语言的语法 (syntax) 描述了该语言的程序的正确形式</p>
+<p>而该语言的语义 (semantics) 则定义了程序的含义，即每个程序在运行时做什么事情</p>
+<blockquote>
+<p>  一个广泛使用的表示方法来描述语法，这个方法就是上下文无关文法或BNF (Backus-Naur范式)</p>
+<p>  上下文无关文法不仅可以描述一个语言的语法，还可以指导程序的翻译过程</p>
+</blockquote>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://pic.fetch150zy.cn/assets/image-20240312141357116.png"
+                      alt="image-20240312141357116"
+                ></p>
+<p>词法翻译器使得翻译器可以处理由多个字符组成的构造，比如标识符</p>
+<p>标识符由多个字符组成，但是在语法分析阶段被当做一个单元进行处理，这样的单元称作词法单元</p>
+<p>语法分析器生成一颗语法树，它又被进一步翻译为三地址代码，有些编译器会将语法分析和中间代码生成合并为一个组件</p>
+<h3 id="语法定义"><a href="#语法定义" class="headerlink" title="语法定义"></a>语法定义</h3><p>描述程序设计语言语法的表示方法，上下文无关文法，用于组织编译器前端</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (expression) statement <span class="keyword">else</span> statement</span><br></pre></td></tr></table></figure></div>
+
+<p>可以表示为</p>
+<div class="highlight-container" data-rel="C"><figure class="iseeu highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">stmt -&gt; <span class="keyword">if</span> (expr) stmt <span class="keyword">else</span> stmt</span><br></pre></td></tr></table></figure></div>
+
+<blockquote>
+<p>  这样的规则称为产生式 (production)，像关键字if和括号这样的词法元素称为终结符号 (terminal)，像expr和stmt这样的变量表示终结符号的序列，它们称为非终结符号 (nonterminal)</p>
+</blockquote>
+<h4 id="文法定义"><a href="#文法定义" class="headerlink" title="文法定义"></a>文法定义</h4><p>一个上下文无关文法 (context-free grammar) 由四个元素组成：</p>
+<ol>
+<li>一个终结符号集合，它们有时也称为“词法单元”，终结符号是该文法所定义的语言的基本符号的集合</li>
+<li>一个非终结符号集合，它们有时被称为“语法变量”，每个非终结符号表示一个终结符号串的集合</li>
+<li>一个产生式集合，其中每个产生式包括一个称为产生式头部或左部的非终结符号</li>
+<li>指定一个非终结符号为开始符号</li>
+</ol>
+<blockquote>
+<p>  在编译器中，词法分析器读入源程序中的字符序列，将它们组织为具有词法含义的词素，生成并输出代表这些词素的词法单元序列</p>
+<p>  词法单元由两个部分组成：名字和属性值，词法单元的名字是语法分析器进行语法分析时使用的抽象符号，我们常把这些词法单元名字称为终结符号，</p>
+<p>  因为它们在描述程序设计语言的文法中是以终结符号的形式出现的，如果词法单元具有属性值，那么这个值就是一个指向符号表的指针，符号表中包含</p>
+<p>  了该词法单元的附加信息。这些附加信息不是文法的组成部分，因此在我们讨论语法分析时，通常将词法单元和终结符号当做同义词</p>
+</blockquote>
+<h4 id="推导"><a href="#推导" class="headerlink" title="推导"></a>推导</h4><p>首先从开始符号出发，不断将某个非终结符号替换为该终结符号的某个产生式的体，可以从开始符号推导得到的所有终结符号串的集合称为该文法定义的语言</p>
+<blockquote>
+<p>  语法分析 (parsing) 的任务是：接受一个终结符号串作为输入，找出从文法的开始符号推导出这个串的方法，如果不能从文法的开始符号推导得到该终结符号串，</p>
+<p>  则报告该终结符号串包含的语法错误</p>
+</blockquote>
+<h4 id="语法分析树"><a href="#语法分析树" class="headerlink" title="语法分析树"></a>语法分析树</h4><p>给定一个上下文无关文法，该文法的一棵语法分析树 (parse tree) 是具有以下性质的树：</p>
+<ol>
+<li>根节点的标号为文法的开始符号</li>
+<li>每个叶子节点的标点为一个非终结符号</li>
+<li>每个内部节点的符号为一个非终结符号</li>
+<li>如果非终结符号A是某个内部节点的符号，并且它的子节点的标号从左到右分别是X1 X2 … Xn，那么必然存在产生式A-&gt;X1X2…Xn，其中X1 X2 … Xn既可以是终结符号<br>也可以是非终结符号，作为一个特殊情况，如果A-&gt;e是一个产生式，那么一个标号为A的节点可以只有一个标点为e的子节点</li>
+</ol>
+<h4 id="二义性"><a href="#二义性" class="headerlink" title="二义性"></a>二义性</h4><p>一个文法可能有多棵语法分析树能够生成同一个给定的终结符号串，这样的文法称为具有二义性 (ambiguous)，要证明一个文法具有二义性，我们只需要找到一个终结符号串</p>
+<p>说明它是两棵以上的语法分析树的结果。因为具有两棵以上语法分析树的符号串通常具有多个含义，所有我们需要为编译应用设计出没有二义性的方法，或者在使用二义性文法时</p>
+<p>使用附加的规则来消除二义性</p>
+<h4 id="运算符的结核性"><a href="#运算符的结核性" class="headerlink" title="运算符的结核性"></a>运算符的结核性</h4><p>一些规则来说明哪个运算符是“左结合”还是“右结合”</p>
+<h4 id="运算符的优先级"><a href="#运算符的优先级" class="headerlink" title="运算符的优先级"></a>运算符的优先级</h4><p>一些规则来定义说明符之间的相对优先关系</p>
+<h3 id="语法制导翻译"><a href="#语法制导翻译" class="headerlink" title="语法制导翻译"></a>语法制导翻译</h3><p>语法制导翻译是通过一个文法的产生式来附加一些规则或程序片段而得到的</p>
+<p><code>expr -&gt; expr1 + term</code></p>
+<blockquote>
+<p>  此处，expr 是两个子表达式 expr1 和 term 的和</p>
+</blockquote>
+<div class="highlight-container" data-rel="C"><figure class="iseeu highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">翻译 exp1;</span><br><span class="line">翻译 term;</span><br><span class="line">处理 +;</span><br></pre></td></tr></table></figure></div>
+
+<p>首先建立 expr1 和 term 的语法分析树，然后处理 + 运算符并构造一个和次运算符对应的节点</p>
+<h4 id="后缀表示"><a href="#后缀表示" class="headerlink" title="后缀表示"></a>后缀表示</h4><blockquote>
+<p>  中缀表达式转后缀表达式</p>
+</blockquote>
+<h4 id="综合属性"><a href="#综合属性" class="headerlink" title="综合属性"></a>综合属性</h4><h2 id="词法分析"><a href="#词法分析" class="headerlink" title="词法分析"></a>词法分析</h2><h3 id="词法分析器的作用"><a href="#词法分析器的作用" class="headerlink" title="词法分析器的作用"></a>词法分析器的作用</h3><p>任务：读入源程序的输入字符、将它们组成词素，生成并输出一个词法单元序列，每个词法单元对应于一个词素</p>
+<p>这个词法单元序列被输出到语法分析器进行语法分析。词法分析器通常还要和符号表进行交互，当词法分析器发现了一个标识符的词素时，它将这个词素添加到符号表中</p>
+<p>在某些情况下，词法分析器会从符号表中读取有关标识符种类的信息，以确定向语法分析器传送哪个词法单元</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://pic.fetch150zy.cn/assets/image-20240312160621544.png"
+                      alt="image-20240312160621544"
+                ></p>
+<p>通常，交互是由语法分析器调用词法分析器来实现的，图中的命令getNextToken所指示的调用使得词法分析器从它的输入中不断读取字符，直到它识别出下一个词素为止</p>
+<p>词法分析器根据这个词素生成下一个词法单元并返回给语法分析器</p>
+<blockquote>
+<p>  词法分析器在编译器中负责读取源程序，因此他还会完成一些识别词素之外的其他任务</p>
+<ul>
+<li><p>任务之一是过滤掉源程序中的注释和空白</p>
+</li>
+<li><p>另一个任务是将编译器生成的错误信息与源程序的位置联系起来</p>
+</li>
+</ul>
+</blockquote>
+<p>有时，词法分析器可以分为两个级联的处理阶段</p>
+<ol>
+<li>扫描阶段主要负责完成一些不需要生成词法单元的简单处理，比如删除注释和将多个连续的空白字符压缩成一个字符</li>
+<li>词法分析阶段是较为复杂的部分，它处理扫描阶段的输出并生成词法单元</li>
+</ol>
+<h4 id="词法分析及语法分析"><a href="#词法分析及语法分析" class="headerlink" title="词法分析及语法分析"></a>词法分析及语法分析</h4><p>把编译过程的分析过程划分为词法分析和语法分析阶段有如下几个原因</p>
+<ol>
+<li>简化编译器的设计，将词法分析和语法分析分离通常使我们至少可以简化其中的一项任务</li>
+<li>提高编译器的效率，把词法分析器独立出来使我们能够使用专用于词法分析人物、不进行语法分析的技术</li>
+<li>增强编译器的可移植性，输入设备相关的特殊性可以被限制在词法分析器中</li>
+</ol>
+<h4 id="词法单元、模式和词素"><a href="#词法单元、模式和词素" class="headerlink" title="词法单元、模式和词素"></a>词法单元、模式和词素</h4><p>在讨论词法分析时，我们使用三个相关但有区别的术语</p>
+<ul>
+<li>词法单元由一个词法单元名和一个可选的属性值组成</li>
+<li>模式描述了一个词法单元的词素可能具有的形式</li>
+<li>词素是源程序中的一个字符序列，它和某个词法单元的模式匹配，并被词法分析器识别为该词法单元的一个实例</li>
+</ul>
+<p>在很多程序设计语言中，下面的类别覆盖了大部分或所有的词法单元</p>
+<ol>
+<li>每个关键字有一个词法单元，一个关键字的模式就是该关键字本身</li>
+<li>表示运算符的词法单元，它可以表示单个运算符，也可以表示一类运算符</li>
+<li>一个表示所有标识符的词法单元</li>
+<li>一个或多个表示常量的词法单元，比如数字和字面值字符串</li>
+<li>每一个标点符号由一个词法单元，比如左右括号、逗号和分号</li>
+</ol>
+<h4 id="词法单元的属性"><a href="#词法单元的属性" class="headerlink" title="词法单元的属性"></a>词法单元的属性</h4><h2 id="语法分析"><a href="#语法分析" class="headerlink" title="语法分析"></a>语法分析</h2><h2 id="语法制导的翻译"><a href="#语法制导的翻译" class="headerlink" title="语法制导的翻译"></a>语法制导的翻译</h2><h2 id="中间代码生成-1"><a href="#中间代码生成-1" class="headerlink" title="中间代码生成"></a>中间代码生成</h2><h2 id="运行时环境"><a href="#运行时环境" class="headerlink" title="运行时环境"></a>运行时环境</h2><h2 id="代码生成-1"><a href="#代码生成-1" class="headerlink" title="代码生成"></a>代码生成</h2><h2 id="机器无关优化"><a href="#机器无关优化" class="headerlink" title="机器无关优化"></a>机器无关优化</h2><h2 id="指令级并行性"><a href="#指令级并行性" class="headerlink" title="指令级并行性"></a>指令级并行性</h2><h2 id="并行性和局部性优化"><a href="#并行性和局部性优化" class="headerlink" title="并行性和局部性优化"></a>并行性和局部性优化</h2><h2 id="过程间分析"><a href="#过程间分析" class="headerlink" title="过程间分析"></a>过程间分析</h2>
+        </div>
+
+        
+
+        
+            <ul class="post-tags-box text-lg mt-1.5 flex-wrap justify-center flex md:hidden">
+                
+                    <li class="tag-item mx-0.5">
+                        <a href="/tags/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86/">#编译原理</a>&nbsp;
+                    </li>
+                
+            </ul>
+        
+
+        
+
+        
+            <div class="article-nav my-8 flex justify-between items-center px-2 sm:px-6 md:px-8">
+                
+                
+                    <div class="article-next border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
+                        <a class="next"
+                        rel="next"
+                        href="/2024/03/05/2024-03-05-verilator/"
+                        >
+                            <span class="title flex justify-center items-center">
+                                <span class="post-nav-title-item">Verilator</span>
+                                <span class="post-nav-item">下一篇</span>
+                            </span>
+                            <span class="right arrow-icon flex justify-center items-center">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </span>
+                        </a>
+                    </div>
+                
+            </div>
+        
+
+
+        
+    </div>
+
+    
+        <div class="toc-content-container">
+            <div class="post-toc-wrap">
+    <div class="post-toc">
+        <div class="toc-title">此页目录</div>
+        <div class="page-title">编译原理</div>
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86"><span class="nav-text">编译原理</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%95%E8%AE%BA"><span class="nav-text">引论</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86%E5%99%A8"><span class="nav-text">语言处理器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E4%B8%AA%E7%BC%96%E8%AF%91%E5%99%A8%E7%9A%84%E7%BB%93%E6%9E%84"><span class="nav-text">一个编译器的结构</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AF%8D%E6%B3%95%E5%88%86%E6%9E%90-lexical-analysis"><span class="nav-text">词法分析 lexical analysis</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AF%AD%E6%B3%95%E5%88%86%E6%9E%90-syntax-analysis"><span class="nav-text">语法分析 syntax analysis</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AF%AD%E4%B9%89%E5%88%86%E6%9E%90-semantic-analysis"><span class="nav-text">语义分析 semantic analysis</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%AD%E9%97%B4%E4%BB%A3%E7%A0%81%E7%94%9F%E6%88%90"><span class="nav-text">中间代码生成</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E4%BC%98%E5%8C%96"><span class="nav-text">代码优化</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E7%94%9F%E6%88%90"><span class="nav-text">代码生成</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%AC%A6%E5%8F%B7%E8%A1%A8%E7%AE%A1%E7%90%86"><span class="nav-text">符号表管理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%B0%86%E5%A4%9A%E4%B8%AA%E6%AD%A5%E9%AA%A4%E7%BB%84%E5%90%88%E6%88%90%E8%B6%9F"><span class="nav-text">将多个步骤组合成趟</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BC%96%E8%AF%91%E5%99%A8%E6%9E%84%E9%80%A0%E5%B7%A5%E5%85%B7"><span class="nav-text">编译器构造工具</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%96%E8%AF%91%E6%8A%80%E6%9C%AF%E7%9A%84%E5%BA%94%E7%94%A8"><span class="nav-text">编译技术的应用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%92%88%E5%AF%B9%E8%AE%A1%E7%AE%97%E6%9C%BA%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E7%9A%84%E4%BC%98%E5%8C%96"><span class="nav-text">针对计算机体系结构的优化</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%B9%B6%E8%A1%8C%E6%80%A7"><span class="nav-text">并行性</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84"><span class="nav-text">内存层次结构</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%96%B0%E8%AE%A1%E7%AE%97%E6%9C%BA%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E7%9A%84%E8%AE%BE%E8%AE%A1"><span class="nav-text">新计算机体系结构的设计</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E7%A8%8B%E5%BA%8F%E7%BF%BB%E8%AF%91"><span class="nav-text">程序翻译</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E8%BD%AF%E4%BB%B6%E7%94%9F%E4%BA%A7%E7%8E%87%E5%B7%A5%E5%85%B7"><span class="nav-text">软件生产率工具</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80"><span class="nav-text">程序设计语言基础</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%9D%99%E6%80%81%E5%92%8C%E5%8A%A8%E6%80%81%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-text">静态和动态的区别</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E4%B8%8E%E7%8A%B6%E6%80%81"><span class="nav-text">环境与状态</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84%E8%AF%AD%E6%B3%95%E5%88%B6%E5%AF%BC%E7%BF%BB%E8%AF%91%E5%99%A8"><span class="nav-text">一个简单的语法制导翻译器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%95%E8%A8%80"><span class="nav-text">引言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%AD%E6%B3%95%E5%AE%9A%E4%B9%89"><span class="nav-text">语法定义</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%96%87%E6%B3%95%E5%AE%9A%E4%B9%89"><span class="nav-text">文法定义</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8E%A8%E5%AF%BC"><span class="nav-text">推导</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AF%AD%E6%B3%95%E5%88%86%E6%9E%90%E6%A0%91"><span class="nav-text">语法分析树</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BA%8C%E4%B9%89%E6%80%A7"><span class="nav-text">二义性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%BF%90%E7%AE%97%E7%AC%A6%E7%9A%84%E7%BB%93%E6%A0%B8%E6%80%A7"><span class="nav-text">运算符的结核性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%BF%90%E7%AE%97%E7%AC%A6%E7%9A%84%E4%BC%98%E5%85%88%E7%BA%A7"><span class="nav-text">运算符的优先级</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%AD%E6%B3%95%E5%88%B6%E5%AF%BC%E7%BF%BB%E8%AF%91"><span class="nav-text">语法制导翻译</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%90%8E%E7%BC%80%E8%A1%A8%E7%A4%BA"><span class="nav-text">后缀表示</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BB%BC%E5%90%88%E5%B1%9E%E6%80%A7"><span class="nav-text">综合属性</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AF%8D%E6%B3%95%E5%88%86%E6%9E%90"><span class="nav-text">词法分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%8D%E6%B3%95%E5%88%86%E6%9E%90%E5%99%A8%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="nav-text">词法分析器的作用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AF%8D%E6%B3%95%E5%88%86%E6%9E%90%E5%8F%8A%E8%AF%AD%E6%B3%95%E5%88%86%E6%9E%90"><span class="nav-text">词法分析及语法分析</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AF%8D%E6%B3%95%E5%8D%95%E5%85%83%E3%80%81%E6%A8%A1%E5%BC%8F%E5%92%8C%E8%AF%8D%E7%B4%A0"><span class="nav-text">词法单元、模式和词素</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AF%8D%E6%B3%95%E5%8D%95%E5%85%83%E7%9A%84%E5%B1%9E%E6%80%A7"><span class="nav-text">词法单元的属性</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AF%AD%E6%B3%95%E5%88%86%E6%9E%90"><span class="nav-text">语法分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AF%AD%E6%B3%95%E5%88%B6%E5%AF%BC%E7%9A%84%E7%BF%BB%E8%AF%91"><span class="nav-text">语法制导的翻译</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%AD%E9%97%B4%E4%BB%A3%E7%A0%81%E7%94%9F%E6%88%90-1"><span class="nav-text">中间代码生成</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C%E6%97%B6%E7%8E%AF%E5%A2%83"><span class="nav-text">运行时环境</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E7%94%9F%E6%88%90-1"><span class="nav-text">代码生成</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%BA%E5%99%A8%E6%97%A0%E5%85%B3%E4%BC%98%E5%8C%96"><span class="nav-text">机器无关优化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8C%87%E4%BB%A4%E7%BA%A7%E5%B9%B6%E8%A1%8C%E6%80%A7"><span class="nav-text">指令级并行性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B9%B6%E8%A1%8C%E6%80%A7%E5%92%8C%E5%B1%80%E9%83%A8%E6%80%A7%E4%BC%98%E5%8C%96"><span class="nav-text">并行性和局部性优化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%87%E7%A8%8B%E9%97%B4%E5%88%86%E6%9E%90"><span class="nav-text">过程间分析</span></a></li></ol></li></ol>
+
+    </div>
+</div>
+        </div>
+    
+</div>
+
+
+
+                
+
+            </div>
+
+            
+
+        </div>
+
+        <div class="main-content-footer">
+            <footer class="footer mt-5 py-5 h-auto text-base text-third-text-color relative border-t-2 border-t-border-color">
+    <div class="info-container py-3 text-center">
+        
+        <div class="text-center">
+            &copy;
+            
+            2024&nbsp;&nbsp;<i class="fa-solid fa-heart fa-beat" style="--fa-animation-duration: 0.5s; color: #f54545"></i>&nbsp;&nbsp;<a href="/">fetch150zy</a>
+            
+                
+                <p class="post-count space-x-0.5">
+                    <span>
+                        共 52 篇文章
+                    </span>
+                    
+                </p>
+            
+        </div>
+        
+        <div class="relative text-center lg:absolute lg:left-[20px] lg:top-1/2 lg:-translate-y-1/2 lg:text-left">
+            <span class="lg:block text-sm">由 <?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg class="relative top-[2px] inline-block align-baseline" version="1.1" id="圖層_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="1rem" height="1rem" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve"><path fill="#0E83CD" d="M256.4,25.8l-200,115.5L56,371.5l199.6,114.7l200-115.5l0.4-230.2L256.4,25.8z M349,354.6l-18.4,10.7l-18.6-11V275H200v79.6l-18.4,10.7l-18.6-11v-197l18.5-10.6l18.5,10.8V237h112v-79.6l18.5-10.6l18.5,10.8V354.6z"/></svg><a target="_blank" class="text-base" href="https://hexo.io">Hexo</a> 驱动</span>
+            <span class="text-sm lg:block">主题&nbsp;<a class="text-base" target="_blank" href="https://github.com/EvanNotFound/hexo-theme-redefine">Redefine v2.6.1</a></span>
+        </div>
+        
+        
+        
+        
+        
+    </div>  
+</footer>
+        </div>
+    </div>
+
+    
+        <div class="post-tools">
+            <div class="post-tools-container">
+    <ul class="article-tools-list">
+        <!-- TOC aside toggle -->
+        
+            <li class="right-bottom-tools page-aside-toggle">
+                <i class="fa-regular fa-outdent"></i>
+            </li>
+        
+
+        <!-- go comment -->
+        
+    </ul>
+</div>
+
+        </div>
+    
+
+    <div class="right-side-tools-container">
+        <div class="side-tools-container">
+    <ul class="hidden-tools-list">
+        <li class="right-bottom-tools tool-font-adjust-plus flex justify-center items-center">
+            <i class="fa-regular fa-magnifying-glass-plus"></i>
+        </li>
+
+        <li class="right-bottom-tools tool-font-adjust-minus flex justify-center items-center">
+            <i class="fa-regular fa-magnifying-glass-minus"></i>
+        </li>
+
+        <li class="right-bottom-tools tool-dark-light-toggle flex justify-center items-center">
+            <i class="fa-regular fa-moon"></i>
+        </li>
+
+        <!-- rss -->
+        
+
+        
+
+        <li class="right-bottom-tools tool-scroll-to-bottom flex justify-center items-center">
+            <i class="fa-regular fa-arrow-down"></i>
+        </li>
+    </ul>
+
+    <ul class="visible-tools-list">
+        <li class="right-bottom-tools toggle-tools-list flex justify-center items-center">
+            <i class="fa-regular fa-cog fa-spin"></i>
+        </li>
+        
+            <li class="right-bottom-tools tool-scroll-to-top flex justify-center items-center">
+                <i class="arrow-up fas fa-arrow-up"></i>
+                <span class="percent"></span>
+            </li>
+        
+        
+    </ul>
+</div>
+
+    </div>
+
+    <div class="image-viewer-container">
+    <img src="">
+</div>
+
+
+    
+
+</main>
+
+
+    
+<script src="/js/libs/Swup.min.js"></script>
+
+<script src="/js/libs/SwupSlideTheme.min.js"></script>
+
+<script src="/js/libs/SwupScriptsPlugin.min.js"></script>
+
+<script src="/js/libs/SwupProgressPlugin.min.js"></script>
+
+<script src="/js/libs/SwupScrollPlugin.min.js"></script>
+
+<script src="/js/libs/SwupPreloadPlugin.min.js"></script>
+
+<script>
+    const swup = new Swup({
+        plugins: [
+            new SwupScriptsPlugin({
+                optin: true,
+            }),
+            new SwupProgressPlugin(),
+            new SwupScrollPlugin({
+                offset: 80,
+            }),
+            new SwupSlideTheme({
+                mainElement: ".main-content-body",
+            }),
+            new SwupPreloadPlugin(),
+        ],
+        containers: ["#swup"],
+    });
+</script>
+
+
+
+
+
+
+
+<script src="/js/tools/imageViewer.js" type="module"></script>
+
+<script src="/js/utils.js" type="module"></script>
+
+<script src="/js/main.js" type="module"></script>
+
+<script src="/js/layouts/navbarShrink.js" type="module"></script>
+
+<script src="/js/tools/scrollTopBottom.js" type="module"></script>
+
+<script src="/js/tools/lightDarkSwitch.js" type="module"></script>
+
+<script src="/js/layouts/categoryList.js" type="module"></script>
+
+
+
+
+
+
+
+    
+<script src="/js/layouts/lazyload.js" type="module"></script>
+
+
+
+
+
+
+  
+<script src="/js/libs/Typed.min.js"></script>
+
+  
+<script src="/js/plugins/typed.js" type="module"></script>
+
+
+
+
+
+
+
+
+
+<div class="post-scripts" data-swup-reload-script>
+    
+        
+<script src="/js/tools/tocToggle.js" type="module"></script>
+
+<script src="/js/layouts/toc.js" type="module"></script>
+
+<script src="/js/plugins/tabs.js" type="module"></script>
+
+    
+</div>
+
+
+</body>
+</html>

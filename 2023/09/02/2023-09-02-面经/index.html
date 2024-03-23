@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="keywords" content="computer science">
+    
+    <meta name="author" content="fetch150zy">
+    <!-- preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    
+    <!--- Seo Part-->
+    
+    <link rel="canonical" href="https://fetch150zy.github.io/2023/09/02/2023-09-02-面经/"/>
+    <meta name="robots" content="index,follow">
+    <meta name="googlebot" content="index,follow">
+    <meta name="revisit-after" content="1 days">
+    
+        <meta name="description" content="C++ 面经wps1、TCP三次握手TCP（Transmission Control Protocol）三次握手是一种网络通信协议中用于建立可靠的连接的机制。这个过程在TCP&#x2F;IP模型中是至关重要的，确保了数据的可靠传输。三次握手的主要目的是在两个TCP端点之间同步序列号和确认号，并交换其他控制信息。这个过程可以分为三个步骤：  SYN（同步）：初始步骤由客户端发起。客户端发送一个SYN">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Cpp面经">
+<meta property="og:url" content="https://fetch150zy.github.io/2023/09/02/2023-09-02-%E9%9D%A2%E7%BB%8F/index.html">
+<meta property="og:site_name" content="fetch150zy&#39;blog">
+<meta property="og:description" content="C++ 面经wps1、TCP三次握手TCP（Transmission Control Protocol）三次握手是一种网络通信协议中用于建立可靠的连接的机制。这个过程在TCP&#x2F;IP模型中是至关重要的，确保了数据的可靠传输。三次握手的主要目的是在两个TCP端点之间同步序列号和确认号，并交换其他控制信息。这个过程可以分为三个步骤：  SYN（同步）：初始步骤由客户端发起。客户端发送一个SYN">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-09-02T04:00:00.000Z">
+<meta property="article:modified_time" content="2024-03-23T05:48:16.642Z">
+<meta property="article:author" content="fetch150zy">
+<meta property="article:tag" content="面经">
+<meta name="twitter:card" content="summary">
+    
+    
+    <!--- Icon Part-->
+    <link rel="icon" type="image/png" href="/img/pacman.png" sizes="192x192">
+    <link rel="apple-touch-icon" sizes="180x180" href="/img/pacman.png">
+    <meta name="theme-color" content="#7FCDCD">
+    <link rel="shortcut icon" href="/img/pacman.png">
+    <!--- Page Info-->
+    
+    <title>
+        
+            Cpp面经 -
+        
+        fetch150zy&#39;s blog
+    </title>
+
+    
+<link rel="stylesheet" href="/fonts/Chillax/chillax.css">
+
+
+    <!--- Inject Part-->
+    
+
+    
+        <style>
+    :root {
+        --preloader-background-color: #fff;
+        --preloader-text-color: #000;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --preloader-background-color: #202124;
+            --preloader-text-color: #fff;
+        }
+    }
+
+    @media (prefers-color-scheme: light) {
+        :root {
+            --preloader-background-color: #fff;
+            --preloader-text-color: #000;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .ml13 {
+            font-size: 2.6rem !important; /* Adjust this value as needed */
+        }
+    }
+
+    .preloader {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem; /* Tailwind 'gap-4' is 1rem */
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        padding: 12px;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh; /* 'h-screen' is 100% of the viewport height */
+        background-color: var(--preloader-background-color);
+        z-index: 1100; /* 'z-[1100]' sets the z-index */
+        transition: opacity 0.2s ease-in-out;
+    }
+
+    .ml13 {
+        font-size: 3.2rem;
+        /* text-transform: uppercase; */
+        color: var(--preloader-text-color);
+        letter-spacing: -1px;
+        font-weight: 500;
+        font-family: 'Chillax-Variable', sans-serif;
+        text-align: center;
+    }
+
+    .ml13 .word {
+        display: inline-flex;
+        flex-wrap: wrap;
+        white-space: nowrap;
+    }
+
+    .ml13 .letter {
+        display: inline-block;
+        line-height: 1em;
+    }
+</style>
+
+<div class="preloader">
+    
+<script src="/js/libs/anime.min.js"></script>
+
+    <h1 class="ml13">
+        fetch150zy&#39;s blog
+    </h1>
+    <script>
+        var textWrapper = document.querySelector('.ml13');
+        // Split text into words
+        var words = textWrapper.textContent.trim().split(' ');
+
+        // Clear the existing content
+        textWrapper.innerHTML = '';
+
+        // Wrap each word and its letters in spans
+        words.forEach(function(word) {
+            var wordSpan = document.createElement('span');
+            wordSpan.classList.add('word');
+            wordSpan.innerHTML = word.replace(/\S/g, "<span class='letter'>$&</span>");
+            textWrapper.appendChild(wordSpan);
+            textWrapper.appendChild(document.createTextNode(' ')); // Add space between words
+        });
+
+
+        anime.timeline({loop: true})
+            .add({
+                targets: '.ml13 .letter',
+                translateY: [100,0],
+                translateZ: 0,
+                opacity: [0,1],
+                easing: "easeOutExpo",
+                duration: 1400,
+                delay: (el, i) => 300 + 30 * i
+            }).add({
+            targets: '.ml13 .letter',
+            translateY: [0,-100],
+            opacity: [1,0],
+            easing: "easeInExpo",
+            duration: 1200,
+            delay: (el, i) => 100 + 30 * i
+        });
+
+        let themeStatus = JSON.parse(localStorage.getItem('REDEFINE-THEME-STATUS'))?.isDark;
+
+        // If the theme status is not found in local storage, check the preferred color scheme
+        if (themeStatus === undefined || themeStatus === null) {
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                themeStatus = 'dark';
+            } else {
+                themeStatus = 'light';
+            }
+        }
+
+        // Now you can use the themeStatus variable in your code
+        if (themeStatus) {
+            document.documentElement.style.setProperty('--preloader-background-color', '#202124');
+            document.documentElement.style.setProperty('--preloader-text-color', '#fff');
+        } else {
+            document.documentElement.style.setProperty('--preloader-background-color', '#fff');
+            document.documentElement.style.setProperty('--preloader-text-color', '#000');
+        }
+
+        window.addEventListener('load', function () {
+            hidePreloaderAfterTimeout(1000); // Hide after 1000 milliseconds once the window has loaded
+        });
+
+        // Backup failsafe: Hide preloader after a maximum of 5000 milliseconds, regardless of the window load event
+        hidePreloaderAfterTimeout(5000);
+
+        function hidePreloaderAfterTimeout(delay) {
+            setTimeout(function () {
+                var preloader = document.querySelector('.preloader');
+                preloader.style.opacity = '0';
+                setTimeout(function () {
+                    preloader.style.display = 'none';
+                }, 200);
+            }, delay);
+        }
+    </script>
+</div>
+    
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+
+    
+        
+<link rel="stylesheet" href="/assets/build/styles.css">
+
+    
+
+    
+<link rel="stylesheet" href="/fonts/fonts.css">
+
+    
+<link rel="stylesheet" href="/fonts/Satoshi/satoshi.css">
+
+    <!--- Font Part-->
+    
+    
+    
+    
+
+
+    <script id="hexo-configurations">
+    window.config = {"hostname":"fetch150zy.github.io","root":"/","language":"zh-CN"};
+    window.theme = {"articles":{"style":{"font_size":"18px","line_height":1.4,"image_border_radius":"14px","image_alignment":"center","image_caption":false,"link_icon":true,"title_alignment":"center","headings_top_spacing":{"h1":"5rem","h2":"4rem","h3":"2.8rem","h4":"2.5rem","h5":"2.2rem","h6":"2rem"}},"word_count":{"enable":false,"count":false,"min2read":false},"author_label":{"enable":false,"auto":false,"list":[]},"code_block":{"copy":false,"style":"mac","font":{"enable":false,"family":null,"url":null}},"toc":{"enable":true,"max_depth":6,"number":false,"expand":true,"init_open":true},"copyright":{"enable":false,"default":"cc_by_nc_sa"},"lazyload":true,"recommendation":{"enable":false,"title":"推荐阅读","limit":3,"mobile_limit":2,"placeholder":null,"skip_dirs":[]}},"colors":{"primary":"#7FCDCD","secondary":null,"default_mode":"dark"},"global":{"fonts":{"chinese":{"enable":null,"family":null,"url":null},"english":{"enable":null,"family":null,"url":null}},"content_max_width":"1000px","sidebar_width":"210px","hover":{"shadow":true,"scale":true},"scroll_progress":{"bar":false,"percentage":true},"website_counter":{"url":"https://cn.vercount.one/js","enable":false,"site_pv":false,"site_uv":false,"post_pv":false},"single_page":true,"preloader":true,"open_graph":true,"google_analytics":{"enable":false,"id":null}},"home_banner":{"enable":true,"style":"fixed","image":{"light":"/img/bg15.jpg","dark":"/img/bg15.jpg"},"title":"fetch150zy's blog","subtitle":{"text":["年年岁岁花相似，岁岁年年人不同"],"hitokoto":{"enable":false,"api":"https://v1.hitokoto.cn"},"typing_speed":100,"backing_speed":80,"starting_delay":500,"backing_delay":1500,"loop":true,"smart_backspace":true},"text_color":{"light":"#fff","dark":"#d1d1b6"},"text_style":{"title_size":"2.8rem","subtitle_size":"1.5rem","line_height":1.3},"custom_font":{"enable":false,"family":null,"url":null},"social_links":{"enable":true,"style":"default","links":{"github":"https://github.com/fetch150zy","bilibili":"https://space.bilibili.com/505867894","stack-overflow":"https://stackoverflow.com/users/16738249/fetch150zy","email":"mailto:mars_zhewei@outlook.com"},"qrs":{"weixin":"https://pic.fetch150zy.cn/weixin.png"}}},"plugins":{"feed":{"enable":false},"aplayer":{"enable":false,"type":"fixed","audios":[{"name":null,"artist":null,"url":null,"cover":null,"lrc":null}]},"mermaid":{"enable":false,"version":"9.3.0"}},"version":"2.6.1","navbar":{"auto_hide":false,"color":{"left":"#f78736","right":"#367df7","transparency":35},"width":{"home":"1200px","pages":"1000px"},"links":{"Home":{"path":"/","icon":"fa-regular fa-house"},"Archives":{"path":"/archives","icon":"fa-regular fa-archive"},"About":{"icon":"fa-regular fa-user","submenus":{"Me":"/about","Blog":"https://fetch150zy.cn","Github":"https://github.com/fetch150zy"}}},"search":{"enable":false,"preload":true}},"page_templates":{"friends_column":3,"tags_style":"blur"},"home":{"sidebar":{"enable":true,"position":"right","first_item":"info","announcement":null,"show_on_mobile":true,"links":{"Archives":{"path":"/archives","icon":"fa-regular fa-archive"},"Tags":{"path":"/tags","icon":"fa-regular fa-tags"},"Categories":{"path":"/categories","icon":"fa-regular fa-folder"}}},"article_date_format":"YYYY-MM-DD","categories":{"enable":true,"limit":3},"tags":{"enable":true,"limit":3}},"footerStart":null};
+    window.lang_ago = {"second":"%s 秒前","minute":"%s 分钟前","hour":"%s 小时前","day":"%s 天前","week":"%s 周前","month":"%s 个月前","year":"%s 年前"};
+    window.data = {"masonry":false};
+  </script>
+    
+    <!--- Fontawesome Part-->
+    
+<link rel="stylesheet" href="/fontawesome/fontawesome.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/brands.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/solid.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/regular.min.css">
+
+    
+    
+    
+    
+        
+<link rel="stylesheet" href="/fontawesome/sharp-solid.min.css">
+
+    
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+
+<body>
+<div class="progress-bar-container">
+    
+
+    
+        <span class="pjax-progress-bar"></span>
+<!--        <span class="swup-progress-icon">-->
+<!--            <i class="fa-solid fa-circle-notch fa-spin"></i>-->
+<!--        </span>-->
+    
+</div>
+
+
+<main class="page-container" id="swup">
+
+    
+
+    <div class="main-content-container">
+
+
+        <div class="main-content-header">
+            <header class="navbar-container px-6 md:px-12">
+
+    <div class="navbar-content ">
+        <div class="left">
+            
+                <a class="logo-image" href="/">
+                    <img src="/img/pacman.png">
+                </a>
+            
+            <a class="logo-title" href="/">
+                
+                fetch150zy&#39;s blog
+                
+            </a>
+        </div>
+
+        <div class="right">
+            <!-- PC -->
+            <div class="desktop">
+                <ul class="navbar-list">
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/"
+                                        >
+                                    <i class="fa-regular fa-house fa-fw"></i>
+                                    首页
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/archives"
+                                        >
+                                    <i class="fa-regular fa-archive fa-fw"></i>
+                                    归档
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class="has-dropdown"
+                                   href="#"
+                                        onClick=&#34;return false;&#34;>
+                                    <i class="fa-regular fa-user fa-fw"></i>
+                                    关于
+                                    <i class="fa-solid fa-chevron-down fa-fw"></i>
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                                    <ul class="sub-menu">
+                                        
+                                            <li>
+                                                <a href="/about">
+                                                    ME
+                                                </a>
+                                            </li>
+                                        
+                                            <li>
+                                                <a target="_blank" rel="noopener" href="https://fetch150zy.cn">
+                                                    BLOG
+                                                </a>
+                                            </li>
+                                        
+                                            <li>
+                                                <a target="_blank" rel="noopener" href="https://github.com/fetch150zy">
+                                                    GITHUB
+                                                </a>
+                                            </li>
+                                        
+                                    </ul>
+                                
+                            </li>
+                    
+                    
+                </ul>
+            </div>
+            <!-- Mobile -->
+            <div class="mobile">
+                
+                <div class="icon-item navbar-bar">
+                    <div class="navbar-bar-middle"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile sheet -->
+    <div class="navbar-drawer h-screen w-full absolute top-0 left-0 bg-background-color flex flex-col justify-between">
+        <ul class="drawer-navbar-list flex flex-col px-4 justify-center items-start">
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/"
+                        >
+                            <span>
+                                首页
+                            </span>
+                            
+                                <i class="fa-regular fa-house fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/archives"
+                        >
+                            <span>
+                                归档
+                            </span>
+                            
+                                <i class="fa-regular fa-archive fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item-sub text-base my-1.5 flex flex-col w-full">
+                        
+                        <div class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary cursor-pointer text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                             navbar-data-toggle="submenu-About"
+                        >
+                            <span>
+                                关于
+                            </span>
+                            
+                                <i class="fa-solid fa-chevron-right fa-sm fa-fw transition-all"></i>
+                            
+                        </div>
+                        
+
+                        
+                            <div class="flex-col items-start px-2 py-2 hidden" data-target="submenu-About">
+                                
+                                    <div class="drawer-navbar-item text-base flex flex-col justify-center items-start hover:underline active:underline hover:underline-offset-1 rounded-3xl">
+                                        <a class=" text-third-text-color text-xl"
+                                           href="/about">ME</a>
+                                    </div>
+                                
+                                    <div class="drawer-navbar-item text-base flex flex-col justify-center items-start hover:underline active:underline hover:underline-offset-1 rounded-3xl">
+                                        <a class=" text-third-text-color text-xl"
+                                           target="_blank" rel="noopener" href="https://fetch150zy.cn">BLOG</a>
+                                    </div>
+                                
+                                    <div class="drawer-navbar-item text-base flex flex-col justify-center items-start hover:underline active:underline hover:underline-offset-1 rounded-3xl">
+                                        <a class=" text-third-text-color text-xl"
+                                           target="_blank" rel="noopener" href="https://github.com/fetch150zy">GITHUB</a>
+                                    </div>
+                                
+                            </div>
+                        
+                    </li>
+            
+
+            
+            
+                
+                    
+                    
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full active"
+                           href="/tags"
+                        >
+                            <span>Tags</span>
+                            <i class="fa-regular fa-tags fa-sm fa-fw"></i>
+                        </a>
+                    </li>
+                
+                    
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full active"
+                           href="/categories"
+                        >
+                            <span>Categories</span>
+                            <i class="fa-regular fa-folder fa-sm fa-fw"></i>
+                        </a>
+                    </li>
+                
+            
+        </ul>
+
+        <div class="statistics flex justify-around my-2.5">
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/tags">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">20</div>
+        <div class="label text-third-text-color text-sm">标签</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/categories">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">18</div>
+        <div class="label text-third-text-color text-sm">分类</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/archives">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">52</div>
+        <div class="label text-third-text-color text-sm">文章</div>
+    </a>
+</div>
+    </div>
+
+    <div class="window-mask"></div>
+
+</header>
+
+
+        </div>
+
+        <div class="main-content-body">
+
+            
+
+            <div class="main-content">
+
+                
+                    <div class="post-page-container flex relative justify-between box-border w-full h-full">
+    <div class="article-content-container">
+
+        <div class="article-title relative w-full">
+            
+                
+                
+                <img src="/../img/bg/45.png" alt="Cpp面经" class="w-full h-60 sm:h-72 md:h-80 object-cover sm:rounded-t-large dark:brightness-75"/>
+                
+                <div class="w-full flex items-center absolute bottom-0 justify-center">
+                    <h1 class="article-title-cover text-center mx-6 my-6 text-second-text-color bg-background-color-transparent px-4 py-3 text-3xl sm:text-4xl md:text-5xl font-bold backdrop-blur-lg rounded-xl border border-border-color ">Cpp面经</h1>
+                </div>
+            
+            </div>
+
+        
+            <div class="article-header flex flex-row gap-2 items-center px-2 sm:px-6 md:px-8">
+                <div class="avatar w-[46px] h-[46px] flex-shrink-0 rounded-medium border border-border-color p-[1px]">
+                    <img src="/img/avatar.jpg">
+                </div>
+                <div class="info flex flex-col justify-between">
+                    <div class="author flex items-center">
+                        <span class="name text-default-text-color text-lg font-semibold">fetch150zy</span>
+                        
+                    </div>
+                    <div class="meta-info">
+                        <div class="article-meta-info">
+    <span class="article-date article-meta-item">
+        <i class="fa-regular fa-pen-fancy"></i>&nbsp;
+        <span class="desktop">2023-09-02 12:00</span>
+        <span class="mobile">2023-09-02 12:00</span>
+        <span class="hover-info">创建</span>
+    </span>
+    
+        <span class="article-date article-meta-item">
+            <i class="fa-regular fa-wrench"></i>&nbsp;
+            <span class="desktop">2024-03-23 13:48:16</span>
+            <span class="mobile">2024-03-23 13:48:16</span>
+            <span class="hover-info">更新</span>
+        </span>
+    
+
+    
+        <span class="article-categories article-meta-item">
+            <i class="fa-regular fa-folders"></i>&nbsp;
+            <ul>
+                
+                
+                    
+                        
+                        <li>
+                            <a href="/categories/Others/">Others</a>&nbsp;
+                        </li>
+                    
+                    
+                
+            </ul>
+        </span>
+    
+    
+        <span class="article-tags article-meta-item">
+            <i class="fa-regular fa-tags"></i>&nbsp;
+            <ul>
+                
+                    <li>
+                        <a href="/tags/%E9%9D%A2%E7%BB%8F/">面经</a>&nbsp;
+                    </li>
+                
+            </ul>
+        </span>
+    
+
+    
+    
+    
+    
+</div>
+
+                    </div>
+                </div>
+            </div>
+        
+
+        
+
+
+        <div class="article-content markdown-body px-2 sm:px-6 md:px-8 pb-8">
+            <h1 id="C-面经"><a href="#C-面经" class="headerlink" title="C++ 面经"></a>C++ 面经</h1><h2 id="wps"><a href="#wps" class="headerlink" title="wps"></a>wps</h2><h3 id="1、TCP三次握手"><a href="#1、TCP三次握手" class="headerlink" title="1、TCP三次握手"></a>1、TCP三次握手</h3><p>TCP（Transmission Control Protocol）三次握手是一种网络通信协议中用于建立可靠的连接的机制。这个过程在TCP&#x2F;IP模型中是至关重要的，确保了数据的可靠传输。三次握手的主要目的是在两个TCP端点之间同步序列号和确认号，并交换其他控制信息。这个过程可以分为三个步骤：</p>
+<ol>
+<li><strong>SYN（同步）</strong>：初始步骤由客户端发起。客户端发送一个SYN（同步序列编号）报文到服务器，这个报文包含一个客户端选择的初始序列号</li>
+<li><strong>SYN-ACK（同步确认）</strong>：服务器接收到SYN报文后，会发送一个SYN-ACK报文作为响应。这个报文包含服务器自己的一个初始序列号，和客户端的序列号加一（这是对客户端SYN报文的确认）</li>
+<li><strong>ACK（确认）</strong>：最后，客户端收到服务器的SYN-ACK报文后，会发送一个ACK报文。这个报文包含客户端的初始序列号加一，和服务器的序列号加一；此时双方都已经完成三次握手，TCP连接建立成功</li>
+</ol>
+<p>整个三次握手过程的目的是确保双方都能够接收和发送报文，从而建立起一个稳定的通信连接</p>
+<h3 id="2、TCP粘包问题"><a href="#2、TCP粘包问题" class="headerlink" title="2、TCP粘包问题"></a>2、TCP粘包问题</h3><p>TCP粘包问题指的是在数据传输过程中，由于TCP的特性和传输机制，多个数据包可能会被接收端组合成一个大的数据块，从而造成数据解析错误；这种情况下，接收端无法正确识别每个独立的数据包</p>
+<blockquote>
+<p>  发生原因</p>
+</blockquote>
+<ol>
+<li>数据发送速度和接收速度不一致</li>
+<li>TCP缓冲区大小限制</li>
+</ol>
+<blockquote>
+<p>  解决方案</p>
+</blockquote>
+<ol>
+<li>使用消息定界</li>
+<li>使用固定长度限制</li>
+<li>使用消息头部信息</li>
+</ol>
+<h3 id="3、TCP四次挥手"><a href="#3、TCP四次挥手" class="headerlink" title="3、TCP四次挥手"></a>3、TCP四次挥手</h3><p>TCP四次挥手是用于终止一个TCP连接的过程，确保双方都完成了数据传输并断开连接</p>
+<blockquote>
+<p>  四个步骤</p>
+</blockquote>
+<ol>
+<li>发送方发送FIN</li>
+<li>接收方确认ACK</li>
+<li>接收方发送FIN</li>
+<li>发送方确认ACK</li>
+</ol>
+<blockquote>
+<p>  为什么需要多一次挥手？</p>
+</blockquote>
+<p>因为在关闭连接时，可能还有未被接收或处理完的数据在网络中传输，当接收到FIN报文时，只能表示对应端口上已经没有新的数据要传输了，并不能保证之前已经传输的全部数据都被接收和处理完毕；所以在进行第三次挥手时允许发送端还能继续等待一段时间来确保所有数据都被接收和处理完毕，才能发送最后一次确认的ACK报文段，这样可以避免数据丢失或被意外截断</p>
+<h3 id="4、Leetcode-141环形链表"><a href="#4、Leetcode-141环形链表" class="headerlink" title="4、Leetcode 141环形链表"></a>4、Leetcode 141环形链表</h3><h3 id="5、Leetcode-236二叉树的最近公共祖先"><a href="#5、Leetcode-236二叉树的最近公共祖先" class="headerlink" title="5、Leetcode 236二叉树的最近公共祖先"></a>5、Leetcode 236二叉树的最近公共祖先</h3><h3 id="6、hashmap出现哈希冲突，怎么解决"><a href="#6、hashmap出现哈希冲突，怎么解决" class="headerlink" title="6、hashmap出现哈希冲突，怎么解决"></a>6、hashmap出现哈希冲突，怎么解决</h3><ol>
+<li>链地址法</li>
+<li>开放地址法</li>
+<li>二次哈希法</li>
+<li>更好的散列函数</li>
+</ol>
+<h3 id="7、百万数据，找出TOP10全部算法"><a href="#7、百万数据，找出TOP10全部算法" class="headerlink" title="7、百万数据，找出TOP10全部算法"></a>7、百万数据，找出TOP10全部算法</h3><ol>
+<li>排序：O(nlogn)</li>
+<li>堆排：利用大根堆来维护当前TOP10元素O(nlogk)</li>
+<li>桶排：取决于数据范围以及桶内排序算法</li>
+</ol>
+<h3 id="8、快排时间复杂度"><a href="#8、快排时间复杂度" class="headerlink" title="8、快排时间复杂度"></a>8、快排时间复杂度</h3><p>快速排序的平均时间复杂度为O(nlogn)，最坏情况下时间复杂度为O(n^2)，在序列基本有序情况下不推荐快排</p>
+<h3 id="9、怎么评判算法的好坏"><a href="#9、怎么评判算法的好坏" class="headerlink" title="9、怎么评判算法的好坏"></a>9、怎么评判算法的好坏</h3><ol>
+<li>时间复杂度</li>
+<li>空间复杂度</li>
+<li>正确性</li>
+<li>可读性和可维护性</li>
+<li>拓展性和灵活性</li>
+<li>实际应用情况</li>
+<li>资源利用率</li>
+</ol>
+<h3 id="10、vector怎么扩容"><a href="#10、vector怎么扩容" class="headerlink" title="10、vector怎么扩容"></a>10、vector怎么扩容</h3><ol>
+<li>当向std::vector添加新元素时，如果当前元素数量超过了当前容量，则需要扩容</li>
+<li>扩容时，通常会分配更大的内存空间来存储更多的元素（2倍规则）</li>
+<li>旧数据会被拷贝的新内存空间中</li>
+<li>扩容完成后，原有的内存空间会被释放</li>
+</ol>
+<h3 id="11、介绍一下项目reactor模式"><a href="#11、介绍一下项目reactor模式" class="headerlink" title="11、介绍一下项目reactor模式"></a>11、介绍一下项目reactor模式</h3><p>Reactor模式是一种基于事件驱动的设计模式，用于构建高性能、可拓展的网络应用程序，它主要由以下几个组件组成：</p>
+<ol>
+<li>事件循环</li>
+<li>多路复用器</li>
+<li>事件处理器</li>
+<li>请求&#x2F;响应模型</li>
+</ol>
+<h3 id="12、Muduo网络库拷贝"><a href="#12、Muduo网络库拷贝" class="headerlink" title="12、Muduo网络库拷贝"></a>12、Muduo网络库拷贝</h3><p>在Muduo网络库中，内存拷贝(Memory Copy)是指将数据从一个内存区域复制到另一个内存区域的操作；在网络编程中，数据的读取和发送通常需要进行内存拷贝</p>
+<h3 id="13、深拷贝浅拷贝"><a href="#13、深拷贝浅拷贝" class="headerlink" title="13、深拷贝浅拷贝"></a>13、深拷贝浅拷贝</h3><p>两种对象复制方式：</p>
+<ol>
+<li>浅拷贝：创建一个对象，将原来对象的值或者引用复制到新对象中，如果原对象包含引用类型的成员变量，那么新对象和原对象会共享这些引用类型的成员，修改其中一个对象的成员可能会影响另一个对象</li>
+<li>深拷贝：创建一个对象，并递归的复制原对象及其所有引用类型的成员，确保新对象与原对象完全独立，即使修改其中一个对象的成员，也不会影响到另一个对象</li>
+</ol>
+<h3 id="14、消息队列的使用"><a href="#14、消息队列的使用" class="headerlink" title="14、消息队列的使用"></a>14、消息队列的使用</h3><p>ZeroMQ为例：</p>
+<ol>
+<li>安装ZeroMQ库</li>
+<li>创建一个发送者和一个接收者</li>
+<li>在发送者和接收者之间建立连接，使用指定的传输协议和地址</li>
+<li>发送者将消息发送到指定的队列</li>
+<li>接收者从队列中接收消息并进行处理</li>
+</ol>
+<h2 id="微信搜索后台开发"><a href="#微信搜索后台开发" class="headerlink" title="微信搜索后台开发"></a>微信搜索后台开发</h2><h3 id="1、C-虚函数用在哪些场景和功能"><a href="#1、C-虚函数用在哪些场景和功能" class="headerlink" title="1、C++虚函数用在哪些场景和功能"></a>1、C++虚函数用在哪些场景和功能</h3><ol>
+<li>多态</li>
+<li>基类指针或引用操作派生类对象</li>
+<li>运行时动态绑定</li>
+<li>实现接口和抽象类</li>
+<li>动态创建和销毁对象</li>
+</ol>
+<h3 id="2、是什么时候的多态，运行还是编译"><a href="#2、是什么时候的多态，运行还是编译" class="headerlink" title="2、是什么时候的多态，运行还是编译"></a>2、是什么时候的多态，运行还是编译</h3><p>C++中虚函数实现了运行时多态，也称为动态多态；在编译时，通过使用关键字virtual来声明基类中的函数为虚函数，然后在派生类中进行重写（覆盖）该虚函数；当使用基类指针或引用调用这个虚函数时，根据实际对象的类型，在运行时会动态绑定并调用相应的派生类函数</p>
+<h3 id="3、虚函数和纯虚函数有什么区别"><a href="#3、虚函数和纯虚函数有什么区别" class="headerlink" title="3、虚函数和纯虚函数有什么区别"></a>3、虚函数和纯虚函数有什么区别</h3><ol>
+<li>实现方式：虚函数在基类中有默认的实现，而派生类可以选择是否重写该函数；纯虚函数在基类中没有具体的实现，只是声明，派生类必须提供自己的实现</li>
+<li>使用限制：由于纯虚函数没有具体的实现，因此无法创建对象；一个类如果含有纯虚函数，则称为抽象类；抽象类不能被实例化，只能作为其他派生类的基类使用</li>
+<li>接口定义：纯虚函数常用于定义接口规范，通过继承抽象基类并重写纯虚函数来完成特定功能</li>
+<li>子类继承：子类可以选择性的重写父类中的虚函数，也可以不重写；对于纯虚函数，子类必须提供自己的实现</li>
+</ol>
+<h3 id="4、内存管理中C-的new和malloc的区别"><a href="#4、内存管理中C-的new和malloc的区别" class="headerlink" title="4、内存管理中C++的new和malloc的区别"></a>4、内存管理中C++的new和malloc的区别</h3><ol>
+<li>类型安全性：new是C++的运算符，可以根据类型自动计算所需的内存大小，并返回正确类型的指针，而malloc是C标准库函数，只返回一个void*指针，需要手动进行类型转换</li>
+<li>构造函数调用：使用new分配内存时，会自动调用对象的构造函数进行初始化；而使用malloc只是简单地分配一块内存空间，并不会调用构造函数。这意味着使用new分配内存时，对象被创建并初始化；而使用malloc分配内存时，必须手动调用构造函数来初始化对象</li>
+<li>内存大小计算：当使用new运算符来分配数组时，编译器会根据数组元素的数量和大小自动计算所需的总内存量；而对于malloc函数，则需要手动计算所需内存大小，并通过参数传递给它</li>
+<li>错误处理机制：当new无法成功分配所需的内存时（内存不足），会抛出异常（std::bad_alloc）；而malloc在无法成功分配内存时返回空指针（nullptr），需要手动检查并处理错误情况</li>
+</ol>
+<h3 id="5、new可以重载吗，可以改写new函数吗"><a href="#5、new可以重载吗，可以改写new函数吗" class="headerlink" title="5、new可以重载吗，可以改写new函数吗"></a>5、new可以重载吗，可以改写new函数吗</h3><p>C++中，可以重载new运算符，但是不建议改写全局的new函数；重载new运算符可以用于自定义内存分配策略、添加日志记录等功能；通过重载类的成员函数operator new和operator delete可以实现对单个类对象的内存管理</p>
+<h3 id="6、C-中的map和unordered-map的区别和使用场景"><a href="#6、C-中的map和unordered-map的区别和使用场景" class="headerlink" title="6、C++中的map和unordered_map的区别和使用场景"></a>6、C++中的map和unordered_map的区别和使用场景</h3><p>C++中的std::map和std::unordered_map都是关联容器，用于存储键值对；它们的区别在于底层实现方式和性能特点</p>
+<p>std::map是基于红黑树实现的有序关联容器，它按照键的顺序进行排序，并提供了较快的搜索、插入和删除操作；因为是有序的，所以适合需要按照键值排序或范围查找操作较多的场景</p>
+<p>std::unordered_map是基于哈希表实现的无序关联容器看，它使用哈希函数将键映射到桶(bucket)中，并提供了常数时间复杂度的搜索、插入和删除操作；由于是无序的，所以适合需要快速查找单个元素而不考虑顺序问题的场景</p>
+<h3 id="7、它们是线程安全的吗"><a href="#7、它们是线程安全的吗" class="headerlink" title="7、它们是线程安全的吗"></a>7、它们是线程安全的吗</h3><p>在标准库中并没有提供线程安全的保证</p>
+<h3 id="8、gcc编译的过程"><a href="#8、gcc编译的过程" class="headerlink" title="8、gcc编译的过程"></a>8、gcc编译的过程</h3><ol>
+<li>预处理：源代码经过预处理器进行处理</li>
+<li>编译：经过预处理后，中间文件会被传递给编译器，编译器将中间文件翻译为汇编语言代码，这些汇编语言代码与特定硬件平台相关的低级指令</li>
+<li>汇编：接下来，汇编器将汇编语言代码转换为目标机器码，并执行一个目标文件，目标文件包含了可执行程序的二进制表示以及符号表信息</li>
+<li>链接：如果程序依赖于其他库或模块，则链接器将被调用，连接器复杂解析和连接目标文件之前的引用关系，并将它们组合成最终的可执行程序或共享库</li>
+</ol>
+<h3 id="9、C-11的特性"><a href="#9、C-11的特性" class="headerlink" title="9、C++11的特性"></a>9、C++11的特性</h3><ol>
+<li>自动类型推导(auto)</li>
+<li>声明和初始化分离</li>
+<li>range-based for loop</li>
+<li>移动语义</li>
+<li>Lambda表达式</li>
+<li>空指针常量</li>
+<li>强类型枚举</li>
+<li>并发编程支持</li>
+</ol>
+<h3 id="10、介绍一下有哪些智能指针"><a href="#10、介绍一下有哪些智能指针" class="headerlink" title="10、介绍一下有哪些智能指针"></a>10、介绍一下有哪些智能指针</h3><p>C++11引入了三种智能指针</p>
+<ol>
+<li>shared_ptr：是一种引用计数智能指针，允许多个对象共享同一个资源，他会跟踪资源的引用计数，在最后一个使用者释放资源时自动销毁</li>
+<li>unique_ptr：是一种独占智能指针，提供了对单个所有权的管理，它不能被拷贝，只能通过移动语义来转移所有权，并在其生命周期结束时自动释放资源</li>
+<li>weak_ptr：是一种弱引用智能指针，主要用于解决shared_ptr循环引用的问题，与shared_ptr不同的是，其并不增加资源的引用计数，可以通过lock()方法获取一个有效的</li>
+</ol>
+<h3 id="11、RAII实现数据库连接池怎么实现的"><a href="#11、RAII实现数据库连接池怎么实现的" class="headerlink" title="11、RAII实现数据库连接池怎么实现的"></a>11、RAII实现数据库连接池怎么实现的</h3><ol>
+<li>创建一个数据库连接类，该类负责封装单个数据库连接的操作</li>
+<li>创建一个连接池类，用于管理多个数据库连接对象；连接池内部维护一个可用连接的队列，以及一个已使用连接的集合</li>
+<li>在连接池的构造函数中，初始化一定数量的数据库连接，并将它们添加到可用连接队列中</li>
+<li>实现从连接池获取可用连接的方法，该方法从可用连接队列中获取一个空闲的数据库连接，并将其移至已使用集合中</li>
+<li>实现释放已使用连接并返回到可用状态的方法，该方法将指定的数据库连接移回到可用队列中，以便其他线程可以重新使用它</li>
+<li>使用RAII技术，在获取数据库连接时创建一个辅助对象，该对象在其析构函数中自动释放所持有的数据库连接</li>
+</ol>
+<h3 id="12、有没有想过其他方法管理数据库连接"><a href="#12、有没有想过其他方法管理数据库连接" class="headerlink" title="12、有没有想过其他方法管理数据库连接"></a>12、有没有想过其他方法管理数据库连接</h3><ol>
+<li>手动管理：需要开发者自行管理连接的声明周期，确保正确地释放资源</li>
+<li>连接池线程池：使用线程池来管理数据库连接，在程序初始化时创建一定数量的连接对象，并将它们添加到线程池中；当需要使用数据库时，从线程池中获取一个可用的连接，执行操作后将其返回给线程池进行复用，这样可以避免频繁的创建和销毁连接对象</li>
+<li>连接池连接超时机制：在连接池中为每个连接设置一个超时时间，在获取连接时检查是否存在空闲但长时间未被使用的连接，如果存在，则关闭并移除该连接，并重新创建新的可用连接</li>
+<li>动态库调整连接数：根据实际负载情况动态调整数据库连接数，通过监控系统负载和数据库响应时间等指标，自动增加或减少数据库连接数以满足需求并避免过多或不足的资源占用</li>
+</ol>
+<h3 id="13、排序算法"><a href="#13、排序算法" class="headerlink" title="13、排序算法"></a>13、排序算法</h3><p>冒泡排序、选择排序、插入排序、快速排序、归并排序、堆排序、计数排序、基数排序、</p>
+<h3 id="14、哪些是稳定的，哪些是不稳定的"><a href="#14、哪些是稳定的，哪些是不稳定的" class="headerlink" title="14、哪些是稳定的，哪些是不稳定的"></a>14、哪些是稳定的，哪些是不稳定的</h3><ol>
+<li><p>稳定</p>
+<p>冒泡、插入、归并</p>
+</li>
+<li><p>不稳定</p>
+<p>选择、快速、堆、计数、基数</p>
+</li>
+</ol>
+<h3 id="15、算法题：实现一个不限类型的线程安全的LRU，不能使用STL"><a href="#15、算法题：实现一个不限类型的线程安全的LRU，不能使用STL" class="headerlink" title="15、算法题：实现一个不限类型的线程安全的LRU，不能使用STL"></a>15、算法题：实现一个不限类型的线程安全的LRU，不能使用STL</h3><h2 id="深信服"><a href="#深信服" class="headerlink" title="深信服"></a>深信服</h2><blockquote>
+<p>  其他题目上面都有提到</p>
+</blockquote>
+<h3 id="进程间通信方式"><a href="#进程间通信方式" class="headerlink" title="进程间通信方式"></a>进程间通信方式</h3><ol>
+<li>管道</li>
+<li>命名管道</li>
+<li>信号量</li>
+<li>消息队列</li>
+<li>共享内存</li>
+<li>套接字</li>
+<li>信号</li>
+<li>RPC</li>
+</ol>
+<h2 id="中望"><a href="#中望" class="headerlink" title="中望"></a>中望</h2><h3 id="虚析构函数"><a href="#虚析构函数" class="headerlink" title="虚析构函数"></a>虚析构函数</h3><p>C++的虚析构函数是一个在基类中声明为虚函数的析构函数，它用于实现多态性，确保在删除指向派生类对象的基类指针时，会调用正确的派生类析构函数</p>
+<h3 id="x64内存对齐"><a href="#x64内存对齐" class="headerlink" title="x64内存对齐"></a>x64内存对齐</h3><p>x64架构中的内存对齐是指在分配内存时，将数据按照一定规则对齐到特定字节边界上，以提高访问速度和效率。这种对齐可以减少内存读写的次数，并且在某些情况下能够优化CPU缓存的使用</p>
+<p>x64内存对齐的原则和机制：</p>
+<ul>
+<li>原则：结构体或类变量的首地址必须是其成员中最宽基本类型变量的倍数</li>
+<li>机制：编译器会在结构体或类变量中插入填充字节，使得结构体或类变量的大小是其成员中最宽基本类型变量的倍数</li>
+</ul>
+<h3 id="智能指针及运用场景"><a href="#智能指针及运用场景" class="headerlink" title="智能指针及运用场景"></a>智能指针及运用场景</h3><h3 id="多线程下的观察者模式，C-11的单例模式，工厂模式，这些设计模式的好处"><a href="#多线程下的观察者模式，C-11的单例模式，工厂模式，这些设计模式的好处" class="headerlink" title="多线程下的观察者模式，C++11的单例模式，工厂模式，这些设计模式的好处"></a>多线程下的观察者模式，C++11的单例模式，工厂模式，这些设计模式的好处</h3><p>观察者模式：</p>
+<ul>
+<li>解耦性：观察者模式可以将被观察对象与观察者对象解耦，使它们之间的交互变得松散，从而提高代码的灵活性和可维护性</li>
+<li>可拓展性：通过添加或删除观察者对象，可以方便地增加或修改系统中的功能</li>
+<li>多线程支持：在多线程环境下，观察者模式能够保证被观察对象和观察者对象之间的同步</li>
+</ul>
+<p>C++11单例模式：</p>
+<ul>
+<li>线程安全性：使用C++11提供的特性（如std::call_once、std::atomic）实现单例模式可以确保在多线程环境下仅创建一个实例，并且保证线程安全性</li>
+<li>懒加载：C++11的单例模式允许实例在需要时进行懒加载，延迟初始化以节省资源开销</li>
+<li>全局访问点：单例模式提供了一个全局访问点，方便其他代码获取该实例</li>
+</ul>
+<p>工厂模式：</p>
+<ul>
+<li>解耦性：工厂模式将对象创建过程封装在工厂类中，客户端代码与具体代码产品类解耦，提高了代码的可维护性和可拓展性</li>
+<li>拓展性：通过添加新的具体产品类和对应的工厂方法，可以方便地增加系统中的功能，而无需修改现有代码</li>
+<li>隐藏实现细节：工厂模式隐藏了对象创建的具体实现细节，使客户端只需要关注接口而不必关心对象如何创建</li>
+</ul>
+<h3 id="进程通信方式，优缺点"><a href="#进程通信方式，优缺点" class="headerlink" title="进程通信方式，优缺点"></a>进程通信方式，优缺点</h3><h3 id="线程同步手段，如何选择用哪个"><a href="#线程同步手段，如何选择用哪个" class="headerlink" title="线程同步手段，如何选择用哪个"></a>线程同步手段，如何选择用哪个</h3><h3 id="explicit"><a href="#explicit" class="headerlink" title="explicit"></a>explicit</h3><h3 id="移动语义，完美转发源码实现"><a href="#移动语义，完美转发源码实现" class="headerlink" title="移动语义，完美转发源码实现"></a>移动语义，完美转发源码实现</h3><h3 id="移动语义底层实现"><a href="#移动语义底层实现" class="headerlink" title="移动语义底层实现"></a>移动语义底层实现</h3><h2 id="百度软件开发"><a href="#百度软件开发" class="headerlink" title="百度软件开发"></a>百度软件开发</h2><h3 id="虚拟内存"><a href="#虚拟内存" class="headerlink" title="虚拟内存"></a>虚拟内存</h3><h3 id="讲讲指针"><a href="#讲讲指针" class="headerlink" title="讲讲指针"></a>讲讲指针</h3><h3 id="并发和并行"><a href="#并发和并行" class="headerlink" title="并发和并行"></a>并发和并行</h3><h3 id="iOS软件开发和Android软件开发的区别"><a href="#iOS软件开发和Android软件开发的区别" class="headerlink" title="iOS软件开发和Android软件开发的区别"></a>iOS软件开发和Android软件开发的区别</h3><h3 id="讲一讲http和https"><a href="#讲一讲http和https" class="headerlink" title="讲一讲http和https"></a>讲一讲http和https</h3><h3 id="讲一讲堆栈"><a href="#讲一讲堆栈" class="headerlink" title="讲一讲堆栈"></a>讲一讲堆栈</h3><h3 id="七层网络参考模型"><a href="#七层网络参考模型" class="headerlink" title="七层网络参考模型"></a>七层网络参考模型</h3><h3 id="找出一个字符串中最长不重复子串的长度（不能暴力）"><a href="#找出一个字符串中最长不重复子串的长度（不能暴力）" class="headerlink" title="找出一个字符串中最长不重复子串的长度（不能暴力）"></a>找出一个字符串中最长不重复子串的长度（不能暴力）</h3><h2 id="百度二面"><a href="#百度二面" class="headerlink" title="百度二面"></a>百度二面</h2><h3 id="char-和char-的区别，分别存储在哪"><a href="#char-和char-的区别，分别存储在哪" class="headerlink" title="char*和char[]的区别，分别存储在哪"></a>char*和char[]的区别，分别存储在哪</h3><h3 id="sizeof和strlen的结果分别是什么"><a href="#sizeof和strlen的结果分别是什么" class="headerlink" title="sizeof和strlen的结果分别是什么"></a>sizeof和strlen的结果分别是什么</h3><h3 id="算法题：翻转字符串中单词的顺序"><a href="#算法题：翻转字符串中单词的顺序" class="headerlink" title="算法题：翻转字符串中单词的顺序"></a>算法题：翻转字符串中单词的顺序</h3><h3 id="项目Reactor和Proactor的区别"><a href="#项目Reactor和Proactor的区别" class="headerlink" title="项目Reactor和Proactor的区别"></a>项目Reactor和Proactor的区别</h3><h3 id="数据库的存储引擎和索引存储类型"><a href="#数据库的存储引擎和索引存储类型" class="headerlink" title="数据库的存储引擎和索引存储类型"></a>数据库的存储引擎和索引存储类型</h3><h3 id="B-树和哈希索引的区别"><a href="#B-树和哈希索引的区别" class="headerlink" title="B+树和哈希索引的区别"></a>B+树和哈希索引的区别</h3><h3 id="哈希冲突怎么解决"><a href="#哈希冲突怎么解决" class="headerlink" title="哈希冲突怎么解决"></a>哈希冲突怎么解决</h3><h3 id="写状态机的伪代码"><a href="#写状态机的伪代码" class="headerlink" title="写状态机的伪代码"></a>写状态机的伪代码</h3><h3 id="写ip地址转32位整型"><a href="#写ip地址转32位整型" class="headerlink" title="写ip地址转32位整型"></a>写ip地址转32位整型</h3><h2 id="快手"><a href="#快手" class="headerlink" title="快手"></a>快手</h2><h3 id="手撕题：k个链表合并"><a href="#手撕题：k个链表合并" class="headerlink" title="手撕题：k个链表合并"></a>手撕题：k个链表合并</h3><h3 id="C-中多继承会导致类继承了多个基类，可能存在同名虚函数的情况，出现二义性，如何处理二义性"><a href="#C-中多继承会导致类继承了多个基类，可能存在同名虚函数的情况，出现二义性，如何处理二义性" class="headerlink" title="C++中多继承会导致类继承了多个基类，可能存在同名虚函数的情况，出现二义性，如何处理二义性"></a>C++中多继承会导致类继承了多个基类，可能存在同名虚函数的情况，出现二义性，如何处理二义性</h3><h3 id="TCP三次握手过程、是否熟悉TLS协议"><a href="#TCP三次握手过程、是否熟悉TLS协议" class="headerlink" title="TCP三次握手过程、是否熟悉TLS协议"></a>TCP三次握手过程、是否熟悉TLS协议</h3><h3 id="C-C-区别、堆栈的问题"><a href="#C-C-区别、堆栈的问题" class="headerlink" title="C&#x2F;C++区别、堆栈的问题"></a>C&#x2F;C++区别、堆栈的问题</h3><h3 id="内存泄漏处理经验"><a href="#内存泄漏处理经验" class="headerlink" title="内存泄漏处理经验"></a>内存泄漏处理经验</h3><h2 id="上海期货信息技术"><a href="#上海期货信息技术" class="headerlink" title="上海期货信息技术"></a>上海期货信息技术</h2><h3 id="C-多态是什么"><a href="#C-多态是什么" class="headerlink" title="C++多态是什么"></a>C++多态是什么</h3><h3 id="虚函数是什么？纯虚函数是什么？"><a href="#虚函数是什么？纯虚函数是什么？" class="headerlink" title="虚函数是什么？纯虚函数是什么？"></a>虚函数是什么？纯虚函数是什么？</h3><h3 id="类模板的特化是什么"><a href="#类模板的特化是什么" class="headerlink" title="类模板的特化是什么"></a>类模板的特化是什么</h3><h3 id="Tcmalloc用过吗？它的底层是什么样的？"><a href="#Tcmalloc用过吗？它的底层是什么样的？" class="headerlink" title="Tcmalloc用过吗？它的底层是什么样的？"></a>Tcmalloc用过吗？它的底层是什么样的？</h3><h3 id="define和inline有什么区别"><a href="#define和inline有什么区别" class="headerlink" title="define和inline有什么区别"></a>define和inline有什么区别</h3><h3 id="重载是什么？底层是怎么实现的？"><a href="#重载是什么？底层是怎么实现的？" class="headerlink" title="重载是什么？底层是怎么实现的？"></a>重载是什么？底层是怎么实现的？</h3><h3 id="vector和deque有什么区别？是线程安全的吗？如何实现的呢？"><a href="#vector和deque有什么区别？是线程安全的吗？如何实现的呢？" class="headerlink" title="vector和deque有什么区别？是线程安全的吗？如何实现的呢？"></a>vector和deque有什么区别？是线程安全的吗？如何实现的呢？</h3><h3 id="vector是如何扩容的？"><a href="#vector是如何扩容的？" class="headerlink" title="vector是如何扩容的？"></a>vector是如何扩容的？</h3><h3 id="无锁结构如何实现多线程？"><a href="#无锁结构如何实现多线程？" class="headerlink" title="无锁结构如何实现多线程？"></a>无锁结构如何实现多线程？</h3><h3 id="gdb如何查看函数的堆栈情况"><a href="#gdb如何查看函数的堆栈情况" class="headerlink" title="gdb如何查看函数的堆栈情况"></a>gdb如何查看函数的堆栈情况</h3><h3 id="硬连接和软连接有什么区别"><a href="#硬连接和软连接有什么区别" class="headerlink" title="硬连接和软连接有什么区别"></a>硬连接和软连接有什么区别</h3><h3 id="UDP如何实现可靠传输？为什么不直接使用TCP？"><a href="#UDP如何实现可靠传输？为什么不直接使用TCP？" class="headerlink" title="UDP如何实现可靠传输？为什么不直接使用TCP？"></a>UDP如何实现可靠传输？为什么不直接使用TCP？</h3><h3 id="Valgrind用了哪些组件？怎么从结果分析问题？"><a href="#Valgrind用了哪些组件？怎么从结果分析问题？" class="headerlink" title="Valgrind用了哪些组件？怎么从结果分析问题？"></a>Valgrind用了哪些组件？怎么从结果分析问题？</h3><h3 id="如何让一个类在堆上生成？"><a href="#如何让一个类在堆上生成？" class="headerlink" title="如何让一个类在堆上生成？"></a>如何让一个类在堆上生成？</h3><h3 id="C-11了解过多少？"><a href="#C-11了解过多少？" class="headerlink" title="C++11了解过多少？"></a>C++11了解过多少？</h3><h3 id="unique-ptr如何实现"><a href="#unique-ptr如何实现" class="headerlink" title="unique_ptr如何实现"></a>unique_ptr如何实现</h3><h3 id="移动语义是什么？举例说明"><a href="#移动语义是什么？举例说明" class="headerlink" title="移动语义是什么？举例说明"></a>移动语义是什么？举例说明</h3><h3 id="说几个常用的设计模式？设计模式的优点和缺点"><a href="#说几个常用的设计模式？设计模式的优点和缺点" class="headerlink" title="说几个常用的设计模式？设计模式的优点和缺点"></a>说几个常用的设计模式？设计模式的优点和缺点</h3><h3 id="为什么有人说单例模式不应该算作一种设计模式？"><a href="#为什么有人说单例模式不应该算作一种设计模式？" class="headerlink" title="为什么有人说单例模式不应该算作一种设计模式？"></a>为什么有人说单例模式不应该算作一种设计模式？</h3><h3 id="情景题：有两个在内存中的系统，一个是学生信息管理另一个是教师打分系统；更新这两个系统的话，如果使用自己写的内存分配器，应该如何设计"><a href="#情景题：有两个在内存中的系统，一个是学生信息管理另一个是教师打分系统；更新这两个系统的话，如果使用自己写的内存分配器，应该如何设计" class="headerlink" title="情景题：有两个在内存中的系统，一个是学生信息管理另一个是教师打分系统；更新这两个系统的话，如果使用自己写的内存分配器，应该如何设计"></a>情景题：有两个在内存中的系统，一个是学生信息管理另一个是教师打分系统；更新这两个系统的话，如果使用自己写的内存分配器，应该如何设计</h3><h2 id="腾讯"><a href="#腾讯" class="headerlink" title="腾讯"></a>腾讯</h2><h3 id="算法题：一个很长的数字字符除一个小于10的整数，保留两位小数"><a href="#算法题：一个很长的数字字符除一个小于10的整数，保留两位小数" class="headerlink" title="算法题：一个很长的数字字符除一个小于10的整数，保留两位小数"></a>算法题：一个很长的数字字符除一个小于10的整数，保留两位小数</h3><h3 id="进程线程和协程的区别"><a href="#进程线程和协程的区别" class="headerlink" title="进程线程和协程的区别"></a>进程线程和协程的区别</h3><h3 id="进程切换为什么比线程切换效率低"><a href="#进程切换为什么比线程切换效率低" class="headerlink" title="进程切换为什么比线程切换效率低"></a>进程切换为什么比线程切换效率低</h3><h3 id="什么是一致性哈希"><a href="#什么是一致性哈希" class="headerlink" title="什么是一致性哈希"></a>什么是一致性哈希</h3><h3 id="了不了解分布式一致性"><a href="#了不了解分布式一致性" class="headerlink" title="了不了解分布式一致性"></a>了不了解分布式一致性</h3><h3 id="TCP三次握手的过程以及状态转换"><a href="#TCP三次握手的过程以及状态转换" class="headerlink" title="TCP三次握手的过程以及状态转换"></a>TCP三次握手的过程以及状态转换</h3><h3 id="如果TCP没有滑动窗口机制还能正常工作吗"><a href="#如果TCP没有滑动窗口机制还能正常工作吗" class="headerlink" title="如果TCP没有滑动窗口机制还能正常工作吗"></a>如果TCP没有滑动窗口机制还能正常工作吗</h3><h3 id="Socket通信服务端和客户端的流程"><a href="#Socket通信服务端和客户端的流程" class="headerlink" title="Socket通信服务端和客户端的流程"></a>Socket通信服务端和客户端的流程</h3><h3 id="滑动窗口能进行拥塞控制吗"><a href="#滑动窗口能进行拥塞控制吗" class="headerlink" title="滑动窗口能进行拥塞控制吗"></a>滑动窗口能进行拥塞控制吗</h3><h3 id="如何确定一个流程图有没有互相引用"><a href="#如何确定一个流程图有没有互相引用" class="headerlink" title="如何确定一个流程图有没有互相引用"></a>如何确定一个流程图有没有互相引用</h3><h3 id="10亿个数字取前100大怎么取"><a href="#10亿个数字取前100大怎么取" class="headerlink" title="10亿个数字取前100大怎么取"></a>10亿个数字取前100大怎么取</h3><h3 id="大根堆具体的原理是什么"><a href="#大根堆具体的原理是什么" class="headerlink" title="大根堆具体的原理是什么"></a>大根堆具体的原理是什么</h3><h3 id="Redis基本数据结构有哪些"><a href="#Redis基本数据结构有哪些" class="headerlink" title="Redis基本数据结构有哪些"></a>Redis基本数据结构有哪些</h3>
+        </div>
+
+        
+
+        
+            <ul class="post-tags-box text-lg mt-1.5 flex-wrap justify-center flex md:hidden">
+                
+                    <li class="tag-item mx-0.5">
+                        <a href="/tags/%E9%9D%A2%E7%BB%8F/">#面经</a>&nbsp;
+                    </li>
+                
+            </ul>
+        
+
+        
+
+        
+            <div class="article-nav my-8 flex justify-between items-center px-2 sm:px-6 md:px-8">
+                
+                    <div class="article-prev border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
+                        <a class="prev"
+                        rel="prev"
+                        href="/2024/01/06/2024-01-06-PyPI%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8C%97/"
+                        >
+                            <span class="left arrow-icon flex justify-center items-center">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </span>
+                            <span class="title flex justify-center items-center">
+                                <span class="post-nav-title-item">PyPI使用指南</span>
+                                <span class="post-nav-item">上一篇</span>
+                            </span>
+                        </a>
+                    </div>
+                
+                
+                    <div class="article-next border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
+                        <a class="next"
+                        rel="next"
+                        href="/2023/07/29/2023-07-29-%E8%BF%9B%E7%A8%8B%E7%9B%B8%E5%85%B3/"
+                        >
+                            <span class="title flex justify-center items-center">
+                                <span class="post-nav-title-item">进程相关</span>
+                                <span class="post-nav-item">下一篇</span>
+                            </span>
+                            <span class="right arrow-icon flex justify-center items-center">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </span>
+                        </a>
+                    </div>
+                
+            </div>
+        
+
+
+        
+    </div>
+
+    
+        <div class="toc-content-container">
+            <div class="post-toc-wrap">
+    <div class="post-toc">
+        <div class="toc-title">此页目录</div>
+        <div class="page-title">Cpp面经</div>
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#C-%E9%9D%A2%E7%BB%8F"><span class="nav-text">C++ 面经</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#wps"><span class="nav-text">wps</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1%E3%80%81TCP%E4%B8%89%E6%AC%A1%E6%8F%A1%E6%89%8B"><span class="nav-text">1、TCP三次握手</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2%E3%80%81TCP%E7%B2%98%E5%8C%85%E9%97%AE%E9%A2%98"><span class="nav-text">2、TCP粘包问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3%E3%80%81TCP%E5%9B%9B%E6%AC%A1%E6%8C%A5%E6%89%8B"><span class="nav-text">3、TCP四次挥手</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4%E3%80%81Leetcode-141%E7%8E%AF%E5%BD%A2%E9%93%BE%E8%A1%A8"><span class="nav-text">4、Leetcode 141环形链表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5%E3%80%81Leetcode-236%E4%BA%8C%E5%8F%89%E6%A0%91%E7%9A%84%E6%9C%80%E8%BF%91%E5%85%AC%E5%85%B1%E7%A5%96%E5%85%88"><span class="nav-text">5、Leetcode 236二叉树的最近公共祖先</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6%E3%80%81hashmap%E5%87%BA%E7%8E%B0%E5%93%88%E5%B8%8C%E5%86%B2%E7%AA%81%EF%BC%8C%E6%80%8E%E4%B9%88%E8%A7%A3%E5%86%B3"><span class="nav-text">6、hashmap出现哈希冲突，怎么解决</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7%E3%80%81%E7%99%BE%E4%B8%87%E6%95%B0%E6%8D%AE%EF%BC%8C%E6%89%BE%E5%87%BATOP10%E5%85%A8%E9%83%A8%E7%AE%97%E6%B3%95"><span class="nav-text">7、百万数据，找出TOP10全部算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8%E3%80%81%E5%BF%AB%E6%8E%92%E6%97%B6%E9%97%B4%E5%A4%8D%E6%9D%82%E5%BA%A6"><span class="nav-text">8、快排时间复杂度</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9%E3%80%81%E6%80%8E%E4%B9%88%E8%AF%84%E5%88%A4%E7%AE%97%E6%B3%95%E7%9A%84%E5%A5%BD%E5%9D%8F"><span class="nav-text">9、怎么评判算法的好坏</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#10%E3%80%81vector%E6%80%8E%E4%B9%88%E6%89%A9%E5%AE%B9"><span class="nav-text">10、vector怎么扩容</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#11%E3%80%81%E4%BB%8B%E7%BB%8D%E4%B8%80%E4%B8%8B%E9%A1%B9%E7%9B%AEreactor%E6%A8%A1%E5%BC%8F"><span class="nav-text">11、介绍一下项目reactor模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#12%E3%80%81Muduo%E7%BD%91%E7%BB%9C%E5%BA%93%E6%8B%B7%E8%B4%9D"><span class="nav-text">12、Muduo网络库拷贝</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#13%E3%80%81%E6%B7%B1%E6%8B%B7%E8%B4%9D%E6%B5%85%E6%8B%B7%E8%B4%9D"><span class="nav-text">13、深拷贝浅拷贝</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#14%E3%80%81%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="nav-text">14、消息队列的使用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BE%AE%E4%BF%A1%E6%90%9C%E7%B4%A2%E5%90%8E%E5%8F%B0%E5%BC%80%E5%8F%91"><span class="nav-text">微信搜索后台开发</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1%E3%80%81C-%E8%99%9A%E5%87%BD%E6%95%B0%E7%94%A8%E5%9C%A8%E5%93%AA%E4%BA%9B%E5%9C%BA%E6%99%AF%E5%92%8C%E5%8A%9F%E8%83%BD"><span class="nav-text">1、C++虚函数用在哪些场景和功能</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2%E3%80%81%E6%98%AF%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E7%9A%84%E5%A4%9A%E6%80%81%EF%BC%8C%E8%BF%90%E8%A1%8C%E8%BF%98%E6%98%AF%E7%BC%96%E8%AF%91"><span class="nav-text">2、是什么时候的多态，运行还是编译</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3%E3%80%81%E8%99%9A%E5%87%BD%E6%95%B0%E5%92%8C%E7%BA%AF%E8%99%9A%E5%87%BD%E6%95%B0%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB"><span class="nav-text">3、虚函数和纯虚函数有什么区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4%E3%80%81%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86%E4%B8%ADC-%E7%9A%84new%E5%92%8Cmalloc%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-text">4、内存管理中C++的new和malloc的区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5%E3%80%81new%E5%8F%AF%E4%BB%A5%E9%87%8D%E8%BD%BD%E5%90%97%EF%BC%8C%E5%8F%AF%E4%BB%A5%E6%94%B9%E5%86%99new%E5%87%BD%E6%95%B0%E5%90%97"><span class="nav-text">5、new可以重载吗，可以改写new函数吗</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6%E3%80%81C-%E4%B8%AD%E7%9A%84map%E5%92%8Cunordered-map%E7%9A%84%E5%8C%BA%E5%88%AB%E5%92%8C%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-text">6、C++中的map和unordered_map的区别和使用场景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7%E3%80%81%E5%AE%83%E4%BB%AC%E6%98%AF%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E7%9A%84%E5%90%97"><span class="nav-text">7、它们是线程安全的吗</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8%E3%80%81gcc%E7%BC%96%E8%AF%91%E7%9A%84%E8%BF%87%E7%A8%8B"><span class="nav-text">8、gcc编译的过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9%E3%80%81C-11%E7%9A%84%E7%89%B9%E6%80%A7"><span class="nav-text">9、C++11的特性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#10%E3%80%81%E4%BB%8B%E7%BB%8D%E4%B8%80%E4%B8%8B%E6%9C%89%E5%93%AA%E4%BA%9B%E6%99%BA%E8%83%BD%E6%8C%87%E9%92%88"><span class="nav-text">10、介绍一下有哪些智能指针</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#11%E3%80%81RAII%E5%AE%9E%E7%8E%B0%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0%E6%80%8E%E4%B9%88%E5%AE%9E%E7%8E%B0%E7%9A%84"><span class="nav-text">11、RAII实现数据库连接池怎么实现的</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#12%E3%80%81%E6%9C%89%E6%B2%A1%E6%9C%89%E6%83%B3%E8%BF%87%E5%85%B6%E4%BB%96%E6%96%B9%E6%B3%95%E7%AE%A1%E7%90%86%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5"><span class="nav-text">12、有没有想过其他方法管理数据库连接</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#13%E3%80%81%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95"><span class="nav-text">13、排序算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#14%E3%80%81%E5%93%AA%E4%BA%9B%E6%98%AF%E7%A8%B3%E5%AE%9A%E7%9A%84%EF%BC%8C%E5%93%AA%E4%BA%9B%E6%98%AF%E4%B8%8D%E7%A8%B3%E5%AE%9A%E7%9A%84"><span class="nav-text">14、哪些是稳定的，哪些是不稳定的</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#15%E3%80%81%E7%AE%97%E6%B3%95%E9%A2%98%EF%BC%9A%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E4%B8%8D%E9%99%90%E7%B1%BB%E5%9E%8B%E7%9A%84%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E7%9A%84LRU%EF%BC%8C%E4%B8%8D%E8%83%BD%E4%BD%BF%E7%94%A8STL"><span class="nav-text">15、算法题：实现一个不限类型的线程安全的LRU，不能使用STL</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B7%B1%E4%BF%A1%E6%9C%8D"><span class="nav-text">深信服</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1%E6%96%B9%E5%BC%8F"><span class="nav-text">进程间通信方式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%AD%E6%9C%9B"><span class="nav-text">中望</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%99%9A%E6%9E%90%E6%9E%84%E5%87%BD%E6%95%B0"><span class="nav-text">虚析构函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#x64%E5%86%85%E5%AD%98%E5%AF%B9%E9%BD%90"><span class="nav-text">x64内存对齐</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%99%BA%E8%83%BD%E6%8C%87%E9%92%88%E5%8F%8A%E8%BF%90%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-text">智能指针及运用场景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%9A%E7%BA%BF%E7%A8%8B%E4%B8%8B%E7%9A%84%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8F%EF%BC%8CC-11%E7%9A%84%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F%EF%BC%8C%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F%EF%BC%8C%E8%BF%99%E4%BA%9B%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E7%9A%84%E5%A5%BD%E5%A4%84"><span class="nav-text">多线程下的观察者模式，C++11的单例模式，工厂模式，这些设计模式的好处</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%9B%E7%A8%8B%E9%80%9A%E4%BF%A1%E6%96%B9%E5%BC%8F%EF%BC%8C%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="nav-text">进程通信方式，优缺点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BA%BF%E7%A8%8B%E5%90%8C%E6%AD%A5%E6%89%8B%E6%AE%B5%EF%BC%8C%E5%A6%82%E4%BD%95%E9%80%89%E6%8B%A9%E7%94%A8%E5%93%AA%E4%B8%AA"><span class="nav-text">线程同步手段，如何选择用哪个</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#explicit"><span class="nav-text">explicit</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A7%BB%E5%8A%A8%E8%AF%AD%E4%B9%89%EF%BC%8C%E5%AE%8C%E7%BE%8E%E8%BD%AC%E5%8F%91%E6%BA%90%E7%A0%81%E5%AE%9E%E7%8E%B0"><span class="nav-text">移动语义，完美转发源码实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A7%BB%E5%8A%A8%E8%AF%AD%E4%B9%89%E5%BA%95%E5%B1%82%E5%AE%9E%E7%8E%B0"><span class="nav-text">移动语义底层实现</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%99%BE%E5%BA%A6%E8%BD%AF%E4%BB%B6%E5%BC%80%E5%8F%91"><span class="nav-text">百度软件开发</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98"><span class="nav-text">虚拟内存</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%B2%E8%AE%B2%E6%8C%87%E9%92%88"><span class="nav-text">讲讲指针</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B9%B6%E5%8F%91%E5%92%8C%E5%B9%B6%E8%A1%8C"><span class="nav-text">并发和并行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#iOS%E8%BD%AF%E4%BB%B6%E5%BC%80%E5%8F%91%E5%92%8CAndroid%E8%BD%AF%E4%BB%B6%E5%BC%80%E5%8F%91%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-text">iOS软件开发和Android软件开发的区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%B2%E4%B8%80%E8%AE%B2http%E5%92%8Chttps"><span class="nav-text">讲一讲http和https</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%B2%E4%B8%80%E8%AE%B2%E5%A0%86%E6%A0%88"><span class="nav-text">讲一讲堆栈</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%83%E5%B1%82%E7%BD%91%E7%BB%9C%E5%8F%82%E8%80%83%E6%A8%A1%E5%9E%8B"><span class="nav-text">七层网络参考模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%89%BE%E5%87%BA%E4%B8%80%E4%B8%AA%E5%AD%97%E7%AC%A6%E4%B8%B2%E4%B8%AD%E6%9C%80%E9%95%BF%E4%B8%8D%E9%87%8D%E5%A4%8D%E5%AD%90%E4%B8%B2%E7%9A%84%E9%95%BF%E5%BA%A6%EF%BC%88%E4%B8%8D%E8%83%BD%E6%9A%B4%E5%8A%9B%EF%BC%89"><span class="nav-text">找出一个字符串中最长不重复子串的长度（不能暴力）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%99%BE%E5%BA%A6%E4%BA%8C%E9%9D%A2"><span class="nav-text">百度二面</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#char-%E5%92%8Cchar-%E7%9A%84%E5%8C%BA%E5%88%AB%EF%BC%8C%E5%88%86%E5%88%AB%E5%AD%98%E5%82%A8%E5%9C%A8%E5%93%AA"><span class="nav-text">char*和char[]的区别，分别存储在哪</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#sizeof%E5%92%8Cstrlen%E7%9A%84%E7%BB%93%E6%9E%9C%E5%88%86%E5%88%AB%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-text">sizeof和strlen的结果分别是什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AE%97%E6%B3%95%E9%A2%98%EF%BC%9A%E7%BF%BB%E8%BD%AC%E5%AD%97%E7%AC%A6%E4%B8%B2%E4%B8%AD%E5%8D%95%E8%AF%8D%E7%9A%84%E9%A1%BA%E5%BA%8F"><span class="nav-text">算法题：翻转字符串中单词的顺序</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%A1%B9%E7%9B%AEReactor%E5%92%8CProactor%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-text">项目Reactor和Proactor的区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E%E5%92%8C%E7%B4%A2%E5%BC%95%E5%AD%98%E5%82%A8%E7%B1%BB%E5%9E%8B"><span class="nav-text">数据库的存储引擎和索引存储类型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#B-%E6%A0%91%E5%92%8C%E5%93%88%E5%B8%8C%E7%B4%A2%E5%BC%95%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-text">B+树和哈希索引的区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%93%88%E5%B8%8C%E5%86%B2%E7%AA%81%E6%80%8E%E4%B9%88%E8%A7%A3%E5%86%B3"><span class="nav-text">哈希冲突怎么解决</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%86%99%E7%8A%B6%E6%80%81%E6%9C%BA%E7%9A%84%E4%BC%AA%E4%BB%A3%E7%A0%81"><span class="nav-text">写状态机的伪代码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%86%99ip%E5%9C%B0%E5%9D%80%E8%BD%AC32%E4%BD%8D%E6%95%B4%E5%9E%8B"><span class="nav-text">写ip地址转32位整型</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BF%AB%E6%89%8B"><span class="nav-text">快手</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%89%8B%E6%92%95%E9%A2%98%EF%BC%9Ak%E4%B8%AA%E9%93%BE%E8%A1%A8%E5%90%88%E5%B9%B6"><span class="nav-text">手撕题：k个链表合并</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#C-%E4%B8%AD%E5%A4%9A%E7%BB%A7%E6%89%BF%E4%BC%9A%E5%AF%BC%E8%87%B4%E7%B1%BB%E7%BB%A7%E6%89%BF%E4%BA%86%E5%A4%9A%E4%B8%AA%E5%9F%BA%E7%B1%BB%EF%BC%8C%E5%8F%AF%E8%83%BD%E5%AD%98%E5%9C%A8%E5%90%8C%E5%90%8D%E8%99%9A%E5%87%BD%E6%95%B0%E7%9A%84%E6%83%85%E5%86%B5%EF%BC%8C%E5%87%BA%E7%8E%B0%E4%BA%8C%E4%B9%89%E6%80%A7%EF%BC%8C%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E4%BA%8C%E4%B9%89%E6%80%A7"><span class="nav-text">C++中多继承会导致类继承了多个基类，可能存在同名虚函数的情况，出现二义性，如何处理二义性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#TCP%E4%B8%89%E6%AC%A1%E6%8F%A1%E6%89%8B%E8%BF%87%E7%A8%8B%E3%80%81%E6%98%AF%E5%90%A6%E7%86%9F%E6%82%89TLS%E5%8D%8F%E8%AE%AE"><span class="nav-text">TCP三次握手过程、是否熟悉TLS协议</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#C-C-%E5%8C%BA%E5%88%AB%E3%80%81%E5%A0%86%E6%A0%88%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-text">C&#x2F;C++区别、堆栈的问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F%E5%A4%84%E7%90%86%E7%BB%8F%E9%AA%8C"><span class="nav-text">内存泄漏处理经验</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8A%E6%B5%B7%E6%9C%9F%E8%B4%A7%E4%BF%A1%E6%81%AF%E6%8A%80%E6%9C%AF"><span class="nav-text">上海期货信息技术</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#C-%E5%A4%9A%E6%80%81%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-text">C++多态是什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%99%9A%E5%87%BD%E6%95%B0%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F%E7%BA%AF%E8%99%9A%E5%87%BD%E6%95%B0%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-text">虚函数是什么？纯虚函数是什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%B1%BB%E6%A8%A1%E6%9D%BF%E7%9A%84%E7%89%B9%E5%8C%96%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-text">类模板的特化是什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Tcmalloc%E7%94%A8%E8%BF%87%E5%90%97%EF%BC%9F%E5%AE%83%E7%9A%84%E5%BA%95%E5%B1%82%E6%98%AF%E4%BB%80%E4%B9%88%E6%A0%B7%E7%9A%84%EF%BC%9F"><span class="nav-text">Tcmalloc用过吗？它的底层是什么样的？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#define%E5%92%8Cinline%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB"><span class="nav-text">define和inline有什么区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%87%8D%E8%BD%BD%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F%E5%BA%95%E5%B1%82%E6%98%AF%E6%80%8E%E4%B9%88%E5%AE%9E%E7%8E%B0%E7%9A%84%EF%BC%9F"><span class="nav-text">重载是什么？底层是怎么实现的？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#vector%E5%92%8Cdeque%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB%EF%BC%9F%E6%98%AF%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E7%9A%84%E5%90%97%EF%BC%9F%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E7%9A%84%E5%91%A2%EF%BC%9F"><span class="nav-text">vector和deque有什么区别？是线程安全的吗？如何实现的呢？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#vector%E6%98%AF%E5%A6%82%E4%BD%95%E6%89%A9%E5%AE%B9%E7%9A%84%EF%BC%9F"><span class="nav-text">vector是如何扩容的？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%A0%E9%94%81%E7%BB%93%E6%9E%84%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E5%A4%9A%E7%BA%BF%E7%A8%8B%EF%BC%9F"><span class="nav-text">无锁结构如何实现多线程？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#gdb%E5%A6%82%E4%BD%95%E6%9F%A5%E7%9C%8B%E5%87%BD%E6%95%B0%E7%9A%84%E5%A0%86%E6%A0%88%E6%83%85%E5%86%B5"><span class="nav-text">gdb如何查看函数的堆栈情况</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A1%AC%E8%BF%9E%E6%8E%A5%E5%92%8C%E8%BD%AF%E8%BF%9E%E6%8E%A5%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB"><span class="nav-text">硬连接和软连接有什么区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#UDP%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E5%8F%AF%E9%9D%A0%E4%BC%A0%E8%BE%93%EF%BC%9F%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E7%9B%B4%E6%8E%A5%E4%BD%BF%E7%94%A8TCP%EF%BC%9F"><span class="nav-text">UDP如何实现可靠传输？为什么不直接使用TCP？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Valgrind%E7%94%A8%E4%BA%86%E5%93%AA%E4%BA%9B%E7%BB%84%E4%BB%B6%EF%BC%9F%E6%80%8E%E4%B9%88%E4%BB%8E%E7%BB%93%E6%9E%9C%E5%88%86%E6%9E%90%E9%97%AE%E9%A2%98%EF%BC%9F"><span class="nav-text">Valgrind用了哪些组件？怎么从结果分析问题？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E8%AE%A9%E4%B8%80%E4%B8%AA%E7%B1%BB%E5%9C%A8%E5%A0%86%E4%B8%8A%E7%94%9F%E6%88%90%EF%BC%9F"><span class="nav-text">如何让一个类在堆上生成？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#C-11%E4%BA%86%E8%A7%A3%E8%BF%87%E5%A4%9A%E5%B0%91%EF%BC%9F"><span class="nav-text">C++11了解过多少？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#unique-ptr%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0"><span class="nav-text">unique_ptr如何实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A7%BB%E5%8A%A8%E8%AF%AD%E4%B9%89%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F%E4%B8%BE%E4%BE%8B%E8%AF%B4%E6%98%8E"><span class="nav-text">移动语义是什么？举例说明</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%B4%E5%87%A0%E4%B8%AA%E5%B8%B8%E7%94%A8%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%EF%BC%9F%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E7%9A%84%E4%BC%98%E7%82%B9%E5%92%8C%E7%BC%BA%E7%82%B9"><span class="nav-text">说几个常用的设计模式？设计模式的优点和缺点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E6%9C%89%E4%BA%BA%E8%AF%B4%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F%E4%B8%8D%E5%BA%94%E8%AF%A5%E7%AE%97%E4%BD%9C%E4%B8%80%E7%A7%8D%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%EF%BC%9F"><span class="nav-text">为什么有人说单例模式不应该算作一种设计模式？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%83%85%E6%99%AF%E9%A2%98%EF%BC%9A%E6%9C%89%E4%B8%A4%E4%B8%AA%E5%9C%A8%E5%86%85%E5%AD%98%E4%B8%AD%E7%9A%84%E7%B3%BB%E7%BB%9F%EF%BC%8C%E4%B8%80%E4%B8%AA%E6%98%AF%E5%AD%A6%E7%94%9F%E4%BF%A1%E6%81%AF%E7%AE%A1%E7%90%86%E5%8F%A6%E4%B8%80%E4%B8%AA%E6%98%AF%E6%95%99%E5%B8%88%E6%89%93%E5%88%86%E7%B3%BB%E7%BB%9F%EF%BC%9B%E6%9B%B4%E6%96%B0%E8%BF%99%E4%B8%A4%E4%B8%AA%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%AF%9D%EF%BC%8C%E5%A6%82%E6%9E%9C%E4%BD%BF%E7%94%A8%E8%87%AA%E5%B7%B1%E5%86%99%E7%9A%84%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E5%99%A8%EF%BC%8C%E5%BA%94%E8%AF%A5%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1"><span class="nav-text">情景题：有两个在内存中的系统，一个是学生信息管理另一个是教师打分系统；更新这两个系统的话，如果使用自己写的内存分配器，应该如何设计</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%85%BE%E8%AE%AF"><span class="nav-text">腾讯</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AE%97%E6%B3%95%E9%A2%98%EF%BC%9A%E4%B8%80%E4%B8%AA%E5%BE%88%E9%95%BF%E7%9A%84%E6%95%B0%E5%AD%97%E5%AD%97%E7%AC%A6%E9%99%A4%E4%B8%80%E4%B8%AA%E5%B0%8F%E4%BA%8E10%E7%9A%84%E6%95%B4%E6%95%B0%EF%BC%8C%E4%BF%9D%E7%95%99%E4%B8%A4%E4%BD%8D%E5%B0%8F%E6%95%B0"><span class="nav-text">算法题：一个很长的数字字符除一个小于10的整数，保留两位小数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%9B%E7%A8%8B%E7%BA%BF%E7%A8%8B%E5%92%8C%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-text">进程线程和协程的区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%9B%E7%A8%8B%E5%88%87%E6%8D%A2%E4%B8%BA%E4%BB%80%E4%B9%88%E6%AF%94%E7%BA%BF%E7%A8%8B%E5%88%87%E6%8D%A2%E6%95%88%E7%8E%87%E4%BD%8E"><span class="nav-text">进程切换为什么比线程切换效率低</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E4%B8%80%E8%87%B4%E6%80%A7%E5%93%88%E5%B8%8C"><span class="nav-text">什么是一致性哈希</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%86%E4%B8%8D%E4%BA%86%E8%A7%A3%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7"><span class="nav-text">了不了解分布式一致性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#TCP%E4%B8%89%E6%AC%A1%E6%8F%A1%E6%89%8B%E7%9A%84%E8%BF%87%E7%A8%8B%E4%BB%A5%E5%8F%8A%E7%8A%B6%E6%80%81%E8%BD%AC%E6%8D%A2"><span class="nav-text">TCP三次握手的过程以及状态转换</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E6%9E%9CTCP%E6%B2%A1%E6%9C%89%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3%E6%9C%BA%E5%88%B6%E8%BF%98%E8%83%BD%E6%AD%A3%E5%B8%B8%E5%B7%A5%E4%BD%9C%E5%90%97"><span class="nav-text">如果TCP没有滑动窗口机制还能正常工作吗</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Socket%E9%80%9A%E4%BF%A1%E6%9C%8D%E5%8A%A1%E7%AB%AF%E5%92%8C%E5%AE%A2%E6%88%B7%E7%AB%AF%E7%9A%84%E6%B5%81%E7%A8%8B"><span class="nav-text">Socket通信服务端和客户端的流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3%E8%83%BD%E8%BF%9B%E8%A1%8C%E6%8B%A5%E5%A1%9E%E6%8E%A7%E5%88%B6%E5%90%97"><span class="nav-text">滑动窗口能进行拥塞控制吗</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E7%A1%AE%E5%AE%9A%E4%B8%80%E4%B8%AA%E6%B5%81%E7%A8%8B%E5%9B%BE%E6%9C%89%E6%B2%A1%E6%9C%89%E4%BA%92%E7%9B%B8%E5%BC%95%E7%94%A8"><span class="nav-text">如何确定一个流程图有没有互相引用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#10%E4%BA%BF%E4%B8%AA%E6%95%B0%E5%AD%97%E5%8F%96%E5%89%8D100%E5%A4%A7%E6%80%8E%E4%B9%88%E5%8F%96"><span class="nav-text">10亿个数字取前100大怎么取</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%A7%E6%A0%B9%E5%A0%86%E5%85%B7%E4%BD%93%E7%9A%84%E5%8E%9F%E7%90%86%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-text">大根堆具体的原理是什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Redis%E5%9F%BA%E6%9C%AC%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E6%9C%89%E5%93%AA%E4%BA%9B"><span class="nav-text">Redis基本数据结构有哪些</span></a></li></ol></li></ol></li></ol>
+
+    </div>
+</div>
+        </div>
+    
+</div>
+
+
+
+                
+
+            </div>
+
+            
+
+        </div>
+
+        <div class="main-content-footer">
+            <footer class="footer mt-5 py-5 h-auto text-base text-third-text-color relative border-t-2 border-t-border-color">
+    <div class="info-container py-3 text-center">
+        
+        <div class="text-center">
+            &copy;
+            
+            2024&nbsp;&nbsp;<i class="fa-solid fa-heart fa-beat" style="--fa-animation-duration: 0.5s; color: #f54545"></i>&nbsp;&nbsp;<a href="/">fetch150zy</a>
+            
+                
+                <p class="post-count space-x-0.5">
+                    <span>
+                        共 52 篇文章
+                    </span>
+                    
+                </p>
+            
+        </div>
+        
+        <div class="relative text-center lg:absolute lg:left-[20px] lg:top-1/2 lg:-translate-y-1/2 lg:text-left">
+            <span class="lg:block text-sm">由 <?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg class="relative top-[2px] inline-block align-baseline" version="1.1" id="圖層_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="1rem" height="1rem" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve"><path fill="#0E83CD" d="M256.4,25.8l-200,115.5L56,371.5l199.6,114.7l200-115.5l0.4-230.2L256.4,25.8z M349,354.6l-18.4,10.7l-18.6-11V275H200v79.6l-18.4,10.7l-18.6-11v-197l18.5-10.6l18.5,10.8V237h112v-79.6l18.5-10.6l18.5,10.8V354.6z"/></svg><a target="_blank" class="text-base" href="https://hexo.io">Hexo</a> 驱动</span>
+            <span class="text-sm lg:block">主题&nbsp;<a class="text-base" target="_blank" href="https://github.com/EvanNotFound/hexo-theme-redefine">Redefine v2.6.1</a></span>
+        </div>
+        
+        
+        
+        
+        
+    </div>  
+</footer>
+        </div>
+    </div>
+
+    
+        <div class="post-tools">
+            <div class="post-tools-container">
+    <ul class="article-tools-list">
+        <!-- TOC aside toggle -->
+        
+            <li class="right-bottom-tools page-aside-toggle">
+                <i class="fa-regular fa-outdent"></i>
+            </li>
+        
+
+        <!-- go comment -->
+        
+    </ul>
+</div>
+
+        </div>
+    
+
+    <div class="right-side-tools-container">
+        <div class="side-tools-container">
+    <ul class="hidden-tools-list">
+        <li class="right-bottom-tools tool-font-adjust-plus flex justify-center items-center">
+            <i class="fa-regular fa-magnifying-glass-plus"></i>
+        </li>
+
+        <li class="right-bottom-tools tool-font-adjust-minus flex justify-center items-center">
+            <i class="fa-regular fa-magnifying-glass-minus"></i>
+        </li>
+
+        <li class="right-bottom-tools tool-dark-light-toggle flex justify-center items-center">
+            <i class="fa-regular fa-moon"></i>
+        </li>
+
+        <!-- rss -->
+        
+
+        
+
+        <li class="right-bottom-tools tool-scroll-to-bottom flex justify-center items-center">
+            <i class="fa-regular fa-arrow-down"></i>
+        </li>
+    </ul>
+
+    <ul class="visible-tools-list">
+        <li class="right-bottom-tools toggle-tools-list flex justify-center items-center">
+            <i class="fa-regular fa-cog fa-spin"></i>
+        </li>
+        
+            <li class="right-bottom-tools tool-scroll-to-top flex justify-center items-center">
+                <i class="arrow-up fas fa-arrow-up"></i>
+                <span class="percent"></span>
+            </li>
+        
+        
+    </ul>
+</div>
+
+    </div>
+
+    <div class="image-viewer-container">
+    <img src="">
+</div>
+
+
+    
+
+</main>
+
+
+    
+<script src="/js/libs/Swup.min.js"></script>
+
+<script src="/js/libs/SwupSlideTheme.min.js"></script>
+
+<script src="/js/libs/SwupScriptsPlugin.min.js"></script>
+
+<script src="/js/libs/SwupProgressPlugin.min.js"></script>
+
+<script src="/js/libs/SwupScrollPlugin.min.js"></script>
+
+<script src="/js/libs/SwupPreloadPlugin.min.js"></script>
+
+<script>
+    const swup = new Swup({
+        plugins: [
+            new SwupScriptsPlugin({
+                optin: true,
+            }),
+            new SwupProgressPlugin(),
+            new SwupScrollPlugin({
+                offset: 80,
+            }),
+            new SwupSlideTheme({
+                mainElement: ".main-content-body",
+            }),
+            new SwupPreloadPlugin(),
+        ],
+        containers: ["#swup"],
+    });
+</script>
+
+
+
+
+
+
+
+<script src="/js/tools/imageViewer.js" type="module"></script>
+
+<script src="/js/utils.js" type="module"></script>
+
+<script src="/js/main.js" type="module"></script>
+
+<script src="/js/layouts/navbarShrink.js" type="module"></script>
+
+<script src="/js/tools/scrollTopBottom.js" type="module"></script>
+
+<script src="/js/tools/lightDarkSwitch.js" type="module"></script>
+
+<script src="/js/layouts/categoryList.js" type="module"></script>
+
+
+
+
+
+
+
+    
+<script src="/js/layouts/lazyload.js" type="module"></script>
+
+
+
+
+
+
+  
+<script src="/js/libs/Typed.min.js"></script>
+
+  
+<script src="/js/plugins/typed.js" type="module"></script>
+
+
+
+
+
+
+
+
+
+<div class="post-scripts" data-swup-reload-script>
+    
+        
+<script src="/js/tools/tocToggle.js" type="module"></script>
+
+<script src="/js/layouts/toc.js" type="module"></script>
+
+<script src="/js/plugins/tabs.js" type="module"></script>
+
+    
+</div>
+
+
+</body>
+</html>
